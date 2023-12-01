@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "990581988375",
+    "firebase_url": "https://freethings-257b6-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "freethings-257b6",
+    "storage_bucket": "freethings-257b6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:990581988375:android:63d5f83115ccce4c7dd052",
+        "android_client_info": {
+          "package_name": "com.thingsfree"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "990581988375-06qdbqfqedrtatrlhumkoeb7tk92cted.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDFwuFnKMvqtqG5DJI_JN-7ub1ceJCB6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "990581988375-06qdbqfqedrtatrlhumkoeb7tk92cted.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "990581988375-48tnussk1lm82ultpldcvvui2crnjds5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.freethings"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
