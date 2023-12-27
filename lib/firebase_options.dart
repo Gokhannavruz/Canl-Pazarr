@@ -75,7 +75,7 @@ class DefaultFirebaseOptions {
     storageBucket: 'freethings-257b6.appspot.com',
     iosClientId:
         '990581988375-947gsnkgc9so4shs08qtrnrave4n0j9a.apps.googleusercontent.com',
-    iosBundleId: 'com.example.frees',
+    iosBundleId: 'com.example.Freecycle',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -88,6 +88,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'freethings-257b6.appspot.com',
     iosClientId:
         '990581988375-947gsnkgc9so4shs08qtrnrave4n0j9a.apps.googleusercontent.com',
-    iosBundleId: 'com.example.frees',
+    iosBundleId: 'com.example.Freecycle',
   );
 }

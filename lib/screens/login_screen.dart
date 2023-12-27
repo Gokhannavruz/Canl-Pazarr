@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:frees/resources/auth_methods.dart';
-import 'package:frees/screens/phone_verificication.dart';
-import 'package:frees/screens/reset_password.dart';
-import 'package:frees/utils/colors.dart';
-import 'package:frees/utils/global_variables.dart';
-import 'package:frees/utils/utils.dart';
+import 'package:Freecycle/resources/auth_methods.dart';
+import 'package:Freecycle/screens/phone_verificication.dart';
+import 'package:Freecycle/screens/reset_password.dart';
+import 'package:Freecycle/utils/colors.dart';
+import 'package:Freecycle/utils/global_variables.dart';
+import 'package:Freecycle/utils/utils.dart';
 
 import '../responsive/mobile_screen_layout.dart';
 import '../responsive/responsive_layout_screen.dart';
@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 flex: 1,
                 child: Container(),
               ),
-              // frees logo
+              // Freecycle logo
               Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -131,6 +131,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   hintStyle: const TextStyle(
                     color: Colors.grey,
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(
+                      color: Colors.blue,
+                    ),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
                     borderSide: const BorderSide(
@@ -157,7 +163,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   hintStyle: const TextStyle(
                     color: Colors.grey,
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                      color: Colors.blue,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   border: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                      color: Colors.grey,
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),

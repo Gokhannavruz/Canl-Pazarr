@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:frees/models/authentication.dart';
-import 'package:frees/screens/discoverPage2.dart';
+import 'package:Freecycle/models/authentication.dart';
+import 'package:Freecycle/screens/discoverPage2.dart';
 
 class GoogleSignInButton extends StatefulWidget {
   const GoogleSignInButton({Key? key}) : super(key: key);
@@ -49,7 +49,8 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
 
                   if (user != null) {
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => const DiscoverPage2()),
+                      MaterialPageRoute(
+                          builder: (context) => const DiscoverPage2()),
                     );
                   }
                 };

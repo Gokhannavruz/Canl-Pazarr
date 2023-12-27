@@ -4,14 +4,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:Freecycle/models/subscription_db.dart';
+import 'package:Freecycle/screens/in_app_purchase.dart';
 import 'package:provider/provider.dart';
-import 'package:frees/models/user.dart' as model;
+import 'package:Freecycle/models/user.dart' as model;
 
-import 'package:frees/screens/credit_page.dart';
-import 'package:frees/screens/message_screen.dart';
-import 'package:frees/utils/colors.dart';
-import 'package:frees/utils/utils.dart';
-import 'package:frees/widgets/like_animation.dart';
+import 'package:Freecycle/screens/credit_page.dart';
+import 'package:Freecycle/screens/message_screen.dart';
+import 'package:Freecycle/utils/colors.dart';
+import 'package:Freecycle/utils/utils.dart';
+import 'package:Freecycle/widgets/like_animation.dart';
 
 import '../providers/user_provider.dart';
 import '../resources/firestore_methods.dart';
@@ -700,6 +702,58 @@ class _PostCardState extends State<PostCard> {
                       ),
                     ),
                   ),
+                // show how many credits
+                if (widget.snap["datePublished"].toDate().isBefore(
+                      DateTime.now().subtract(
+                        const Duration(days: 7),
+                      ),
+                    ))
+                  Positioned(
+                    bottom:
+                        10, // Adjust the top position according to your needs
+                    right:
+                        10, // Adjust the right position according to your needs
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        "10 Credit",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                // check with stream builder if the post shared in 2 days then show text "Premium Only" else show nothing
+                if (widget.snap["datePublished"].toDate().isAfter(
+                      DateTime.now().subtract(
+                        const Duration(days: 7),
+                      ),
+                    ))
+                  Positioned(
+                    top: 10, // Adjust the top position according to your needs
+                    left:
+                        10, // Adjust the right position according to your needs
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        "Premium Only",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+
                 AnimatedOpacity(
                   duration: const Duration(milliseconds: 200),
                   opacity: isLikeAnimating ? 1 : 0,
@@ -738,351 +792,502 @@ class _PostCardState extends State<PostCard> {
               children: <Widget>[
                 Expanded(
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      LikeAnimation(
-                        isAnimating: widget.snap['likes'].contains(user.uid),
-                        smallLike: true,
-                        child: IconButton(
-                          onPressed: () async {
-                            // add like to the post
-                            await FireStoreMethods().likePost(
-                                widget.snap["postId"],
-                                user.uid,
-                                widget.snap["likes"]);
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        LikeAnimation(
+                          isAnimating: widget.snap['likes'].contains(user.uid),
+                          smallLike: true,
+                          child: IconButton(
+                            onPressed: () async {
+                              // add like to the post
+                              await FireStoreMethods().likePost(
+                                  widget.snap["postId"],
+                                  user.uid,
+                                  widget.snap["likes"]);
 
-                            // if user not liked the post before add notification
-                            // if (!widget.snap["likes"].contains(user.uid) &&
-                            //     currentUserId != widget.snap["uid"]) {
-                            //   NotificationService().showNotification(
-                            //     id: 0,
-                            //     title: "New Notification",
-                            //     body: "${user.username} liked your post",
-                            //   );
-                            // add notification
-                            await FireStoreMethods().addNotification(
-                                "liked",
-                                widget.snap["postId"],
-                                widget.snap["uid"],
-                                user.uid,
-                                currentUserId,
-                                "");
-                            // }
-                          },
-                          icon: widget.snap['likes'].contains(user.uid)
-                              ? const Icon(
-                                  Icons.favorite,
-                                  color: Colors.red,
-                                  size: 25,
-                                )
-                              : const Icon(
-                                  Icons.favorite_border,
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                                  size: 25,
-                                ),
+                              // if user not liked the post before add notification
+                              // if (!widget.snap["likes"].contains(user.uid) &&
+                              //     currentUserId != widget.snap["uid"]) {
+                              //   NotificationService().showNotification(
+                              //     id: 0,
+                              //     title: "New Notification",
+                              //     body: "${user.username} liked your post",
+                              //   );
+                              // add notification
+                              await FireStoreMethods().addNotification(
+                                  "liked",
+                                  widget.snap["postId"],
+                                  widget.snap["uid"],
+                                  user.uid,
+                                  currentUserId,
+                                  "");
+                              // }
+                            },
+                            icon: widget.snap['likes'].contains(user.uid)
+                                ? const Icon(
+                                    Icons.favorite,
+                                    color: Colors.red,
+                                    size: 25,
+                                  )
+                                : const Icon(
+                                    Icons.favorite_border,
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    size: 25,
+                                  ),
+                          ),
                         ),
-                      ),
 
-                      DefaultTextStyle(
-                        style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 35,
-                            ),
-                        child: widget.snap['likes'].length > 0
-                            ? Text(
-                                widget.snap['likes'].length.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 18,
-                                ),
-                              )
-                            : const Text(""),
-                      ),
+                        DefaultTextStyle(
+                          style:
+                              Theme.of(context).textTheme.titleSmall!.copyWith(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 35,
+                                  ),
+                          child: widget.snap['likes'].length > 0
+                              ? Text(
+                                  widget.snap['likes'].length.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 18,
+                                  ),
+                                )
+                              : const Text(""),
+                        ),
 
-                      const SizedBox(
-                        width: 0,
-                      ),
+                        const SizedBox(
+                          width: 0,
+                        ),
 
-                      // comment button
-                      // IconButton(
-                      //   onPressed: () => Navigator.of(context).push(
-                      //     MaterialPageRoute(
-                      //       builder: (context) => CommentsScreen(
-                      //         postId: widget.snap["postId"],
-                      //         uid: widget.snap["uid"],
-                      //         snap: widget.snap,
-                      //       ),
-                      //     ),
-                      //   ),
-                      //   icon: const Icon(
-                      //     Icons.chat_bubble_outline,
-                      //     size: 23,
-                      //   ),
-                      // ),
-                      // InkWell(
-                      //   onTap: () {
-                      //     Navigator.of(context).push(
-                      //       MaterialPageRoute(
-                      //         builder: (context) => CommentsScreen(
-                      //           postId: widget.snap["postId"],
-                      //           uid: widget.snap["uid"],
-                      //           snap: widget.snap,
-                      //         ),
-                      //       ),
-                      //     );
-                      //   },
-                      //   child: Padding(
-                      //     padding: const EdgeInsets.only(top: 8.0),
-                      //     child: DefaultTextStyle(
-                      //         style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                      //               fontWeight: FontWeight.w800,
-                      //               fontSize: 30,
-                      //             ),
-                      //         child: // if commentLen is 0 then show nothing else show the commentLen
-                      //             commentLen > 0
-                      //                 ? Text(
-                      //                     "$commentLen",
-                      //                     style: Theme.of(context).textTheme.bodyMedium,
-                      //                   )
-                      //                 : const Text("")),
-                      //   ),
-                      // ),
+                        // comment button
+                        // IconButton(
+                        //   onPressed: () => Navigator.of(context).push(
+                        //     MaterialPageRoute(
+                        //       builder: (context) => CommentsScreen(
+                        //         postId: widget.snap["postId"],
+                        //         uid: widget.snap["uid"],
+                        //         snap: widget.snap,
+                        //       ),
+                        //     ),
+                        //   ),
+                        //   icon: const Icon(
+                        //     Icons.chat_bubble_outline,
+                        //     size: 23,
+                        //   ),
+                        // ),
+                        // InkWell(
+                        //   onTap: () {
+                        //     Navigator.of(context).push(
+                        //       MaterialPageRoute(
+                        //         builder: (context) => CommentsScreen(
+                        //           postId: widget.snap["postId"],
+                        //           uid: widget.snap["uid"],
+                        //           snap: widget.snap,
+                        //         ),
+                        //       ),
+                        //     );
+                        //   },
+                        //   child: Padding(
+                        //     padding: const EdgeInsets.only(top: 8.0),
+                        //     child: DefaultTextStyle(
+                        //         style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                        //               fontWeight: FontWeight.w800,
+                        //               fontSize: 30,
+                        //             ),
+                        //         child: // if commentLen is 0 then show nothing else show the commentLen
+                        //             commentLen > 0
+                        //                 ? Text(
+                        //                     "$commentLen",
+                        //                     style: Theme.of(context).textTheme.bodyMedium,
+                        //                   )
+                        //                 : const Text("")),
+                        //   ),
+                        // ),
 
-                      // const SizedBox(
-                      //   width: 10,
-                      // ),
+                        // const SizedBox(
+                        //   width: 10,
+                        // ),
 
-                      // IconButton(
-                      //   icon: isSaved
-                      //       ? const Icon(Icons.bookmark, size: 23, color: Colors.green)
-                      //       : const Icon(Icons.bookmark_border,
-                      //           size: 23, color: Colors.white),
-                      //   onPressed: () {
-                      //     savePost(context, widget.snap["postId"]);
-                      //   },
-                      // ),
+                        // IconButton(
+                        //   icon: isSaved
+                        //       ? const Icon(Icons.bookmark, size: 23, color: Colors.green)
+                        //       : const Icon(Icons.bookmark_border,
+                        //           size: 23, color: Colors.white),
+                        //   onPressed: () {
+                        //     savePost(context, widget.snap["postId"]);
+                        //   },
+                        // ),
 
-                      // button to message the user
-                      // get current user credit and check if it is more than 0 then show the message button else show get credit button
-                      // if post owner current user then show nothing
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      StreamBuilder(
-                        stream: FirebaseFirestore.instance
-                            .collection("users")
-                            .doc(currentUserId)
-                            .snapshots(),
-                        builder: (context, AsyncSnapshot snapshot) {
-                          if (snapshot.hasData) {
-                            return snapshot.data["credit"] >= 5
-                                ? Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      // IconButton(
-                                      //   tooltip: "Message",
-                                      //   onPressed: () {
-                                      //     Navigator.of(context).push(
-                                      //       MaterialPageRoute(
-                                      //         builder: (context) =>
-                                      //             MessagesPage(
-                                      //           recipientUid:
-                                      //               widget.snap["uid"],
-                                      //           currentUserUid: currentUserId,
-                                      //           postId: widget.snap["postId"],
-                                      //         ),
-                                      //       ),
-                                      //     );
-                                      //   },
-                                      //   icon: const Icon(
-                                      //     Icons.mail,
-                                      //     size: 23,
-                                      //   ),
-                                      // ),
-                                      // text buton to send message
-                                      TextButton(
-                                        style: TextButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 5,
-                                          ),
-                                          backgroundColor: const Color.fromARGB(
-                                              255, 50, 133, 196),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                        onPressed: () {
+                        // button to message the user
+                        // get current user credit and check if it is more than 0 then show the message button else show get credit button
+                        // if post owner current user then show nothing
+                        const SizedBox(
+                          width: 10,
+                        ),
+
+                        // show message button but if user not premium show premium alert
+                        if (currentUserId != widget.snap["uid"])
+                          StreamBuilder(
+                            stream: FirebaseFirestore.instance
+                                .collection("users")
+                                .doc(currentUserId)
+                                .snapshots(),
+                            builder: (context, AsyncSnapshot snapshot) {
+                              if (snapshot.hasData) {
+                                int userCredits = snapshot.data["credit"];
+                                bool isPremium = snapshot.data["is_premium"];
+
+                                return Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () async {
+                                        // check if the user has sent a message before
+                                        bool hasSentMessage =
+                                            await hasUserSentMessage(
+                                                currentUserId,
+                                                widget.snap["postId"]);
+
+                                        if (hasSentMessage) {
+                                          // Show premium alert because the user has sent a message before
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                backgroundColor:
+                                                    Colors.grey[900],
+                                                title: const Text(
+                                                  "Premium Alert",
+                                                  style: TextStyle(
+                                                    color: Color.fromARGB(
+                                                        255, 255, 255, 255),
+                                                  ),
+                                                ),
+                                                content: const Text(
+                                                  "You have sent a message for a product before. Only premium users can send multiple messages. \n\nBecome a premium member for unlimited messaging.",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(context),
+                                                    child: const Text(
+                                                      "Cancel",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              const SubscriptionPage(),
+                                                        ),
+                                                      );
+                                                    },
+                                                    // gradient colors
+                                                    style: TextButton.styleFrom(
+                                                      padding: EdgeInsets
+                                                          .zero, // Remove the padding from TextButton
+                                                    ),
+                                                    child: Container(
+                                                      height: 35,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                        gradient:
+                                                            LinearGradient(
+                                                          colors: [
+                                                            Colors.blue,
+                                                            Colors.purple,
+                                                          ], // Replace with your gradient colors
+                                                          begin:
+                                                              Alignment.topLeft,
+                                                          end: Alignment
+                                                              .bottomRight,
+                                                        ),
+                                                      ),
+                                                      child: Padding(
+                                                        padding: const EdgeInsets
+                                                            .all(
+                                                            10.0), // Adjust the padding as needed
+                                                        child: Center(
+                                                          child: const Text(
+                                                            'Become Premium',
+                                                            style: TextStyle(
+                                                              fontSize: 13,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        } else if (userCredits < 10) {
+                                          // Show an alert dialog for insufficient credits
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                backgroundColor:
+                                                    Colors.grey[900],
+                                                title: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    const Text(
+                                                      "Not enough credit",
+                                                      style: TextStyle(
+                                                        color: Color.fromARGB(
+                                                            255, 255, 255, 255),
+                                                      ),
+                                                    ),
+                                                    IconButton(
+                                                      icon: Icon(Icons.close,
+                                                          color: Colors.red),
+                                                      onPressed: () {
+                                                        Navigator.pop(
+                                                            context); // Close the dialog
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
+                                                content: const Text(
+                                                  "You need at least 10 credits to message this user.\n\nBut don't worry, you can become a premium member to get unlimited messaging.\n\nOr you can get credit by watching ads.",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            const CreditPage(),
+                                                      ),
+                                                    ),
+                                                    child: const Text(
+                                                      "Earn Credit",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                      width:
+                                                          10), // Adjust the spacing between buttons as needed
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              const SubscriptionPage(),
+                                                        ),
+                                                      );
+                                                    },
+                                                    // gradient colors
+                                                    style: TextButton.styleFrom(
+                                                      padding: EdgeInsets
+                                                          .zero, // Remove the padding from TextButton
+                                                    ),
+                                                    child: Container(
+                                                      height: 35,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                        gradient:
+                                                            LinearGradient(
+                                                          colors: [
+                                                            Colors.blue,
+                                                            Colors.purple,
+                                                          ], // Replace with your gradient colors
+                                                          begin:
+                                                              Alignment.topLeft,
+                                                          end: Alignment
+                                                              .bottomRight,
+                                                        ),
+                                                      ),
+                                                      child: Padding(
+                                                        padding: const EdgeInsets
+                                                            .all(
+                                                            10.0), // Adjust the padding as needed
+                                                        child: Center(
+                                                          child: const Text(
+                                                            'Become Premium',
+                                                            style: TextStyle(
+                                                              fontSize: 13,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        } else if (widget.snap["datePublished"]
+                                            .toDate()
+                                            .isBefore(
+                                                DateTime.now().subtract(
+                                                    const Duration(days: 7)),
+                                                {
+                                              // if user not premium show premium alert
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    backgroundColor:
+                                                        Colors.grey[900],
+                                                    title: const Text(
+                                                      "Premium Alert",
+                                                      style: TextStyle(
+                                                        color: Color.fromARGB(
+                                                            255, 255, 255, 255),
+                                                      ),
+                                                    ),
+                                                    content: const Text(
+                                                      "Only premium subscribers can send messages to posts shared within the last 7 days. \n\nIf you want to send messages before another user purchases the product, Subscribe Now!",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                                context),
+                                                        child: const Text(
+                                                          "Cancel",
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                        style: TextButton
+                                                            .styleFrom(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(10),
+                                                          backgroundColor:
+                                                              const Color
+                                                                  .fromARGB(255,
+                                                                  50, 133, 196),
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10),
+                                                          ),
+                                                        ),
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  const SubscriptionPage(),
+                                                            ),
+                                                          );
+                                                        },
+                                                        child: const Text(
+                                                          "Become Premium",
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              )
+                                            }))
+                                          ;
+                                        else {
+                                          // Proceed to the message page
                                           Navigator.of(context).push(
                                             MaterialPageRoute(
                                               builder: (context) =>
                                                   MessagesPage(
+                                                currentUserUid: currentUserId,
                                                 recipientUid:
                                                     widget.snap["uid"],
-                                                currentUserUid: currentUserId,
                                                 postId: widget.snap["postId"],
                                               ),
                                             ),
                                           );
-                                        },
-                                        child: const Row(
-                                          children: [
-                                            Icon(
-                                              Icons.mail,
-                                              color: Colors.white,
-                                              size: 23,
-                                            ),
-                                            SizedBox(
-                                              width: 3,
-                                            ),
-                                            Text(
-                                              "Message",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                : TextButton(
-                                    style: TextButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 5,
-                                      ),
-                                      backgroundColor: const Color.fromARGB(
-                                          255, 50, 133, 196),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
+                                        }
+                                      },
+                                      icon: const Icon(
+                                        Icons.mail,
+                                        size: 23,
                                       ),
                                     ),
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const CreditPage(),
-                                        ),
-                                      );
-                                    },
-                                    child: const Row(
-                                      children: [
-                                        Icon(
-                                          Icons.monetization_on_outlined,
-                                          color: Colors.white,
-                                          size: 23,
-                                        ),
-                                        SizedBox(
-                                          width: 3,
-                                        ),
-                                        Text(
-                                          "Get Credit",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                          } else {
-                            return const SizedBox();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
+                                  ],
+                                );
+                              } else {
+                                return const SizedBox();
+                              }
+                            },
+                          )
+                      ]),
                 ),
 
-                // if (isRecipentExist)
-                //   StreamBuilder(
-                //     stream: FirebaseFirestore.instance
-                //         .collection("users")
-                //         .doc(recipientUid)
-                //         .snapshots(),
-                //     builder: (context, AsyncSnapshot snapshot) {
-                //       if (snapshot.hasData) {
-                //         return Expanded(
-                //           child: InkWell(
-                //             onTap: () {
-                //               Navigator.of(context).push(
-                //                 MaterialPageRoute(
-                //                   builder: (context) => ProfileScreen2(
-                //                     snap: null,
-                //                     uid: recipientUid,
-                //                     userId: recipientUid,
-                //                   ),
-                //                 ),
-                //               );
-                //             },
-                //             child: Row(
-                //               mainAxisAlignment: MainAxisAlignment.end,
-                //               children: [
-                //                 if (snapshot.data!['match_count'] != null &&
-                //                     snapshot.data!['number_of_sent_gifts'] !=
-                //                         null &&
-                //                     snapshot.data!['match_count'] != 0 &&
-                //                     snapshot.data!['number_of_sent_gifts'] != 0 &&
-                //                     snapshot.data!['match_count'] /
-                //                             snapshot
-                //                                 .data!['number_of_sent_gifts'] ==
-                //                         1)
-                //                   const Padding(
-                //                     padding: EdgeInsets.only(top: 2),
-                //                     child: Icon(
-                //                       Icons.verified,
-                //                       size: 15,
-                //                       color: Colors.blue,
-                //                     ),
-                //                   ),
-                //                 const SizedBox(width: 3),
-                //                 Text(
-                //                   snapshot.data["username"],
-                //                   style: const TextStyle(
-                //                     color: Colors.white,
-                //                     fontSize: 13,
-                //                     fontWeight: FontWeight.w500,
-                //                   ),
-                //                 ),
-                //                 const SizedBox(width: 3),
-                //                 CircleAvatar(
-                //                   radius: 10,
-                //                   backgroundImage:
-                //                       NetworkImage(snapshot.data["photoUrl"]),
-                //                 ),
-                //                 const SizedBox(
-                //                   width: 13,
-                //                 ),
-                //                 // if sent gifts / match count == %100 show verified icon
-                //               ],
-                //             ),
-                //           ),
-                //         );
-                //       } else {
-                //         return const SizedBox();
-                //       }
-                //     },
-                //   ),
-                //
-                // show this item how much credit with Text widget at the end of the row
-                const Padding(
-                  padding: EdgeInsets.only(right: 8.0),
-                  child: Text(
-                    "5 credits",
-                    textAlign: TextAlign.end,
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
+                // show current user credit
+                // if post owner current user then show nothing
+                if (currentUserId != widget.snap["uid"])
+                  StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection("users")
+                        .doc(currentUserId)
+                        .snapshots(),
+                    builder: (context, AsyncSnapshot snapshot) {
+                      if (snapshot.hasData) {
+                        int userCredits = snapshot.data["credit"];
+
+                        return Row(
+                          children: [
+                            Text(
+                              "Your credit: $userCredits",
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 3,
+                            ),
+                          ],
+                        );
+                      } else {
+                        return const SizedBox();
+                      }
+                    },
                   ),
-                ),
               ],
             ),
 
@@ -1171,6 +1376,17 @@ class _PostCardState extends State<PostCard> {
         ],
       ),
     );
+  }
+
+  Future<bool> hasUserSentMessage(String userId, String postId) async {
+    QuerySnapshot<Map<String, dynamic>> result = await FirebaseFirestore
+        .instance
+        .collection("conversations")
+        .where("sender", isEqualTo: userId)
+        .limit(1)
+        .get();
+
+    return result.docs.isNotEmpty;
   }
 
   String _getTimeAgo(DateTime dateTime) {

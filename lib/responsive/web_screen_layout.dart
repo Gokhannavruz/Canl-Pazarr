@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frees/utils/global_variables.dart';
+import 'package:Freecycle/utils/global_variables.dart';
 
 import '../utils/colors.dart';
 

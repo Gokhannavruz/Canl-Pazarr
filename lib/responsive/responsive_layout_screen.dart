@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:frees/utils/global_variables.dart';
+import 'package:Freecycle/utils/global_variables.dart';
 
 import '../providers/user_provider.dart';
 

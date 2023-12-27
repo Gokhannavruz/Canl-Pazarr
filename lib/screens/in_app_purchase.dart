@@ -2,16 +2,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:Freecycle/models/subscription_db.dart';
+import 'package:Freecycle/utils/colors2.dart';
 import 'dart:io';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 import 'package:in_app_purchase_storekit/store_kit_wrappers.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'dart:async';
-
-import '../models/subscription_db.dart';
-
-import '../utils/colors2.dart';
 
 class SubscriptionPage extends StatefulWidget {
   const SubscriptionPage({Key? key}) : super(key: key);
@@ -21,10 +20,10 @@ class SubscriptionPage extends StatefulWidget {
 }
 
 //Subscription 01
-String sub1Id = Platform.isAndroid ? 'premiumsub' : 'your_ios_sub1_id';
+String sub1Id = Platform.isAndroid ? 'monthlysub' : 'your_ios_sub1_id';
 
 //Subscription 02
-String sub2Id = Platform.isAndroid ? 'yearlysub' : 'your_ios_sub2_id';
+String sub2Id = Platform.isAndroid ? 'annualy2' : 'your_ios_sub2_id';
 
 class _SubscriptionPageState extends State<SubscriptionPage> {
   String activeSubId = "";
@@ -73,7 +72,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       return;
     }
 
-    Set<String> subcriptionProductIds = <String>{
+    Set<String> _subcriptionProductIds = <String>{
       sub1Id,
       sub2Id,
     };
@@ -86,7 +85,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     }
 
     final ProductDetailsResponse productDetailResponse =
-        await _inAppPurchase.queryProductDetails(subcriptionProductIds);
+        await _inAppPurchase.queryProductDetails(_subcriptionProductIds);
     if (productDetailResponse.error != null) {
       setState(() {
         _queryProductError = productDetailResponse.error!.message;
@@ -170,7 +169,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     return SafeArea(
       child: Scaffold(
           appBar: AppBar(
-            title: const Text('frees Premium',
+            title: const Text('Subscription',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -224,7 +223,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                               //   mainAxisAlignment:
                               //       MainAxisAlignment.spaceBetween,
                               //   children: [
-                              //     const Text('frees Premium',
+                              //     const Text('swapptzy Premium',
                               //         overflow: TextOverflow.ellipsis,
                               //         style: TextStyle(
                               //             fontSize: 24,
@@ -324,7 +323,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       GestureDetector(
                         onTap: () {
                           confirmPriceChange(context, sub1Id);
-                          print("===================================$sub1Id");
+                          print("===================================${sub1Id}");
                         },
                         child: Container(
                           padding: const EdgeInsets.all(5),
@@ -355,8 +354,92 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             const Divider(),
             Align(
               alignment: Alignment.centerLeft,
-              child: Text(pd.description,
-                  style: TextStyle(color: AppColors.c3, fontSize: 16)),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Monthly Premium Membership Benefits Only \$9.99 per month',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                      overflow: TextOverflow.visible,
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      '1. Only Premium Members Can Send Messages to Products in the First Week:',
+                      style: TextStyle(fontSize: 16, color: Colors.black),
+                      overflow: TextOverflow.visible,
+                    ),
+                    const Text(
+                      '   - Discover new products before other users.',
+                      style: TextStyle(fontSize: 14, color: Colors.black),
+                      overflow: TextOverflow.visible,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '2. Premium Users Can Send Messages to All Products:',
+                      style: TextStyle(fontSize: 16, color: Colors.black),
+                      overflow: TextOverflow.visible,
+                    ),
+                    const Text(
+                      '   - Send messages to any products without limitations.',
+                      style: TextStyle(fontSize: 14, color: Colors.black),
+                      overflow: TextOverflow.visible,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '3. Premium Users Have Unlimited Credit Rights:',
+                      style: TextStyle(fontSize: 16, color: Colors.black),
+                      overflow: TextOverflow.visible,
+                    ),
+                    const Text(
+                      '   - Enjoy unlimited advantages in credit usage.',
+                      style: TextStyle(fontSize: 14, color: Colors.black),
+                      overflow: TextOverflow.visible,
+                    ),
+                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
+                    // Warning with row and icon
+                    Column(
+                      children: [
+                        // Info
+                        const Icon(
+                          Icons.info,
+                          color: Colors.blue,
+                        ),
+                        // There is no trial period for yearly subscription
+                        const Text(
+                          'There is no trial period for monthly subscription',
+                          style: TextStyle(fontSize: 12),
+                          overflow: TextOverflow.visible,
+                        ),
+                        Text(
+                          '   - Renews until canceled',
+                          style: TextStyle(fontSize: 12, color: AppColors.c3),
+                          overflow: TextOverflow.visible,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(
               height: 20,
@@ -427,7 +510,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       GestureDetector(
                         onTap: () {
                           confirmPriceChange(context, sub2Id);
-                          print("===================================$sub2Id");
+                          print("===================================${sub2Id}");
                         },
                         child: Container(
                           padding: const EdgeInsets.all(5),
@@ -458,8 +541,60 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             const Divider(),
             Align(
               alignment: Alignment.centerLeft,
-              child: Text(pd.description,
-                  style: TextStyle(color: AppColors.c3, fontSize: 16)),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "If you buy monthly subscription you will pay 12x9,99 = 119,88 \$ per year \nbut if you buy yearly subscription you will pay 12x6,99 = 83,88 \$ per year",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.blue,
+                        fontSize: 18,
+                      ),
+                      softWrap: true, // Allow text to wrap onto the next line
+                      textAlign:
+                          TextAlign.start, // Adjust text alignment as needed
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Annually Premium Membership Benefits',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      '1. Pay 30% less',
+                      style: TextStyle(fontSize: 16, color: Colors.black),
+                    ),
+                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
+                    // Warning with row and icon
+                    Column(
+                      children: [
+                        // Info
+                        const Icon(
+                          Icons.info,
+                          color: Colors.blue,
+                        ),
+                        // There is no trial period for yearly subscription
+                        const Text(
+                          'There is no trial period for yearly subscription',
+                          style: TextStyle(fontSize: 12, color: Colors.black),
+                          softWrap:
+                              true, // Allow text to wrap onto the next line
+                        ),
+                        Text(
+                          '   - Renews until canceled',
+                          style: TextStyle(fontSize: 12, color: Colors.black),
+                          softWrap:
+                              true, // Allow text to wrap onto the next line
+                        ),
+                      ],
+                    ),
+                  ]),
             ),
             const SizedBox(
               height: 20,
@@ -499,9 +634,8 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     if (Platform.isAndroid) {
       //update oldSubscription details for upgrading and downgrading subscription
       GooglePlayPurchaseDetails? oldSubscription;
-      if (userData?.oldPdFromDb != null) {
+      if (userData?.oldPdFromDb != null)
         oldSubscription = userData?.oldPdFromDb;
-      }
 
       purchaseParam = PurchaseParam(productDetails: productDetails);
 
@@ -668,6 +802,14 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .update({'is_premium': true});
+  }
+
+  // update currentuser credits number in firestore
+  updateCredits() async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .update({'credits': 9999});
   }
 }
 

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 
-import 'package:frees/resources/firestore_methods.dart';
-import 'package:frees/utils/colors.dart';
-import 'package:frees/widgets/comments_card.dart';
+import 'package:Freecycle/resources/firestore_methods.dart';
+import 'package:Freecycle/utils/colors.dart';
+import 'package:Freecycle/widgets/comments_card.dart';
 
 import '../flutter_local_notification/flutter_local_notification.dart';
 import '../providers/user_provider.dart';

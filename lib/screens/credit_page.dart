@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,14 +17,15 @@ class _CreditPageState extends State<CreditPage> {
   late int credits;
   RewardedAd? _rewardedAd;
   var watchedAds = 0;
-
   final adUnitId = Platform.isAndroid
       ? 'ca-app-pub-8445989958080180/1538574301'
       : 'ca-app-pub-3940256099942544/1712485313';
+  late Completer<void> _adLoadCompleter;
 
   @override
   void initState() {
     super.initState();
+    _adLoadCompleter = Completer<void>();
     loadAd();
     getCredit();
   }
@@ -46,16 +48,17 @@ class _CreditPageState extends State<CreditPage> {
     });
   }
 
-  void _watchAd() {
+  Future<void> _watchAd() async {
     if (_rewardedAd == null) {
-      loadAd();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ad is not loaded yet. Please try again later.'),
-        ),
-      );
-
-      return;
+      await _adLoadCompleter.future; // Wait for the ad to be loaded
+      if (_rewardedAd == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ad is not loaded yet. Please try again later.'),
+          ),
+        );
+        return;
+      }
     }
 
     _rewardedAd!.show(
@@ -97,6 +100,7 @@ class _CreditPageState extends State<CreditPage> {
 
           debugPrint('$ad loaded.');
           _rewardedAd = ad;
+          _adLoadCompleter.complete(); // Notify that the ad is loaded
         },
         onAdFailedToLoad: (LoadAdError error) {
           debugPrint('RewardedAd failed to load: $error');
@@ -166,7 +170,7 @@ class _CreditPageState extends State<CreditPage> {
               height: 20,
             ),
             const Text(
-              'You can earn credits by watching ads. You will earn 1 credit every time you watch 3 ads.',
+              "Don't spend money just spend a minute \n \n You can earn credits by watching ads. You will earn 1 credit every time you watch 3 ads",
               style: TextStyle(
                 fontSize: 15,
               ),
@@ -190,8 +194,13 @@ class _CreditPageState extends State<CreditPage> {
                           fontWeight: FontWeight.bold),
                     ),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color.fromARGB(255, 6, 114, 229),
+                      ),
                       onPressed: _watchAd,
-                      child: const Text('Watch Ad'),
+                      child: const Text('Watch Ad',
+                          style: TextStyle(fontSize: 19)),
                     ),
                   ],
                 ),

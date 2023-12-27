@@ -2,16 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:frees/resources/auth_methods.dart';
-import 'package:frees/resources/firestore_methods.dart';
-import 'package:frees/screens/bio_and_profil.dart';
-import 'package:frees/screens/credit_page.dart';
-import 'package:frees/screens/following_Page.dart';
-import 'package:frees/screens/login_screen.dart';
-import 'package:frees/screens/post_screen.dart';
-import 'package:frees/screens/settings.dart';
-import 'package:frees/utils/colors.dart';
-import 'package:frees/utils/utils.dart';
+import 'package:Freecycle/resources/auth_methods.dart';
+import 'package:Freecycle/resources/firestore_methods.dart';
+import 'package:Freecycle/screens/bio_and_profil.dart';
+import 'package:Freecycle/screens/credit_page.dart';
+import 'package:Freecycle/screens/following_Page.dart';
+import 'package:Freecycle/screens/login_screen.dart';
+import 'package:Freecycle/screens/post_screen.dart';
+import 'package:Freecycle/screens/settings.dart';
+import 'package:Freecycle/utils/colors.dart';
+import 'package:Freecycle/utils/utils.dart';
 import '../widgets/follow_button.dart';
 import '../widgets/post_card.dart';
 import 'followers_list_page.dart';
@@ -569,7 +569,7 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                                           widget.uid)
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 39),
+                                              horizontal: 35),
                                           child: FollowButton(
                                             size: // media query
                                                 (MediaQuery.of(context)
@@ -878,7 +878,9 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                               );
                             } else {
                               return const Center(
-                                child: CircularProgressIndicator(),
+                                child: CircularProgressIndicator(
+                                  color: Colors.blue,
+                                ),
                               );
                             }
                           },
@@ -906,7 +908,9 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                               );
                             } else {
                               return const Center(
-                                child: CircularProgressIndicator(),
+                                child: CircularProgressIndicator(
+                                  color: Colors.blue,
+                                ),
                               );
                             }
                           },

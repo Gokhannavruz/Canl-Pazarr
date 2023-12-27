@@ -8,7 +8,7 @@ const RESOURCES = {
 "assets/assets/fire.png": "04a5623c01788adf46a2311af03bc4ca",
 "assets/assets/giftbox.png": "2475d6cdc415578108ecc34d24b4ba31",
 "assets/assets/giftinglogo.png": "6ac02b7954a814671f9bf749c95bd680",
-"assets/assets/frees.png": "532a45400bd2795e3b03d16974d68620",
+"assets/assets/Freecycle.png": "532a45400bd2795e3b03d16974d68620",
 "assets/assets/logogifting.png": "d9598cdb6e229048bf0b002e040f97dc",
 "assets/assets/noun-giftbox-4804968.png": "918686e58d5a2fdfe729737360a346a1",
 "assets/assets/racetimelogo.svg": "96dc896199f7b647afa3959686c5db36",

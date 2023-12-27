@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:frees/models/user.dart';
-import 'package:frees/resources/auth_methods.dart';
+import 'package:Freecycle/models/user.dart';
+import 'package:Freecycle/resources/auth_methods.dart';
 
 class UserProvider with ChangeNotifier {
   User? _user;
@@ -34,7 +34,7 @@ class UserProvider with ChangeNotifier {
         isRated: false,
         rateCount: 0,
         fcmToken: '',
-        credit: 3,
+        credit: 5,
       );
 
   // refresh user

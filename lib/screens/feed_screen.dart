@@ -4,10 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:frees/screens/incoming_messages.dart';
-import 'package:frees/screens/login_screen.dart';
-import 'package:frees/screens/notification_page.dart';
-import 'package:frees/widgets/post_card.dart';
+import 'package:Freecycle/screens/incoming_messages.dart';
+import 'package:Freecycle/screens/login_screen.dart';
+import 'package:Freecycle/screens/notification_page.dart';
+import 'package:Freecycle/widgets/post_card.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class FeedScreen extends StatefulWidget {
@@ -164,7 +164,7 @@ class _FeedScreenState extends State<FeedScreen> {
         automaticallyImplyLeading: false,
         title: Container(
           child: Image.asset(
-            "assets/frees.png",
+            "assets/Freecycle.png",
             width: 40,
             height: 40,
           ),

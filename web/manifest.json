@@ -1,11 +1,11 @@
 {
-    "name": "frees",
-    "short_name": "frees",
+    "name": "Freecycle",
+    "short_name": "Freecycle",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#hexcode",
     "theme_color": "#hexcode",
-    "description": "frees",
+    "description": "Freecycle",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

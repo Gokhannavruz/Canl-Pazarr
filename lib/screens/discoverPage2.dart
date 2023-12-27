@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:frees/screens/add_post_screen.dart';
-import 'package:frees/screens/post_screen.dart';
-import 'package:frees/screens/search_screen.dart';
+import 'package:Freecycle/screens/in_app_purchase.dart';
+import 'package:Freecycle/screens/login_screen.dart';
+import 'package:Freecycle/screens/post_screen.dart';
+import 'package:Freecycle/screens/search_screen.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 // import math
 
@@ -172,7 +173,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                             height: 5,
                           ),
                           Text(
-                            "Share the things you need or the things you don't use!",
+                            "Find what you need!",
                             style: TextStyle(
                               color: Colors.grey,
                               fontSize: 12,
@@ -187,28 +188,48 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
             ),
 
             actions: [
-              // text button for add post screen
+              // be premium button text button. gradient color
               Padding(
-                padding: const EdgeInsets.only(top: 27.5),
+                padding: const EdgeInsets.only(top: 21.0),
                 child: TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 15, 129, 49),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const AddPostScreen()),
+                        builder: (context) => const SubscriptionPage(),
+                      ),
                     );
                   },
-                  child: const Text(
-                    'Share Your Needs!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
+                  // gradient colors
+                  style: TextButton.styleFrom(
+                    padding:
+                        EdgeInsets.zero, // Remove the padding from TextButton
+                  ),
+                  child: Container(
+                    height: 35,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue,
+                          Colors.purple
+                        ], // Replace with your gradient colors
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(
+                          10.0), // Adjust the padding as needed
+                      child: Center(
+                        child: const Text(
+                          'Be Premium',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -227,6 +248,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                   icon: const Icon(Icons.search),
                 ),
               ),
+
               // İS GRID VIEW TRUE THEN SHOW GRID VIEW ICON
               Padding(
                 padding: const EdgeInsets.only(top: 21.0),
@@ -266,59 +288,68 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                'All',
-                'Electronics',
-                'Music',
-                'Sports',
-                'Beauty',
-                'Books',
-                'Clothing',
-                'Baby',
-                'Fitness',
-                'Food',
-                'Furniture',
-                'Garden',
-                'Health',
-                'Home',
-                'Jewelry',
-                'Kitchen',
-                'Automotive',
-                'Office',
-                'Outdoors',
-                'Pets',
-                'Shoes',
-                'Appliances',
-                'Toys',
-                'Travel',
-                'Video Games',
-                'Watches',
-                'Crafts',
-                'Collectibles',
-                'Art',
-                'Movies',
-                'Computers',
-              ]
-                  .map((category) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: InkWell(
-                          onTap: () {
-                            // get category name and add to variable selectedCategory
-                            setState(() {
-                              selectedCategory = category;
-                            });
-                          },
-                          child: Chip(
-                            label: Text(category),
-                            // You can style the chip as needed
-                            backgroundColor: Colors.grey[200],
-                            labelStyle: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                for (var category in [
+                  'All',
+                  'Electronics',
+                  'Music',
+                  'Sports',
+                  'Beauty',
+                  'Books',
+                  'Clothing',
+                  'Baby',
+                  'Fitness',
+                  'Food',
+                  'Furniture',
+                  'Garden',
+                  'Health',
+                  'Home',
+                  'Jewelry',
+                  'Kitchen',
+                  'Automotive',
+                  'Office',
+                  'Outdoors',
+                  'Pets',
+                  'Shoes',
+                  'Appliances',
+                  'Toys',
+                  'Travel',
+                  'Video Games',
+                  'Watches',
+                  'Crafts',
+                  'Collectibles',
+                  'Art',
+                  'Movies',
+                  'Computers',
+                ])
+                  // show category buttons with nice animation
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedCategory = category;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedCategory == category
+                            ? const Color.fromARGB(255, 13, 98, 167)
+                            : Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ))
-                  .toList(),
+                      ),
+                      child: Text(
+                        category,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: selectedCategory == category
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           // text
@@ -335,7 +366,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
           //       child: Padding(
           //         padding: const EdgeInsets.all(8.0),
           //         child: Text(
-          //           "Welcome to Frees \nwhere sharing means caring! At Frees, we believe in the power of giving and receiving. Share what you no longer need and discover treasures from others, all for FREE. Together, we can reduce waste and build a stronger, more connected community. Start sharing now and make a difference! ",
+          //           "Welcome to Freecycle \nwhere sharing means caring! At Freecycle, we believe in the power of giving and receiving. Share what you no longer need and discover treasures from others, all for FREE. Together, we can reduce waste and build a stronger, more connected community. Start sharing now and make a difference! ",
           //           style: TextStyle(
           //             fontSize: 13,
           //             color: Colors.white,
@@ -508,7 +539,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                         if (snapshot.connectionState ==
                                             ConnectionState.waiting) {
                                           return const Center(
-                                            child: CircularProgressIndicator(),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.blue,
+                                            ),
                                           );
                                         }
 
@@ -571,7 +604,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                         if (snapshot.connectionState ==
                                             ConnectionState.waiting) {
                                           return const Center(
-                                            child: CircularProgressIndicator(),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.blue,
+                                            ),
                                           );
                                         }
 
@@ -636,7 +671,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                         if (snapshot.connectionState ==
                                             ConnectionState.waiting) {
                                           return const Center(
-                                            child: CircularProgressIndicator(),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.blue,
+                                            ),
                                           );
                                         }
 
@@ -690,7 +727,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                         if (snapshot.connectionState ==
                                             ConnectionState.waiting) {
                                           return const Center(
-                                            child: CircularProgressIndicator(),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.blue,
+                                            ),
                                           );
                                         }
 
@@ -747,7 +786,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
                                       return const Center(
-                                        child: CircularProgressIndicator(),
+                                        child: CircularProgressIndicator(
+                                          color: Colors.blue,
+                                        ),
                                       );
                                     }
 
@@ -809,7 +850,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
                                       return const Center(
-                                        child: CircularProgressIndicator(),
+                                        child: CircularProgressIndicator(
+                                          color: Colors.blue,
+                                        ),
                                       );
                                     }
 
@@ -871,7 +914,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
                                       return const Center(
-                                        child: CircularProgressIndicator(),
+                                        child: CircularProgressIndicator(
+                                          color: Colors.blue,
+                                        ),
                                       );
                                     }
 
@@ -926,7 +971,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
                                       return const Center(
-                                        child: CircularProgressIndicator(),
+                                        child: CircularProgressIndicator(
+                                          color: Colors.blue,
+                                        ),
                                       );
                                     }
 

@@ -5,8 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:frees/responsive/mobile_screen_layout.dart';
-import 'package:frees/responsive/responsive_layout_screen.dart';
+import 'package:Freecycle/responsive/mobile_screen_layout.dart';
+import 'package:Freecycle/responsive/responsive_layout_screen.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
 import '../resources/auth_methods.dart';
@@ -220,9 +220,9 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                     //       color: Color.fromARGB(255, 0, 0, 0),
                     //       shape: BoxShape.circle,
                     //     ),
-                    //     child: // frees logo image
+                    //     child: // Freecycle logo image
                     //         Image.asset(
-                    //       "assets/frees.png",
+                    //       "assets/Freecycle.png",
                     //       fit: BoxFit.cover,
                     //     ),
                     //   ),
@@ -279,14 +279,37 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                                     ),
                                     dropdownIcon: const Icon(
                                       Icons.arrow_drop_down,
-                                      size: 25,
                                       color: Color.fromARGB(255, 255, 255, 255),
                                     ),
                                     cursorColor: Colors.white,
                                     controller: _phoneController,
                                     decoration: const InputDecoration(
-                                        labelText: "Phone Number",
-                                        border: OutlineInputBorder()),
+                                      labelText: "Phone Number",
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors
+                                                .white), // Default border color
+                                      ),
+                                      focusedBorder: const OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors
+                                                .blue), // Border color when focused
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors
+                                                .grey), // Border color when enabled
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors
+                                                .blue), // Border color when error
+                                      ),
+                                      labelStyle: TextStyle(
+                                        color: Colors
+                                            .white, // Set label text color to white
+                                      ),
+                                    ),
                                     initialCountryCode: 'US',
                                     onChanged: (phone) {
                                       countryDial = phone.countryCode;
@@ -298,16 +321,23 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                                       otpPin = value;
                                     },
                                     keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
+                                    decoration: InputDecoration(
                                       labelText: "OTP",
                                       labelStyle: TextStyle(
                                         color:
                                             Color.fromARGB(255, 255, 255, 255),
                                       ),
                                       hintText: "Enter OTP",
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(5),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Colors
+                                              .blue, // Border color when focused
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Colors
+                                              .grey, // Border color when not focused
                                         ),
                                       ),
                                     ),
@@ -319,17 +349,23 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                                       TextFormField(
                                         maxLength: 25,
                                         controller: _usernameController,
-                                        decoration: const InputDecoration(
+                                        decoration: InputDecoration(
                                           labelStyle: TextStyle(
                                             color: Color.fromARGB(
                                                 255, 255, 255, 255),
                                           ),
                                           labelText: "Username",
                                           hintText: "Enter your username",
-                                          border: OutlineInputBorder(
+                                          focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
-                                              color: Color.fromARGB(
-                                                  255, 255, 255, 255),
+                                              color: Colors
+                                                  .blue, // Border color when focused
+                                            ),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: Colors
+                                                  .grey, // Border color when not focused
                                             ),
                                           ),
                                         ),
@@ -339,28 +375,50 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                                         controller: _emailController,
                                         keyboardType:
                                             TextInputType.emailAddress,
-                                        decoration: const InputDecoration(
+                                        decoration: InputDecoration(
                                           labelText: "Email",
                                           labelStyle: TextStyle(
                                             color: Color.fromARGB(
                                                 255, 255, 255, 255),
                                           ),
                                           hintText: "Enter your email address",
-                                          border: OutlineInputBorder(),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: Colors
+                                                  .blue, // Border color when focused
+                                            ),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: Colors
+                                                  .grey, // Border color when not focused
+                                            ),
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(height: 20),
                                       TextFormField(
                                         controller: _passwordController,
                                         obscureText: true,
-                                        decoration: const InputDecoration(
+                                        decoration: InputDecoration(
                                           labelText: "Password",
                                           labelStyle: TextStyle(
                                             color: Color.fromARGB(
                                                 255, 255, 255, 255),
                                           ),
                                           hintText: "Enter your password",
-                                          border: OutlineInputBorder(),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: Colors
+                                                  .blue, // Border color when focused
+                                            ),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: Colors
+                                                  .grey, // Border color when not focused
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -414,17 +472,17 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                                 if (screenState == 0)
                                   SizedBox(
                                     height: MediaQuery.of(context).size.height *
-                                        0.42,
+                                        0.40,
                                   ),
                                 if (screenState == 1)
                                   SizedBox(
                                     height: MediaQuery.of(context).size.height *
-                                        0.45,
+                                        0.40,
                                   ),
                                 if (screenState == 2)
                                   SizedBox(
                                     height: MediaQuery.of(context).size.height *
-                                        0.22,
+                                        0.18,
                                   ),
 
                                 // show the add on the bottom

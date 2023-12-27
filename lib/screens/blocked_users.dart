@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import 'package:frees/screens/profile_screen2.dart';
+import 'package:Freecycle/screens/profile_screen2.dart';
 
 class BlockedListScreen extends StatefulWidget {
   final String userId;

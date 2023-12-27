@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:frees/screens/profile_screen2.dart';
+import 'package:Freecycle/screens/profile_screen2.dart';
 import 'package:intl/intl.dart';
 
 import '../models/user.dart';
@@ -429,7 +429,8 @@ class _MessagesPageState extends State<MessagesPage> {
                                           borderRadius:
                                               BorderRadius.circular(15),
                                           color: isCurrentUser
-                                              ? const Color.fromARGB(255, 176, 49, 11)
+                                              ? const Color.fromARGB(
+                                                  255, 176, 49, 11)
                                               : const Color.fromARGB(
                                                   255, 37, 79, 118),
                                         ),

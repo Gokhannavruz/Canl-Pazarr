@@ -1,16 +1,16 @@
+import 'package:Freecycle/screens/pagepage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:frees/screens/add_post_screen.dart';
-import 'package:frees/screens/discoverPage2.dart';
-import 'package:frees/screens/hediye_sayfas%C4%B1101.dart';
-import 'package:frees/screens/incoming_messages.dart';
-import 'package:frees/screens/profile_screen2.dart';
+import 'package:Freecycle/screens/add_post_screen.dart';
+import 'package:Freecycle/screens/discoverPage2.dart';
+import 'package:Freecycle/screens/incoming_messages.dart';
+import 'package:Freecycle/screens/profile_screen2.dart';
 
 const webScreenSize = 600;
 
 List<Widget> homeScreenItem = [
-  DiscoverPage2(),
+  const PagePage(),
   IncomingMessagesPage(
       currentUserUid: FirebaseAuth.instance.currentUser?.uid ?? ''),
   const AddPostScreen(),

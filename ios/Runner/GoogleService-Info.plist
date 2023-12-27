@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.frees</string>
+	<string>com.example.Freecycle</string>
 	<key>PROJECT_ID</key>
 	<string>gifting-relaise</string>
 	<key>STORAGE_BUCKET</key>

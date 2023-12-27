@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
-import 'package:frees/providers/user_provider.dart';
-import 'package:frees/responsive/mobile_screen_layout.dart';
-import 'package:frees/responsive/responsive_layout_screen.dart';
-import 'package:frees/responsive/web_screen_layout.dart';
-import 'package:frees/screens/login_screen.dart';
-import 'package:frees/utils/colors.dart';
+import 'package:Freecycle/providers/user_provider.dart';
+import 'package:Freecycle/responsive/mobile_screen_layout.dart';
+import 'package:Freecycle/responsive/responsive_layout_screen.dart';
+import 'package:Freecycle/responsive/web_screen_layout.dart';
+import 'package:Freecycle/screens/login_screen.dart';
+import 'package:Freecycle/utils/colors.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'firebase_options.dart';
 import 'src/firebase_messaging.dart';
@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'frees',
+        title: 'Freecycle',
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: mobileBackgroundColor,
         ),

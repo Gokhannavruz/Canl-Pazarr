@@ -4,13 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:frees/screens/country_state_city_picker.dart';
-import 'package:frees/screens/credit_page.dart';
+import 'package:Freecycle/screens/country_state_city_picker.dart';
+import 'package:Freecycle/screens/credit_page.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:frees/resources/firestore_methods.dart';
-import 'package:frees/utils/colors.dart';
-import 'package:frees/utils/utils.dart';
+import 'package:Freecycle/resources/firestore_methods.dart';
+import 'package:Freecycle/utils/colors.dart';
+import 'package:Freecycle/utils/utils.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({

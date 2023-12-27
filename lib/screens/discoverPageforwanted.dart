@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:frees/screens/post_screen.dart';
-import 'package:frees/screens/search_screen.dart';
+import 'package:Freecycle/screens/post_screen.dart';
+import 'package:Freecycle/screens/search_screen.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 // import math
 
@@ -307,7 +307,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
           //       child: Padding(
           //         padding: const EdgeInsets.all(8.0),
           //         child: Text(
-          //           "Welcome to Frees \nwhere sharing means caring! At Frees, we believe in the power of giving and receiving. Share what you no longer need and discover treasures from others, all for FREE. Together, we can reduce waste and build a stronger, more connected community. Start sharing now and make a difference! ",
+          //           "Welcome to Freecycle \nwhere sharing means caring! At Freecycle, we believe in the power of giving and receiving. Share what you no longer need and discover treasures from others, all for FREE. Together, we can reduce waste and build a stronger, more connected community. Start sharing now and make a difference! ",
           //           style: TextStyle(
           //             fontSize: 13,
           //             color: Colors.white,

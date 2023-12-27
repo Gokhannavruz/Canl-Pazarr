@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:frees/screens/profile_screen2.dart';
-
+import 'package:Freecycle/screens/profile_screen2.dart';
 
 class SearchScreenForMessage extends StatefulWidget {
   const SearchScreenForMessage({Key? key}) : super(key: key);
@@ -56,7 +55,7 @@ class _SearchScreenForMessageState extends State<SearchScreenForMessage> {
                 children: [
                   SizedBox(height: 30),
                   Text(
-                    'Try searching for new frees friends',
+                    'Try searching for new Freecycle friends',
                     style: TextStyle(
                       color: Colors.grey,
                       fontSize: 13,

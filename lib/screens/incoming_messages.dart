@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:frees/screens/message_screen.dart';
+import 'package:Freecycle/screens/message_screen.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../models/user.dart';
 
@@ -295,7 +295,7 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
             // show native ad
             if (isAdLoaded)
               SizedBox(
-                height: 100,
+                height: 55,
                 child: AdWidget(ad: _nativeAd!),
               )
             else
