@@ -26,7 +26,7 @@ class AdHelper {
   // native ad
   static String get nativeAdUnitId {
     if (Platform.isAndroid) {
-      return "ca-app-pub-8445989958080180/5525673359";
+      return "ca-app-pub-8445989958080180/8651364298";
     } else if (Platform.isIOS) {
       return "ca-app-pub-3940256099942544/3986624511";
     } else {

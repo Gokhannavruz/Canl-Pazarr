@@ -1,9 +1,9 @@
+import 'package:Freecycle/screens/credit_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:Freecycle/screens/in_app_purchase.dart';
-import 'package:Freecycle/screens/login_screen.dart';
+
 import 'package:Freecycle/screens/post_screen.dart';
 import 'package:Freecycle/screens/search_screen.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -21,8 +21,8 @@ class DiscoverPage2 extends StatefulWidget {
 class _DiscoverPage2State extends State<DiscoverPage2> {
   late final bool _isShuffleActive = false;
   BannerAd? _bannerAd;
-  late bool _isGridView = true;
-  int adIndex = 3;
+  late bool _isGridView = false;
+  int adIndex = 10;
   int currenAdCount = 0;
   bool isAdLoaded = false;
   NativeAd? _nativeAd;
@@ -43,7 +43,6 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
   @override
   void initState() {
     super.initState();
-    _createBannerAd();
     _loadNativeAd();
     _getUserLocation();
   }
@@ -72,19 +71,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
     });
   }
 
-  // create a banner ad
-  void _createBannerAd() {
-    _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-8445989958080180/1067758482',
-      size: AdSize.banner,
-      request: const AdRequest(),
-      listener: const BannerAdListener(),
-    )..load();
-  }
-
   void _loadNativeAd() {
     _nativeAd = NativeAd(
-      adUnitId: 'ca-app-pub-8445989958080180/8651364298',
+      adUnitId: 'ca-app-pub-8445989958080180/2172976388',
       factoryId: 'listTile',
       request: const AdRequest(),
       listener: NativeAdListener(
@@ -196,7 +185,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SubscriptionPage(),
+                        builder: (context) => const CreditPage(),
                       ),
                     );
                   },
@@ -223,7 +212,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                           10.0), // Adjust the padding as needed
                       child: Center(
                         child: const Text(
-                          'Be Premium',
+                          'Free Credits',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.white,
@@ -291,12 +280,16 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                 for (var category in [
                   'All',
                   'Electronics',
-                  'Music',
-                  'Sports',
+                  'Appliances',
+                  'Art',
+                  'Automotive',
+                  'Baby',
                   'Beauty',
                   'Books',
                   'Clothing',
-                  'Baby',
+                  'Collectibles',
+                  'Computers',
+                  'Crafts',
                   'Fitness',
                   'Food',
                   'Furniture',
@@ -305,21 +298,17 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                   'Home',
                   'Jewelry',
                   'Kitchen',
-                  'Automotive',
+                  'Movies',
+                  'Music',
                   'Office',
                   'Outdoors',
                   'Pets',
                   'Shoes',
-                  'Appliances',
+                  'Sports',
                   'Toys',
                   'Travel',
                   'Video Games',
                   'Watches',
-                  'Crafts',
-                  'Collectibles',
-                  'Art',
-                  'Movies',
-                  'Computers',
                 ])
                   // show category buttons with nice animation
                   Padding(

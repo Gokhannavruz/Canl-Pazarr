@@ -22,7 +22,6 @@ class UserProvider with ChangeNotifier {
         country: '',
         state: '',
         city: '',
-        phoneNumber: '',
         matchCount: 0,
         isPremium: false,
         numberOfSentGifts: 0,
@@ -34,7 +33,7 @@ class UserProvider with ChangeNotifier {
         isRated: false,
         rateCount: 0,
         fcmToken: '',
-        credit: 5,
+        credit: 0,
       );
 
   // refresh user

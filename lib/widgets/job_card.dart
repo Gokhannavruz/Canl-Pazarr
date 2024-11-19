@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:Freecycle/screens/jobs_messages_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -16,11 +17,11 @@ import '../providers/user_provider.dart';
 import '../resources/firestore_methods.dart';
 import '../screens/profile_screen2.dart';
 
-class PostCard extends StatefulWidget {
+class JobCard extends StatefulWidget {
   final snap;
   final bool isGridView;
   final bool isBlocked;
-  const PostCard({
+  const JobCard({
     Key? key,
     required this.snap,
     required this.isGridView,
@@ -28,12 +29,12 @@ class PostCard extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<PostCard> createState() => _PostCardState();
+  State<JobCard> createState() => _JobCardState();
 }
 
 // save post to and create savedpost collection in user document
 
-class _PostCardState extends State<PostCard> {
+class _JobCardState extends State<JobCard> {
   bool isLikeAnimating = false;
   int commentLen = 0;
   late List<String> savedList;
@@ -55,7 +56,7 @@ class _PostCardState extends State<PostCard> {
     getComments();
     // initialize isRecipentExist if recipient is exist with stream builder
     FirebaseFirestore.instance
-        .collection("posts")
+        .collection("jobs")
         .doc(widget.snap.id)
         .snapshots()
         .listen((event) {
@@ -73,7 +74,7 @@ class _PostCardState extends State<PostCard> {
 
     // initialize isWanted if isWanted is true set state true with stream builder
     FirebaseFirestore.instance
-        .collection("posts")
+        .collection("jobs")
         .doc(widget.snap.id)
         .snapshots()
         .listen((event) {
@@ -108,7 +109,7 @@ class _PostCardState extends State<PostCard> {
   // get post location from post document and save them to variables
   Future<void> getPostLocation() async {
     await FirebaseFirestore.instance
-        .collection('posts')
+        .collection('jobs')
         .doc(widget.snap["postId"])
         .get()
         .then((value) {
@@ -191,7 +192,7 @@ class _PostCardState extends State<PostCard> {
   void getComments() async {
     try {
       QuerySnapshot snap = await FirebaseFirestore.instance
-          .collection("posts")
+          .collection("jobs")
           .doc(widget.snap["postId"])
           .collection("comments")
           .get();
@@ -701,7 +702,7 @@ class _PostCardState extends State<PostCard> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
-                        "Wanted",
+                        "Offer",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -720,9 +721,7 @@ class _PostCardState extends State<PostCard> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      widget.snap["category"] == "Electronics"
-                          ? "30 Credit"
-                          : "30 Credit",
+                      "20 Credit",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
@@ -773,7 +772,7 @@ class _PostCardState extends State<PostCard> {
                           child: IconButton(
                             onPressed: () async {
                               // add like to the post
-                              await FireStoreMethods().likePost(
+                              await FireStoreMethods().likeJobPost(
                                   widget.snap["postId"],
                                   user.uid,
                                   widget.snap["likes"]);
@@ -912,36 +911,38 @@ class _PostCardState extends State<PostCard> {
                                 return Row(children: [
                                   IconButton(
                                     onPressed: () async {
-                                      int requiredCredit =
-                                          widget.snap["category"] ==
-                                                  "Electronics"
-                                              ? 20
-                                              : 30;
+                                      int requiredCredit = 20;
                                       if (userCredits < requiredCredit) {
                                         showDialog(
                                           context: context,
                                           builder: (BuildContext context) {
                                             return AlertDialog(
                                               backgroundColor: Colors.grey[900],
-                                              title: const Row(
+                                              title: Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
                                                         .spaceBetween,
                                                 children: [
-                                                  Text(
+                                                  const Text(
                                                     "Not enough credit",
                                                     style: TextStyle(
                                                       color: Color.fromARGB(
                                                           255, 255, 255, 255),
                                                     ),
                                                   ),
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                        Icons.close,
+                                                        color: Colors.white),
+                                                    onPressed: () {
+                                                      Navigator.pop(
+                                                          context); // Close the dialog
+                                                    },
+                                                  ),
                                                 ],
                                               ),
                                               content: Text(
-                                                widget.snap["category"] ==
-                                                        "Electronics"
-                                                    ? "You need at least 20 credits to message this user.\n\nSince there is a limited number of free products, we have implemented a credit system. You can earn credits by watching ads to get products for free before other users."
-                                                    : "You need at least 30 credits to message this user.\n\nSince there is a limited number of free products, we have implemented a credit system. You can earn credits by watching ads to get products for free before other users.",
+                                                "You need at least 20 credits to message this user.\n\nSince there is a limited number of free products, we have implemented a credit system. You can earn credits by watching ads to get products for free before other users.",
                                                 style: const TextStyle(
                                                     color: Colors.white),
                                               ),
@@ -992,7 +993,8 @@ class _PostCardState extends State<PostCard> {
                                       } else {
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
-                                            builder: (context) => MessagesPage(
+                                            builder: (context) =>
+                                                jobMessagesPage(
                                               currentUserUid: currentUserId,
                                               recipientUid: widget.snap["uid"],
                                               postId: widget.snap["postId"],

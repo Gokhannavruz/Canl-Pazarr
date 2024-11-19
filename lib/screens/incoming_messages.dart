@@ -1,9 +1,11 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:Freecycle/screens/message_screen.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../models/user.dart';
+import 'package:Freecycle/screens/jobs_messages_page.dart' hide Message;
 
 class IncomingMessagesPage extends StatefulWidget {
   final String currentUserUid;
@@ -17,8 +19,8 @@ class IncomingMessagesPage extends StatefulWidget {
 
 class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
   late Future<Map<String, List<Message>>> _futureConversations;
-  BannerAd? _bannerAd;
-  final bool _isBannerAdReady = false;
+  bool isJobPost = false;
+
   NativeAd? _nativeAd;
   bool isAdLoaded = false;
   final StreamController<Message> _messageStreamController =
@@ -47,19 +49,9 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
     }
   }
 
-  // create a banner ad
-  void _createBannerAd() {
-    _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
-      size: AdSize.banner,
-      request: const AdRequest(),
-      listener: const BannerAdListener(),
-    )..load();
-  }
-
   void _loadNativeAd() {
     _nativeAd = NativeAd(
-      adUnitId: 'ca-app-pub-8445989958080180/9188709513',
+      adUnitId: 'ca-app-pub-8445989958080180/5911867262',
       factoryId: 'listTile',
       request: const AdRequest(),
       listener: NativeAdListener(
@@ -95,7 +87,7 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
   void initState() {
     super.initState();
     _futureConversations = _loadConversations();
-    _createBannerAd();
+
     _loadNativeAd();
     // Listen for new messages
     FirebaseFirestore.instance
@@ -118,12 +110,40 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
   @override
   void dispose() {
     _messageStreamController.close();
-    _bannerAd?.dispose();
     _nativeAd?.dispose();
     super.dispose();
   }
 
-  // get clicked conversation's post id
+  Future<void> _getPostIdAndRedirect(String recipientUid) async {
+    String postId = await _getPostId(recipientUid);
+    if (isJobPost == false) {
+      // PostId varsa MessagesPage'e yönlendir
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MessagesPage(
+            currentUserUid: widget.currentUserUid,
+            recipientUid: recipientUid,
+            postId: postId,
+          ),
+        ),
+      );
+    } else {
+      // PostId yoksa JobMessagesPage'e yönlendir
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => jobMessagesPage(
+            currentUserUid: widget.currentUserUid,
+            recipientUid: recipientUid,
+            postId: postId,
+          ),
+        ),
+      );
+    }
+  }
+
+// get clicked conversation's post id
   Future<String> _getPostId(String recipientUid) async {
     QuerySnapshot conversations = await FirebaseFirestore.instance
         .collection("conversations")
@@ -133,6 +153,21 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
       List<dynamic> users = conversation["users"];
       if (users.contains(recipientUid)) {
         String postId = conversation["postId"];
+        // Check if postId exists in the "posts" collection
+        DocumentSnapshot<Map<String, dynamic>> postSnapshot =
+            await FirebaseFirestore.instance
+                .collection("posts")
+                .doc(postId)
+                .get();
+        if (postSnapshot.exists) {
+          setState(() {
+            isJobPost = false;
+          });
+        } else {
+          setState(() {
+            isJobPost = true;
+          });
+        }
         return postId;
       }
     }
@@ -155,10 +190,13 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
                 future: _futureConversations,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(
+                        child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Padding(
-                      padding: EdgeInsets.only(top: 12.0),
+                      padding: EdgeInsets.only(top: 20.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -265,21 +303,7 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
                                   ),
                                   onTap: () {
                                     // get post id of clicked conversation
-                                    _getPostId(senderUid).then(
-                                      (postId) {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => MessagesPage(
-                                              currentUserUid:
-                                                  widget.currentUserUid,
-                                              recipientUid: senderUid,
-                                              postId: postId,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
+                                    _getPostIdAndRedirect(senderUid);
                                   },
                                 ),
                               ),
@@ -294,9 +318,12 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
             ),
             // show native ad
             if (isAdLoaded)
-              SizedBox(
-                height: 55,
-                child: AdWidget(ad: _nativeAd!),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: SizedBox(
+                  height: 55,
+                  child: AdWidget(ad: _nativeAd!),
+                ),
               )
             else
               const SizedBox.shrink(),

@@ -38,7 +38,7 @@ class _PagePageState extends State<PagePage> {
               width: 390,
               height: 844,
               clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(color: Colors.black),
+              decoration: const BoxDecoration(color: Colors.black),
               child: Stack(
                 children: [
                   Positioned(
@@ -47,7 +47,7 @@ class _PagePageState extends State<PagePage> {
                     child: Container(
                       width: 390,
                       height: 422,
-                      decoration: ShapeDecoration(
+                      decoration: const ShapeDecoration(
                         image: DecorationImage(
                           image: AssetImage('assets/unsplash.png'),
                           fit: BoxFit.fill,
@@ -64,7 +64,7 @@ class _PagePageState extends State<PagePage> {
                   Positioned(
                     left: 27,
                     top: 515,
-                    child: Container(
+                    child: SizedBox(
                       width: 335,
                       height: 155,
                       child: Stack(
@@ -72,7 +72,7 @@ class _PagePageState extends State<PagePage> {
                           Positioned(
                             left: 0,
                             top: 15,
-                            child: Container(
+                            child: SizedBox(
                               width: 160,
                               height: 140,
                               child: Stack(
@@ -91,7 +91,7 @@ class _PagePageState extends State<PagePage> {
                                       ),
                                     ),
                                   ),
-                                  Positioned(
+                                  const Positioned(
                                     left: 17,
                                     top: 52,
                                     child: SizedBox(
@@ -118,7 +118,7 @@ class _PagePageState extends State<PagePage> {
                           Positioned(
                             left: 175,
                             top: 0,
-                            child: Container(
+                            child: SizedBox(
                               width: 160,
                               height: 155,
                               child: Stack(
@@ -137,7 +137,7 @@ class _PagePageState extends State<PagePage> {
                                       ),
                                     ),
                                   ),
-                                  Positioned(
+                                  const Positioned(
                                     left: 18,
                                     top: 61,
                                     child: SizedBox(
@@ -157,7 +157,7 @@ class _PagePageState extends State<PagePage> {
                                       ),
                                     ),
                                   ),
-                                  Positioned(
+                                  const Positioned(
                                     left: 16,
                                     top: 120,
                                     child: SizedBox(
@@ -180,7 +180,7 @@ class _PagePageState extends State<PagePage> {
                                   Positioned(
                                     left: 32,
                                     top: 0,
-                                    child: Container(
+                                    child: SizedBox(
                                       width: 97,
                                       height: 29,
                                       child: Stack(
@@ -192,7 +192,7 @@ class _PagePageState extends State<PagePage> {
                                               width: 97,
                                               height: 29,
                                               decoration: ShapeDecoration(
-                                                color: Color(0xFFEDC994),
+                                                color: const Color(0xFFEDC994),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
                                                       BorderRadius.circular(15),
@@ -200,7 +200,7 @@ class _PagePageState extends State<PagePage> {
                                               ),
                                             ),
                                           ),
-                                          Positioned(
+                                          const Positioned(
                                             left: 10,
                                             top: 8,
                                             child: SizedBox(
@@ -241,7 +241,7 @@ class _PagePageState extends State<PagePage> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
+                          SizedBox(
                             width: 194,
                             height: 24,
                             child: Stack(
@@ -253,11 +253,11 @@ class _PagePageState extends State<PagePage> {
                                     width: 24,
                                     height: 24,
                                     clipBehavior: Clip.antiAlias,
-                                    decoration: BoxDecoration(),
-                                    child: Stack(children: []),
+                                    decoration: const BoxDecoration(),
+                                    child: const Stack(children: []),
                                   ),
                                 ),
-                                Positioned(
+                                const Positioned(
                                   left: 35,
                                   top: 3,
                                   child: SizedBox(
@@ -280,7 +280,7 @@ class _PagePageState extends State<PagePage> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          Container(
+                          SizedBox(
                             width: 347,
                             height: 24,
                             child: Stack(
@@ -292,11 +292,11 @@ class _PagePageState extends State<PagePage> {
                                     width: 24,
                                     height: 24,
                                     clipBehavior: Clip.antiAlias,
-                                    decoration: BoxDecoration(),
-                                    child: Stack(children: []),
+                                    decoration: const BoxDecoration(),
+                                    child: const Stack(children: []),
                                   ),
                                 ),
-                                Positioned(
+                                const Positioned(
                                   left: 35,
                                   top: 3,
                                   child: SizedBox(
@@ -319,7 +319,7 @@ class _PagePageState extends State<PagePage> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          Container(
+                          SizedBox(
                             width: 347,
                             height: 24,
                             child: Stack(
@@ -331,11 +331,11 @@ class _PagePageState extends State<PagePage> {
                                     width: 24,
                                     height: 24,
                                     clipBehavior: Clip.antiAlias,
-                                    decoration: BoxDecoration(),
-                                    child: Stack(children: []),
+                                    decoration: const BoxDecoration(),
+                                    child: const Stack(children: []),
                                   ),
                                 ),
-                                Positioned(
+                                const Positioned(
                                   left: 35,
                                   top: 3,
                                   child: SizedBox(
@@ -358,7 +358,7 @@ class _PagePageState extends State<PagePage> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          Container(
+                          SizedBox(
                             width: 347,
                             height: 24,
                             child: Stack(
@@ -370,11 +370,11 @@ class _PagePageState extends State<PagePage> {
                                     width: 24,
                                     height: 24,
                                     clipBehavior: Clip.antiAlias,
-                                    decoration: BoxDecoration(),
-                                    child: Stack(children: []),
+                                    decoration: const BoxDecoration(),
+                                    child: const Stack(children: []),
                                   ),
                                 ),
-                                Positioned(
+                                const Positioned(
                                   left: 35,
                                   top: 3,
                                   child: SizedBox(
@@ -397,7 +397,7 @@ class _PagePageState extends State<PagePage> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          Container(
+                          SizedBox(
                             width: 347,
                             height: 24,
                             child: Stack(
@@ -409,11 +409,11 @@ class _PagePageState extends State<PagePage> {
                                     width: 24,
                                     height: 24,
                                     clipBehavior: Clip.antiAlias,
-                                    decoration: BoxDecoration(),
-                                    child: Stack(children: []),
+                                    decoration: const BoxDecoration(),
+                                    child: const Stack(children: []),
                                   ),
                                 ),
-                                Positioned(
+                                const Positioned(
                                   left: 35,
                                   top: 3,
                                   child: SizedBox(
@@ -442,7 +442,7 @@ class _PagePageState extends State<PagePage> {
                   Positioned(
                     left: 22,
                     top: 693,
-                    child: Container(
+                    child: SizedBox(
                       width: 345,
                       height: 50,
                       child: Stack(
@@ -454,7 +454,7 @@ class _PagePageState extends State<PagePage> {
                               width: 345,
                               height: 50,
                               decoration: ShapeDecoration(
-                                gradient: LinearGradient(
+                                gradient: const LinearGradient(
                                   begin: Alignment(0.70, -0.71),
                                   end: Alignment(-0.7, 0.71),
                                   colors: [
@@ -468,7 +468,7 @@ class _PagePageState extends State<PagePage> {
                               ),
                             ),
                           ),
-                          Positioned(
+                          const Positioned(
                             left: 67.99,
                             top: 15,
                             child: SizedBox(
@@ -492,7 +492,7 @@ class _PagePageState extends State<PagePage> {
                       ),
                     ),
                   ),
-                  Positioned(
+                  const Positioned(
                     left: 27,
                     top: 235,
                     child: SizedBox(
@@ -513,7 +513,7 @@ class _PagePageState extends State<PagePage> {
                   Positioned(
                     left: 344,
                     top: 70,
-                    child: Container(
+                    child: SizedBox(
                       width: 30,
                       height: 30,
                       child: Stack(
@@ -526,14 +526,14 @@ class _PagePageState extends State<PagePage> {
                               child: Container(
                                 width: 30,
                                 height: 30,
-                                decoration: ShapeDecoration(
+                                decoration: const ShapeDecoration(
                                   color: Color(0xFFC4C4C4),
                                   shape: OvalBorder(),
                                 ),
                               ),
                             ),
                           ),
-                          Positioned(
+                          const Positioned(
                             left: 4,
                             top: 8,
                             child: SizedBox(
@@ -556,10 +556,10 @@ class _PagePageState extends State<PagePage> {
                       ),
                     ),
                   ),
-                  Positioned(
+                  const Positioned(
                     left: 23,
                     top: 756,
-                    child: Container(
+                    child: SizedBox(
                       width: 340,
                       height: 40,
                       child: Stack(
@@ -628,7 +628,7 @@ class _PagePageState extends State<PagePage> {
                       ),
                     ),
                   ),
-                  Positioned(
+                  const Positioned(
                     left: 27,
                     top: 492,
                     child: SizedBox(
@@ -650,23 +650,23 @@ class _PagePageState extends State<PagePage> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    const SizedBox(
+                    SizedBox(
                       height: 5,
                     ),
-                    const SizedBox(
+                    SizedBox(
                       height: 20,
                     ),
 
                     // Display monthly subscription UI
-                    const SizedBox(
+                    SizedBox(
                       height: 20,
                     ),
-                    const SizedBox(
+                    SizedBox(
                       height: 10,
                     ),
                     // _buildYearlySubTile(), // Display yearly subscription UI
@@ -811,7 +811,7 @@ class _PagePageState extends State<PagePage> {
   Widget _buildSubscriptionBenefitTitle(String title) {
     return Text(
       title,
-      style: TextStyle(
+      style: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,
         color: Colors.black,
@@ -864,9 +864,9 @@ class _PagePageState extends State<PagePage> {
           color: AppColors.c2,
         ),
         alignment: Alignment.center,
-        child: Text(
+        child: const Text(
           'Choose Plan',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             color: Colors.white,
             fontWeight: FontWeight.w500,

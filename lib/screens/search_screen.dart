@@ -25,7 +25,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _loadNativeAd() {
     _nativeAd = NativeAd(
-      adUnitId: 'ca-app-pub-8445989958080180/9188709513',
+      adUnitId: 'ca-app-pub-8445989958080180/5829790999',
       factoryId: 'listTile',
       request: const AdRequest(),
       listener: NativeAdListener(

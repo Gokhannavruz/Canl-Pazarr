@@ -24,7 +24,6 @@ class UserProvider with ChangeNotifier {
         country: _user!.country,
         state: _user!.state,
         city: _user!.city,
-        phoneNumber: _user!.phoneNumber,
         matchCount: _user!.matchCount,
         isPremium: _user!.isPremium,
         numberOfSentGifts: _user!.numberOfSentGifts,

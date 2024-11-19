@@ -14,7 +14,6 @@ class User {
   String country;
   String state;
   String city;
-  String phoneNumber = "";
   int numberOfSentGifts = 0;
   int numberOfUnsentGifts = 0;
   String giftSendingRate = "0";
@@ -25,7 +24,7 @@ class User {
   bool isPremium = false;
   bool isVerified = false;
   bool isConfirmed = false;
-  int credit = 5;
+  int credit = 0;
   // FCMTokens
   final String fcmToken;
 
@@ -46,7 +45,6 @@ class User {
     required this.country,
     required this.state,
     required this.city,
-    required this.phoneNumber,
     required this.matchCount,
     required this.isPremium,
     required this.numberOfSentGifts,
@@ -80,7 +78,6 @@ class User {
       city: snapshot['city'],
       country: snapshot['country'],
       state: snapshot['state'],
-      phoneNumber: snapshot['phone_number'],
       matchCount: snapshot['match_count'],
       isPremium: snapshot['is_premium'],
       numberOfSentGifts: snapshot['number_of_sent_gifts'],
@@ -110,7 +107,6 @@ class User {
         'country': country,
         'state': state,
         'city': city,
-        'phone_number': phoneNumber,
         'match_count': matchCount,
         'is_premium': isPremium,
         'number_of_sent_gifts': numberOfSentGifts,
@@ -140,7 +136,6 @@ class User {
       country: json['country'],
       state: json['state'],
       city: json['city'],
-      phoneNumber: json['phone_number'],
       matchCount: json['match_count'],
       isPremium: json['is_premium'],
       numberOfSentGifts: json['number_of_sent_gifts'],

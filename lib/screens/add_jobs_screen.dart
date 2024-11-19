@@ -1,6 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:typed_data';
-import 'package:Freecycle/screens/add_jobs_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -13,16 +12,16 @@ import 'package:Freecycle/resources/firestore_methods.dart';
 import 'package:Freecycle/utils/colors.dart';
 import 'package:Freecycle/utils/utils.dart';
 
-class AddPostScreen extends StatefulWidget {
-  const AddPostScreen({
+class AddJobsScreen extends StatefulWidget {
+  const AddJobsScreen({
     Key? key,
   }) : super(key: key);
 
   @override
-  _AddPostScreenState createState() => _AddPostScreenState();
+  _AddJobsScreenState createState() => _AddJobsScreenState();
 }
 
-class _AddPostScreenState extends State<AddPostScreen> {
+class _AddJobsScreenState extends State<AddJobsScreen> {
   Uint8List? _file;
   String? username;
   String? profImage;
@@ -34,38 +33,61 @@ class _AddPostScreenState extends State<AddPostScreen> {
   String _city = '';
   bool isWanted = false;
   List<String> productCategories = [
-    'Appliances',
-    'Automotive',
-    'Baby',
-    'Beauty',
-    'Books',
-    'Clothing',
-    'Electronics',
-    'Fitness',
-    'Food',
-    'Furniture',
-    'Garden',
-    'Health',
-    'Home',
-    'Jewelry',
-    'Kitchen',
-    'Music',
-    'Office',
-    'Outdoors',
-    'Pets',
-    'Shoes',
-    'Sports',
-    'Toys',
-    'Travel',
-    'Video Games',
-    'Watches',
-    'Crafts',
-    'Collectibles',
-    'Art',
-    'Movies',
-    'Computers',
+    "Attic conversion",
+    "Bathroom remodeling",
+    "Cabinet installation",
+    "Carpet cleaning",
+    "Childcare",
+    "Cleaning",
+    "Countertop installation",
+    "Crop rotation",
+    "Dishwashing",
+    "Door replacement",
+    "Elderly care",
+    "Electrical",
+    "Equipment maintenance",
+    "Feeding",
+    "Fence maintenance",
+    "Fertilizing",
+    "Flooring installation",
+    "Garden maintenance",
+    "General repairs",
+    "Grooming",
+    "Grocery shopping",
+    "Harvesting crops",
+    "HVAC",
+    "Ironing",
+    "Irrigation management",
+    "Irrigation system maintenance",
+    "Kitchen remodeling",
+    "Landscaping projects",
+    "Lawn mowing",
+    "Laundry",
+    "Livestock care and management",
+    "Meal preparation",
+    "Mulching",
+    "Masonry",
+    "Organizing",
+    "Pest control",
+    "Pest management",
+    "Painting",
+    "Pet boarding",
+    "Pet sitting",
+    "Planting",
+    "Planting crops",
+    "Plumbing",
+    "Pruning",
+    "Private tutoring",
+    "Roofing",
+    "Soil testing and fertilization",
+    "Training",
+    "Wall tiling",
+    "Walking",
+    "Weeding",
+    "Window replacement",
+    "Workplace assistance"
   ];
-  String dropdownValue = 'Appliances';
+  String dropdownValue = 'Painting';
   String value = '';
   late final TextEditingController _descriptionController =
       TextEditingController();
@@ -94,7 +116,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
 
   void _loadNativeAd() {
     _nativeAd = NativeAd(
-      adUnitId: 'ca-app-pub-8445989958080180/3120445139',
+      adUnitId: 'ca-app-pub-8445989958080180/1854924959',
       factoryId: 'listTile',
       request: const AdRequest(),
       listener: NativeAdListener(
@@ -244,7 +266,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     // start the loading
     try {
       // upload to storage and db
-      String res = await FireStoreMethods().uploadPost(
+      String res = await FireStoreMethods().uploadJob(
           _descriptionController.text, _file!, uid, username, profImage,
           recipient: recipient,
           country: _country,
@@ -292,6 +314,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
   @override
   Widget build(BuildContext context) {
     // get user profile photo from firebase  storage
+
     if (_file == null) {
       return SingleChildScrollView(
         child: Column(
@@ -315,14 +338,12 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 ),
               ),
 
-            const SizedBox(height: 20), // Üst reklam ile yazı arasındaki boşluk
-
             Padding(
               padding: EdgeInsets.only(
                 top: MediaQuery.of(context).size.height *
-                    0.01, // Yazı ile üst boşluk arası
+                    0.000, // Yazı ile üst boşluk arası
                 bottom: MediaQuery.of(context).size.height *
-                    0.019, // Yazı ile alt boşluk arası
+                    0.0, // Yazı ile alt boşluk arası
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -330,23 +351,23 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 children: [
                   // Görselin gösterilmesi
                   Image.asset(
-                    'assets/sharingimagepng.png',
-                    height: 250,
+                    'assets/jobs.png',
+                    height: 290,
                   ),
                   const SizedBox(
-                      height: 20), // Görsel ile metin arasındaki boşluk
+                      height: 3), // Görsel ile metin arasındaki boşluk
 
                   // Metnin gösterilmesi ve stilinin iyileştirilmesi
                   Padding(
                     padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width * 0.06,
+                      horizontal: MediaQuery.of(context).size.width * 0.07,
                     ),
                     child: const Material(
                       color: Colors.transparent,
                       child: Text(
-                        "Share your needs \nand find help from others for free.\n\nOr share items you no longer need.",
+                        "Do you have projects you need to complete but don't want to spend money on? \n\nOr perhaps you have skills you're willing to share with others? Our platform is designed for exactly that! Join our community where we believe in mutual support and collaboration. Share what you can offer, and let's help each other with repairs, renovations, maintenance, and more without spending a penny. Together, we can make a difference!",
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 16,
                           color:
                               Colors.white, // Metnin kalın olarak gösterilmesi
                         ),
@@ -355,7 +376,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     ),
                   ),
                   const SizedBox(
-                      height: 20), // Metin ile buton arasındaki boşluk
+                      height: 10), // Metin ile buton arasındaki boşluk
 
                   // Görsel ekleme butonunun gösterilmesi
                   TextButton.icon(
@@ -385,27 +406,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     ),
                   ),
                   const SizedBox(
-                      height: 20), // Buton ile alt boşluk arasındaki boşluk
-
-                  // İş paylaşımı butonunun gösterilmesi
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AddJobsScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Or Share a Job',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                      height: 0), // Buton ile alt boşluk arasındaki boşluk
                 ],
               ),
             ),
@@ -456,6 +457,18 @@ class _AddPostScreenState extends State<AddPostScreen> {
           child: SafeArea(
             child: Column(
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      "Select the Category",
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                    const SizedBox(width: 30),
+                  ],
+                ),
                 // linear progress indicator
                 if (isLoading)
                   const LinearProgressIndicator(
@@ -490,17 +503,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
                         color: Colors.grey[400],
                       ),
                       const SizedBox(width: 1),
-                      Text(
-                        "Category",
-                        style: TextStyle(
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                      const SizedBox(width: 10),
                       DropdownButton<String>(
                         dropdownColor: const Color.fromARGB(255, 24, 22, 22),
                         menuMaxHeight: 300,
-
                         value: dropdownValue,
                         icon:
                             const SizedBox(), // Remove the default icon and use the one in the Row
@@ -508,7 +513,10 @@ class _AddPostScreenState extends State<AddPostScreen> {
                         style: const TextStyle(color: Colors.white),
                         underline: Container(
                           height: 2,
-                          color: const Color.fromARGB(255, 91, 85, 85),
+                          width: dropdownValue.length *
+                              8.0, // Alt çizgi genişliğini seçilen kategori ismi uzunluğuna göre ayarla
+                          color: const Color.fromARGB(
+                              255, 91, 85, 85), // Alt çizgi rengi
                         ),
                         onChanged: (String? newValue) {
                           setState(() {
@@ -519,9 +527,14 @@ class _AddPostScreenState extends State<AddPostScreen> {
                             .map<DropdownMenuItem<String>>((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
-                            child: Text(
-                              value,
-                              style: const TextStyle(color: Colors.white),
+                            child: SizedBox(
+                              width: 160, // DropdownMenuItem genişliği
+                              child: Text(
+                                value,
+                                style: const TextStyle(color: Colors.white),
+                                overflow: TextOverflow
+                                    .ellipsis, // Uzun kategoriler için kısaltma ve üç nokta ekleme
+                              ),
                             ),
                           );
                         }).toList(),
@@ -640,7 +653,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text(
-                              "Wanted",
+                              "Offer",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -665,7 +678,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                       return Row(
                         children: [
                           const Text(
-                            'Is this your need?',
+                            'Is this an offer?',
                             style: TextStyle(
                               color: Colors.white,
                             ),
@@ -766,7 +779,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
                         _descriptionController,
                     maxLines: 5,
                     decoration: const InputDecoration(
-                      hintText: 'Write a caption...',
+                      hintText:
+                          'Write a caption here... \nYou can write about the fields in which you are an expert or have experience.',
                       hintStyle: TextStyle(
                         color: Colors.grey,
                       ),

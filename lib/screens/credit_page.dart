@@ -16,6 +16,7 @@ class CreditPage extends StatefulWidget {
 class _CreditPageState extends State<CreditPage> {
   late int credits;
   RewardedAd? _rewardedAd;
+  var earnedCredits = 0;
   var watchedAds = 0;
   final adUnitId = Platform.isAndroid
       ? 'ca-app-pub-8445989958080180/1538574301'
@@ -63,17 +64,15 @@ class _CreditPageState extends State<CreditPage> {
 
     _rewardedAd!.show(
       onUserEarnedReward: (AdWithoutView ad, RewardItem rewardItem) {
-        watchedAds++;
-        if (watchedAds % 3 == 0) {
-          watchedAds = 0;
-        }
         setState(() {
-          if (watchedAds % 3 == 0) {
-            FirebaseFirestore.instance
-                .collection('users')
-                .doc(FirebaseAuth.instance.currentUser!.uid)
-                .update({'credit': credits + 1}).then((value) {});
-          }
+          // Increment the watchedAds count
+          watchedAds++;
+
+          // Update credits based on the number of ads watched
+          FirebaseFirestore.instance
+              .collection('users')
+              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .update({'credit': credits + watchedAds}).then((value) {});
         });
       },
     );
@@ -170,7 +169,7 @@ class _CreditPageState extends State<CreditPage> {
               height: 20,
             ),
             const Text(
-              "Don't spend money just spend a minute \n \n You can earn credits by watching ads. You will earn 1 credit every time you watch 3 ads",
+              "You can earn credits by watching ads. \nYou will receive 1 credit for each ad",
               style: TextStyle(
                 fontSize: 15,
               ),
@@ -182,7 +181,7 @@ class _CreditPageState extends State<CreditPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'Watched Ads:',
+                      'Earned credit:',
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
@@ -199,7 +198,7 @@ class _CreditPageState extends State<CreditPage> {
                         backgroundColor: const Color.fromARGB(255, 6, 114, 229),
                       ),
                       onPressed: _watchAd,
-                      child: const Text('Watch Ad',
+                      child: const Text('Earn Credit',
                           style: TextStyle(fontSize: 19)),
                     ),
                   ],

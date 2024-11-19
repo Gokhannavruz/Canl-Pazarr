@@ -1,20 +1,21 @@
+import 'package:Freecycle/widgets/job_card.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:Freecycle/widgets/post_card.dart';
 
-class PostScreen extends StatefulWidget {
+class jobPostScreen extends StatefulWidget {
   final String postId;
   final String uid;
 
-  const PostScreen({Key? key, required this.postId, required this.uid})
+  const jobPostScreen({Key? key, required this.postId, required this.uid})
       : super(key: key);
 
   @override
-  State<PostScreen> createState() => _PostScreenState();
+  State<jobPostScreen> createState() => _jobPostScreenState();
 }
 
-class _PostScreenState extends State<PostScreen> {
+class _jobPostScreenState extends State<jobPostScreen> {
   NativeAd? _nativeAd;
   bool isAdLoaded = false;
 
@@ -26,7 +27,7 @@ class _PostScreenState extends State<PostScreen> {
 
   void _loadNativeAd() {
     _nativeAd = NativeAd(
-      adUnitId: 'ca-app-pub-8445989958080180/1505718391',
+      adUnitId: 'ca-app-pub-8445989958080180/2322368783',
       factoryId: 'listTile',
       request: const AdRequest(),
       listener: NativeAdListener(
@@ -80,14 +81,14 @@ class _PostScreenState extends State<PostScreen> {
               children: [
                 StreamBuilder<DocumentSnapshot>(
                   stream: FirebaseFirestore.instance
-                      .collection('posts')
+                      .collection('jobs')
                       .doc(widget.postId)
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return const SizedBox.shrink();
                     }
-                    return PostCard(
+                    return JobCard(
                       snap: snapshot.data!,
                       isBlocked: false,
                       isGridView: false,

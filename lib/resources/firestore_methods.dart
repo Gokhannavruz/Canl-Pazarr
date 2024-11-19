@@ -52,6 +52,52 @@ class FireStoreMethods {
     return res;
   }
 
+  // listen user changes
+  Future<String> uploadJob(String description, Uint8List file, String uid,
+      String username, String profImage,
+      {required String recipient,
+      required city,
+      required country,
+      required String state,
+      required bool isWanted,
+      required String category}) async {
+    // asking uid here because we dont want to make extra calls to firebase auth when we can just get from our state management
+    String res = "Some error occurred";
+    try {
+      String photoUrl =
+          await StorageMethods().uploadImageToStorage('jobs', file, true);
+      String postId = const Uuid().v1(); // creates unique id based on time
+      Post post = Post(
+        description: description,
+        uid: uid,
+        username: username,
+        likes: [],
+        postId: postId,
+        datePublished: DateTime.now(),
+        postUrl: photoUrl,
+        profImage: profImage,
+        recipient: recipient,
+        saved: [],
+        whoSent: '',
+        giftPoint: 0,
+        country: country,
+        state: state,
+        city: city,
+        category: category,
+        isGiven: false,
+        isWanted: isWanted,
+      );
+      _firestore
+          .collection('jobs')
+          .doc(postId)
+          .set({"random": FieldValue.serverTimestamp(), ...post.toJson()});
+      res = "success";
+    } catch (err) {
+      res = err.toString();
+    }
+    return res;
+  }
+
   Future<String> likePost(String postId, String uid, List likes) async {
     String res = "Some error occurred";
     try {
@@ -63,6 +109,27 @@ class FireStoreMethods {
       } else {
         // else we need to add uid to the likes array
         _firestore.collection('posts').doc(postId).update({
+          'likes': FieldValue.arrayUnion([uid])
+        });
+      }
+      res = 'success';
+    } catch (err) {
+      res = err.toString();
+    }
+    return res;
+  }
+
+  Future<String> likeJobPost(String postId, String uid, List likes) async {
+    String res = "Some error occurred";
+    try {
+      if (likes.contains(uid)) {
+        // if the likes list contains the user uid, we need to remove it
+        _firestore.collection('jobs').doc(postId).update({
+          'likes': FieldValue.arrayRemove([uid])
+        });
+      } else {
+        // else we need to add uid to the likes array
+        _firestore.collection('jobs').doc(postId).update({
           'likes': FieldValue.arrayUnion([uid])
         });
       }

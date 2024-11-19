@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:Freecycle/screens/liked_posts_screen.dart';
 import 'package:Freecycle/screens/login_screen.dart';
 
 import 'package:Freecycle/screens/reset_password.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -14,6 +17,49 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  NativeAd? _nativeAd;
+  bool isAdLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNativeAd();
+  }
+
+  void _loadNativeAd() {
+    _nativeAd = NativeAd(
+      adUnitId: 'ca-app-pub-8445989958080180/7800892333',
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        // Called when an ad is successfully received.
+        onAdLoaded: (Ad ad) {
+          var add = ad as NativeAd;
+          setState(() {
+            _nativeAd = add;
+            isAdLoaded = true;
+          });
+        },
+
+        // Called when an ad request failed.
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          // Dispose the ad here to free resources.
+          ad.dispose();
+        },
+        // Called when an ad opens an overlay that covers the screen.
+        onAdOpened: (Ad ad) => print('Ad opened.'),
+        // Called when an ad removes an overlay that covers the screen.
+        onAdClosed: (Ad ad) => print('Ad closed.'),
+        // Called when an impression occurs on the ad.
+        onAdImpression: (Ad ad) => print('Ad impression.'),
+        // Called when a click is recorded for a NativeAd.
+        onAdClicked: (Ad ad) => print('Ad clicked.'),
+      ),
+    );
+
+    _nativeAd!.load();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,128 +71,144 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       ),
-      body: ListView(
+      body: Column(
         children: [
-          Card(
-            color: Colors.black,
-            child: ListTile(
-              // icon and text for liked posts
-              title: const Row(
-                children: [
-                  Icon(Icons.favorite_border_outlined, size: 25),
-                  SizedBox(width: 10),
-                  Text('Favorites'),
-                ],
-              ),
-              onTap: () {
-                // Navigate to blocked users page
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LikedPostsScreen(
-                      userId: FirebaseAuth.instance.currentUser!.uid,
+          Expanded(
+            child: ListView(
+              children: [
+                Card(
+                  color: Colors.black,
+                  child: ListTile(
+                    // icon and text for liked posts
+                    title: const Row(
+                      children: [
+                        Icon(Icons.favorite_border_outlined, size: 25),
+                        SizedBox(width: 10),
+                        Text('Favorites'),
+                      ],
                     ),
+                    onTap: () {
+                      // Navigate to blocked users page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LikedPostsScreen(
+                            userId: FirebaseAuth.instance.currentUser!.uid,
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-          ),
-          // Card(
-          //   color: Colors.black,
-          //   child: ListTile(
-          //     // icon and text for liked posts
-          //     title: Row(
-          //       children: const [
-          //         Icon(Icons.person_pin_circle_outlined, size: 25),
-          //         SizedBox(width: 10),
-          //         Text('Tagged posts'),
-          //       ],
-          //     ),
-          //     onTap: () {
-          //       // Navigate to blocked users page
-          //       Navigator.push(
-          //         context,
-          //         MaterialPageRoute(
-          //           builder: (context) => RecipientScreen(
-          //             userId: FirebaseAuth.instance.currentUser!.uid,
-          //           ),
-          //         ),
-          //       );
-          //     },
-          //   ),
-          // ),
-          Card(
-            color: Colors.black,
-            child: ListTile(
-              title: const Row(
-                children: [
-                  Icon(
-                    Icons.person_off_outlined,
-                    size: 25,
-                  ),
-                  SizedBox(width: 10),
-                  Text('Blocked Users'),
-                ],
-              ),
-              onTap: () {
-                // Navigate to blocked users page
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BlockedListScreen(
-                      userId: FirebaseAuth.instance.currentUser!.uid,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          InkWell(
-            child: Card(
-              color: Colors.black,
-              child: ListTile(
-                title: const Row(
-                  children: [
-                    Icon(
-                      Icons.lock_outline_sharp,
-                      color: Colors.white,
-                    ),
-                    SizedBox(width: 10),
-                    Text('Change Password'),
-                  ],
                 ),
-                onTap: () {
-                  // navigate to change password page
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const ForgetPassword(),
+                // Card(
+                //   color: Colors.black,
+                //   child: ListTile(
+                //     // icon and text for liked posts
+                //     title: Row(
+                //       children: const [
+                //         Icon(Icons.person_pin_circle_outlined, size: 25),
+                //         SizedBox(width: 10),
+                //         Text('Tagged posts'),
+                //       ],
+                //     ),
+                //     onTap: () {
+                //       // Navigate to blocked users page
+                //       Navigator.push(
+                //         context,
+                //         MaterialPageRoute(
+                //           builder: (context) => RecipientScreen(
+                //             userId: FirebaseAuth.instance.currentUser!.uid,
+                //           ),
+                //         ),
+                //       );
+                //     },
+                //   ),
+                // ),
+                Card(
+                  color: Colors.black,
+                  child: ListTile(
+                    title: const Row(
+                      children: [
+                        Icon(
+                          Icons.person_off_outlined,
+                          size: 25,
+                        ),
+                        SizedBox(width: 10),
+                        Text('Blocked Users'),
+                      ],
                     ),
-                  );
-                },
-              ),
-            ),
-          ),
-          InkWell(
-            child: Card(
-              color: Colors.black,
-              child: ListTile(
-                title: const Row(
-                  children: [
-                    Icon(
-                      Icons.delete_forever,
-                      color: Colors.red,
-                    ),
-                    SizedBox(width: 10),
-                    Text('Delete account'),
-                  ],
+                    onTap: () {
+                      // Navigate to blocked users page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BlockedListScreen(
+                            userId: FirebaseAuth.instance.currentUser!.uid,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-                onTap: () {
-                  // Show confirm delete account dialog
-                  deleteAccount(context);
-                },
-              ),
+                InkWell(
+                  child: Card(
+                    color: Colors.black,
+                    child: ListTile(
+                      title: const Row(
+                        children: [
+                          Icon(
+                            Icons.lock_outline_sharp,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 10),
+                          Text('Change Password'),
+                        ],
+                      ),
+                      onTap: () {
+                        // navigate to change password page
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const ForgetPassword(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                InkWell(
+                  child: Card(
+                    color: Colors.black,
+                    child: ListTile(
+                      title: const Row(
+                        children: [
+                          Icon(
+                            Icons.delete_forever,
+                            color: Colors.red,
+                          ),
+                          SizedBox(width: 10),
+                          Text('Delete account'),
+                        ],
+                      ),
+                      onTap: () {
+                        // Show confirm delete account dialog
+                        deleteAccount(context);
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+          if (isAdLoaded)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: SizedBox(
+                height: 55,
+                child: AdWidget(ad: _nativeAd!),
+              ),
+            )
+          else
+            const SizedBox.shrink(),
         ],
       ),
     );

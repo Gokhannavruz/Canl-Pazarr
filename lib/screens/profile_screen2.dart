@@ -40,6 +40,8 @@ class ProfileScreen2State extends State<ProfileScreen2> {
   bool isBlocked = false;
   String sendingRate = '0';
   int matches = 0;
+  NativeAd? _nativeAd;
+
   int sentGifts = 0;
   double giftPoint = 0;
   int rateCount = 0;
@@ -52,7 +54,7 @@ class ProfileScreen2State extends State<ProfileScreen2> {
   void initState() {
     super.initState();
     getData();
-    // _loadNativeAd();
+    _loadNativeAd();
   }
 
   @override
@@ -97,6 +99,39 @@ class ProfileScreen2State extends State<ProfileScreen2> {
 
   //   _nativeAd2!.load();
   // }
+  void _loadNativeAd() {
+    _nativeAd = NativeAd(
+      adUnitId: 'ca-app-pub-8445989958080180/1071832450',
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        // Called when an ad is successfully received.
+        onAdLoaded: (Ad ad) {
+          var add = ad as NativeAd;
+          setState(() {
+            _nativeAd = add;
+            isAdLoaded = true;
+          });
+        },
+
+        // Called when an ad request failed.
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          // Dispose the ad here to free resources.
+          ad.dispose();
+        },
+        // Called when an ad opens an overlay that covers the screen.
+        onAdOpened: (Ad ad) => print('Ad opened.'),
+        // Called when an ad removes an overlay that covers the screen.
+        onAdClosed: (Ad ad) => print('Ad closed.'),
+        // Called when an impression occurs on the ad.
+        onAdImpression: (Ad ad) => print('Ad impression.'),
+        // Called when a click is recorded for a NativeAd.
+        onAdClicked: (Ad ad) => print('Ad clicked.'),
+      ),
+    );
+
+    _nativeAd!.load();
+  }
 
   getData() async {
     setState(() {
@@ -169,7 +204,9 @@ class ProfileScreen2State extends State<ProfileScreen2> {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     return isLoading
         ? const Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(
+              color: Colors.white,
+            ),
           )
         : Scaffold(
             appBar: AppBar(
@@ -416,6 +453,7 @@ class ProfileScreen2State extends State<ProfileScreen2> {
               centerTitle: false,
             ),
             body: RefreshIndicator(
+              color: Colors.white,
               onRefresh: _refresh,
               child: ListView(
                 children: [
@@ -502,7 +540,7 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                                           }
                                         }),
                                   const SizedBox(
-                                    height: 15,
+                                    height: 7,
                                   ),
                                   // earn more credit button
                                   if (FirebaseAuth.instance.currentUser!.uid ==
@@ -522,14 +560,26 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                                           borderRadius:
                                               BorderRadius.circular(10),
                                         ),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal:
+                                                5), // Adjust the horizontal padding
                                       ),
-                                      child: const Text(
-                                        'Earn more credit',
-                                        style: TextStyle(
-                                          color: Colors.white,
+                                      child: const SizedBox(
+                                        width:
+                                            120, // Set a specific width for the button
+                                        child: Center(
+                                          child: Text(
+                                            'Earn Free Credit',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
                                   Row(
                                     mainAxisSize: MainAxisSize.max,
                                     mainAxisAlignment:
@@ -830,6 +880,20 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                               ),
                             ],
                           ),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height *
+                                0.13, // Ekran yüksekliğinin %10'u kadar bir boşluk
+                          ),
+                          if (isAdLoaded)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4.0),
+                              child: SizedBox(
+                                height: 55,
+                                child: AdWidget(ad: _nativeAd!),
+                              ),
+                            )
+                          else
+                            const SizedBox.shrink(),
                         ],
                       ),
                     ),
@@ -879,7 +943,7 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                             } else {
                               return const Center(
                                 child: CircularProgressIndicator(
-                                  color: Colors.blue,
+                                  color: Colors.white,
                                 ),
                               );
                             }
@@ -909,7 +973,7 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                             } else {
                               return const Center(
                                 child: CircularProgressIndicator(
-                                  color: Colors.blue,
+                                  color: Colors.white,
                                 ),
                               );
                             }

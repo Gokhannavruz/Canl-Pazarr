@@ -62,6 +62,30 @@ class _MessagesPageState extends State<MessagesPage> {
     });
   }
 
+  // reduce cureent user's credit, if post category is "Electronics" reduce 30, else reduce 20
+  Future<void> reduceCredit() async {
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(widget.currentUserUid)
+        .get();
+    int credit = doc["credit"];
+    if (doc["credit"] >= 30) {
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(widget.currentUserUid)
+          .update({
+        "credit": credit - 30,
+      });
+    } else if (doc["credit"] >= 20) {
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(widget.currentUserUid)
+          .update({
+        "credit": credit - 20,
+      });
+    }
+  }
+
   @override
   void dispose() {
     _subscription.cancel();
@@ -219,18 +243,12 @@ class _MessagesPageState extends State<MessagesPage> {
 
                               return Padding(
                                 padding: const EdgeInsets.only(left: 8.0),
-                                child: Row(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // category information
-                                    Text(
-                                      "# $category",
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
+                                    const SizedBox(
+                                        height:
+                                            4), // Burada boşluk ekledim, ihtiyacınıza göre ayarlayabilirsiniz
                                     // location information
                                     if (city != "")
                                       Text(
@@ -580,6 +598,7 @@ class _MessagesPageState extends State<MessagesPage> {
                     _textController.text.isNotEmpty
                         ? _handleSubmitted(_textController.text)
                         : null;
+                    reduceCredit();
                   }),
             )
           ],

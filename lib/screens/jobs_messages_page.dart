@@ -6,12 +6,12 @@ import 'package:intl/intl.dart';
 
 import '../models/user.dart';
 
-class MessagesPage2 extends StatefulWidget {
+class jobMessagesPage extends StatefulWidget {
   final String currentUserUid;
   final String recipientUid;
   final String postId;
 
-  const MessagesPage2({
+  const jobMessagesPage({
     Key? key,
     required this.currentUserUid,
     required this.recipientUid,
@@ -19,10 +19,10 @@ class MessagesPage2 extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _MessagesPage2State createState() => _MessagesPage2State();
+  _jobMessagesPageState createState() => _jobMessagesPageState();
 }
 
-class _MessagesPage2State extends State<MessagesPage2> {
+class _jobMessagesPageState extends State<jobMessagesPage> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -31,6 +31,8 @@ class _MessagesPage2State extends State<MessagesPage2> {
   User? recipientUser;
   late CollectionReference _messagesCollection;
   late bool _isListViewRendered;
+  String currentUserUid = "";
+  String PostUid = "";
 
   late String conversationId =
       widget.currentUserUid.hashCode <= widget.recipientUid.hashCode
@@ -42,7 +44,8 @@ class _MessagesPage2State extends State<MessagesPage2> {
     super.initState();
     // initialize _conversationId
     _isListViewRendered = false;
-
+    getCurrentUserUid();
+    getPostUid(widget.postId);
     getCurrentUser();
     getUserProfile().then((_) {
       _loadMessages();
@@ -87,6 +90,24 @@ class _MessagesPage2State extends State<MessagesPage2> {
   Future<void> getUserProfile() async {
     recipientUser = await getUser(widget.recipientUid);
     setState(() {});
+  }
+
+  // get current users uid
+  Future<void> getCurrentUserUid() async {
+    currentUserUid = await getCurrentUser().then((value) => value.uid);
+    setState(() {
+      currentUserUid = currentUserUid;
+    });
+  }
+
+  // get uid field from posts collection with postId
+  Future<String> getPostUid(String postId) async {
+    DocumentSnapshot doc =
+        await FirebaseFirestore.instance.collection("jobs").doc(postId).get();
+    setState(() {
+      PostUid = doc["uid"];
+    });
+    return PostUid;
   }
 
   @override
@@ -154,7 +175,7 @@ class _MessagesPage2State extends State<MessagesPage2> {
                 widget.postId != ""
                     ? StreamBuilder<DocumentSnapshot>(
                         stream: FirebaseFirestore.instance
-                            .collection('posts')
+                            .collection('jobs')
                             .doc(widget.postId)
                             .snapshots(),
                         builder: (context, snapshot) {
@@ -176,189 +197,160 @@ class _MessagesPage2State extends State<MessagesPage2> {
                         },
                       )
                     : Container(),
-                // get post description if it exists
-                Column(children: [
-                  widget.postId != ""
-                      ? StreamBuilder<DocumentSnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('posts')
-                              .doc(widget.postId)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData) {
-                              return const SizedBox.shrink();
-                            }
-                            final String description =
-                                snapshot.data!['description'];
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Text(
-                                description,
-                                style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            );
-                          },
-                        )
-                      : Container(),
+                // get post category and location information
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    widget.postId != ""
+                        ? StreamBuilder<DocumentSnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('jobs')
+                                .doc(widget.postId)
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const SizedBox.shrink();
+                              }
+                              final String category =
+                                  snapshot.data!['category'];
+                              final String country = snapshot.data!['country'];
+                              final String state = snapshot.data!['state'];
+                              final String city = snapshot.data!['city'];
 
-                  // get post country state city and state if it exists
-
-                  widget.postId != ""
-                      ? StreamBuilder<DocumentSnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('posts')
-                              .doc(widget.postId)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData) {
-                              return const SizedBox.shrink();
-                            }
-                            final String category = snapshot.data!['category'];
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Text(
-                                category,
-                                style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey),
-                              ),
-                            );
-                          },
-                        )
-                      : Container(),
-
-                  widget.postId != ""
-                      ? StreamBuilder<DocumentSnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('posts')
-                              .doc(widget.postId)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData) {
-                              return const SizedBox.shrink();
-                            }
-                            final String country = snapshot.data!['country'];
-                            final String state = snapshot.data!['state'];
-                            final String city = snapshot.data!['city'];
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Row(
-                                children: [
-                                  // location icon
-                                  const Icon(
-                                    Icons.location_on,
-                                    color: Colors.grey,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    // if city is empty show only country and state, if city and state is empty show only country
-                                    city != ""
-                                        ? "$city, $state, $country"
-                                        : state != ""
-                                            ? "$state, $country"
-                                            : country,
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        )
-                      : Container(),
-                ]),
-                // confirm button for is this item given this user or not
-                widget.postId != "" &&
-                        widget.recipientUid == widget.currentUserUid
-                    ? StreamBuilder<DocumentSnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('posts')
-                            .doc(widget.postId)
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return const SizedBox.shrink();
-                          }
-                          final bool isGiven = snapshot.data!['isGiven'];
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: Row(
-                              // if not given show confirm button, if given show text given
-                              children: [
-                                isGiven
-                                    ? const Text(
-                                        "Given",
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey),
-                                      )
-                                    : ElevatedButton(
-                                        onPressed: () {
-                                          // show dialog to confirm
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return AlertDialog(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                title: const Text(
-                                                    "Confirm this item is given?"),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                    child: const Text("Cancel"),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                      // update post isGiven to true
-                                                      FirebaseFirestore.instance
-                                                          .collection("posts")
-                                                          .doc(widget.postId)
-                                                          .update({
-                                                        "isGiven": true,
-                                                      });
-
-                                                      updateCredit();
-                                                    },
-                                                    child:
-                                                        const Text("Confirm"),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          foregroundColor: Colors.white,
-                                          backgroundColor: Colors.black,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(32.0),
-                                          ),
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Row(
+                                  children: [
+                                    const SizedBox(width: 4),
+                                    // location information
+                                    if (city != "")
+                                      Text(
+                                        "- $city, $state, $country",
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey,
                                         ),
-                                        child: const Text("Confirm"),
+                                      )
+                                    else if (state != "")
+                                      Text(
+                                        "- $state, $country",
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey,
+                                        ),
+                                      )
+                                    else
+                                      Text(
+                                        "- $country",
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey,
+                                        ),
                                       ),
-                              ],
-                            ),
-                          );
-                        },
-                      )
-                    : Container(),
+                                  ],
+                                ),
+                              );
+                            },
+                          )
+                        : Container(),
+                  ],
+                ),
               ],
             ),
           ),
+// confirm button for is this item given this user or not
+          PostUid == currentUserUid
+              ? StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('jobs')
+                      .doc(widget.postId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const SizedBox.shrink();
+                    }
+                    final bool isGiven = snapshot.data!['isGiven'];
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        // if not given show confirm button, if given show text given
+                        children: [
+                          isGiven
+                              ? const Text(
+                                  "Given",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                  ),
+                                )
+                              : ElevatedButton(
+                                  onPressed: () {
+                                    // show dialog to confirm
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                          title: const Text(
+                                              "Confirm this item is given?"),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text("Cancel"),
+                                            ),
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                foregroundColor: Colors.white,
+                                                backgroundColor:
+                                                    Colors.blueAccent,
+                                                disabledForegroundColor:
+                                                    Colors.grey.withOpacity(
+                                                        0.38), // foreground
+                                              ),
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                // update post isGiven to true
+                                                FirebaseFirestore.instance
+                                                    .collection("jobs")
+                                                    .doc(widget.postId)
+                                                    .update({
+                                                  "isGiven": true,
+                                                });
+
+                                                updateCredit();
+                                              },
+                                              child: const Text("Confirm"),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(32.0),
+                                    ),
+                                  ),
+                                  child: const Text("Confirm"),
+                                ),
+                        ],
+                      ),
+                    );
+                  },
+                )
+              : Container(),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(3.0),
@@ -422,16 +414,16 @@ class _MessagesPage2State extends State<MessagesPage2> {
                                           maxWidth: MediaQuery.of(context)
                                                   .size
                                                   .width *
-                                              0.6,
+                                              0.9,
                                         ),
                                         decoration: BoxDecoration(
                                           borderRadius:
-                                              BorderRadius.circular(8),
+                                              BorderRadius.circular(15),
                                           color: isCurrentUser
                                               ? const Color.fromARGB(
-                                                  255, 16, 79, 130)
+                                                  255, 176, 49, 11)
                                               : const Color.fromARGB(
-                                                  255, 118, 37, 37),
+                                                  255, 37, 79, 118),
                                         ),
 
                                         padding: const EdgeInsets.all(8),
@@ -455,7 +447,7 @@ class _MessagesPage2State extends State<MessagesPage2> {
                                                 ),
                                               ),
                                             ),
-                                            const SizedBox(height: 4),
+                                            const SizedBox(height: 2),
                                             // if in today show time, if yesterday show yesterday, if not show date
                                             // show in the bottom right
                                             Text(
@@ -600,7 +592,7 @@ class _MessagesPage2State extends State<MessagesPage2> {
         .collection("users")
         .doc(widget.currentUserUid)
         .update({
-      "credit": credit + 1,
+      "credit": credit + 20,
     });
     // get recipient user's credit
     DocumentSnapshot doc2 = await FirebaseFirestore.instance
@@ -613,7 +605,7 @@ class _MessagesPage2State extends State<MessagesPage2> {
         .collection("users")
         .doc(widget.recipientUid)
         .update({
-      "credit": credit2 - 1,
+      "credit": credit2 - 10,
     });
   }
 

@@ -1,7 +1,11 @@
+import 'package:Freecycle/screens/credit_page.dart';
+import 'package:Freecycle/screens/job_post_screen.dart';
+import 'package:Freecycle/widgets/job_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:Freecycle/screens/post_screen.dart';
 import 'package:Freecycle/screens/search_screen.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -9,14 +13,14 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../widgets/post_card.dart';
 
-class DiscoverPage2 extends StatefulWidget {
-  const DiscoverPage2({Key? key}) : super(key: key);
+class DiscoverJobsPage extends StatefulWidget {
+  const DiscoverJobsPage({Key? key}) : super(key: key);
 
   @override
-  State<DiscoverPage2> createState() => _DiscoverPage2State();
+  State<DiscoverJobsPage> createState() => _DiscoverJobsPage();
 }
 
-class _DiscoverPage2State extends State<DiscoverPage2> {
+class _DiscoverJobsPage extends State<DiscoverJobsPage> {
   late final bool _isShuffleActive = false;
   BannerAd? _bannerAd;
   late bool _isGridView = true;
@@ -41,7 +45,6 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
   @override
   void initState() {
     super.initState();
-    _createBannerAd();
     _loadNativeAd();
     _getUserLocation();
   }
@@ -70,19 +73,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
     });
   }
 
-  // create a banner ad
-  void _createBannerAd() {
-    _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-8445989958080180/1067758482',
-      size: AdSize.banner,
-      request: const AdRequest(),
-      listener: const BannerAdListener(),
-    )..load();
-  }
-
   void _loadNativeAd() {
     _nativeAd = NativeAd(
-      adUnitId: 'ca-app-pub-8445989958080180/8651364298',
+      adUnitId: 'ca-app-pub-8445989958080180/7276038914',
       factoryId: 'listTile',
       request: const AdRequest(),
       listener: NativeAdListener(
@@ -160,7 +153,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Discover",
+                            "Jobs",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 30,
@@ -171,10 +164,10 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                             height: 5,
                           ),
                           Text(
-                            "Find new people and posts",
+                            "Find what you need!",
                             style: TextStyle(
                               color: Colors.grey,
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -186,8 +179,55 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
             ),
 
             actions: [
+              // be premium button text button. gradient color
               Padding(
-                padding: const EdgeInsets.only(top: 24.0),
+                padding: const EdgeInsets.only(top: 21.0),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CreditPage(),
+                      ),
+                    );
+                  },
+                  // gradient colors
+                  style: TextButton.styleFrom(
+                    padding:
+                        EdgeInsets.zero, // Remove the padding from TextButton
+                  ),
+                  child: Container(
+                    height: 35,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue,
+                          Colors.purple
+                        ], // Replace with your gradient colors
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(
+                          10.0), // Adjust the padding as needed
+                      child: Center(
+                        child: const Text(
+                          'Free Credits',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.only(top: 21.0),
                 child: IconButton(
                   onPressed: () {
                     Navigator.push(
@@ -199,9 +239,10 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                   icon: const Icon(Icons.search),
                 ),
               ),
+
               // İS GRID VIEW TRUE THEN SHOW GRID VIEW ICON
               Padding(
-                padding: const EdgeInsets.only(top: 24.0),
+                padding: const EdgeInsets.only(top: 21.0),
                 child: IconButton(
                   onPressed: () {
                     setState(() {
@@ -238,59 +279,90 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                'All',
-                'Electronics',
-                'Music',
-                'Sports',
-                'Beauty',
-                'Books',
-                'Clothing',
-                'Baby',
-                'Fitness',
-                'Food',
-                'Furniture',
-                'Garden',
-                'Health',
-                'Home',
-                'Jewelry',
-                'Kitchen',
-                'Automotive',
-                'Office',
-                'Outdoors',
-                'Pets',
-                'Shoes',
-                'Appliances',
-                'Toys',
-                'Travel',
-                'Video Games',
-                'Watches',
-                'Crafts',
-                'Collectibles',
-                'Art',
-                'Movies',
-                'Computers',
-              ]
-                  .map((category) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: InkWell(
-                          onTap: () {
-                            // get category name and add to variable selectedCategory
-                            setState(() {
-                              selectedCategory = category;
-                            });
-                          },
-                          child: Chip(
-                            label: Text(category),
-                            // You can style the chip as needed
-                            backgroundColor: Colors.grey[200],
-                            labelStyle: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                for (var category in [
+                  "Attic conversion",
+                  "Bathroom remodeling",
+                  "Cabinet installation",
+                  "Carpet cleaning",
+                  "Childcare",
+                  "Cleaning",
+                  "Countertop installation",
+                  "Crop rotation",
+                  "Dishwashing",
+                  "Door replacement",
+                  "Elderly care",
+                  "Electrical",
+                  "Equipment maintenance",
+                  "Feeding",
+                  "Fence maintenance",
+                  "Fertilizing",
+                  "Flooring installation",
+                  "Garden maintenance",
+                  "General repairs",
+                  "Grooming",
+                  "Grocery shopping",
+                  "Harvesting crops",
+                  "HVAC",
+                  "Ironing",
+                  "Irrigation management",
+                  "Irrigation system maintenance",
+                  "Kitchen remodeling",
+                  "Landscaping projects",
+                  "Lawn mowing",
+                  "Laundry",
+                  "Livestock care and management",
+                  "Meal preparation",
+                  "Mulching",
+                  "Masonry",
+                  "Organizing",
+                  "Pest control",
+                  "Pest management",
+                  "Painting",
+                  "Pet boarding",
+                  "Pet sitting",
+                  "Planting",
+                  "Planting crops",
+                  "Plumbing",
+                  "Pruning",
+                  "Private tutoring",
+                  "Roofing",
+                  "Soil testing and fertilization",
+                  "Training",
+                  "Wall tiling",
+                  "Walking",
+                  "Weeding",
+                  "Window replacement",
+                  "Workplace assistance"
+                ])
+                  // show category buttons with nice animation
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedCategory = category;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedCategory == category
+                            ? const Color.fromARGB(255, 13, 98, 167)
+                            : Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ))
-                  .toList(),
+                      ),
+                      child: Text(
+                        category,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: selectedCategory == category
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           // text
@@ -416,7 +488,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                       (selectedCategory == 'All')
                           ? StreamBuilder<QuerySnapshot>(
                               stream: FirebaseFirestore.instance
-                                  .collection('posts')
+                                  .collection('jobs')
                                   .snapshots(),
                               builder: (context, snapshot) {
                                 return Padding(
@@ -442,7 +514,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                             Navigator.of(context).push(
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    PostScreen(
+                                                    jobPostScreen(
                                                   postId: data.id,
                                                   uid: data['uid'],
                                                 ),
@@ -468,7 +540,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                               (selectedCategory == 'All')
                                   ? StreamBuilder<QuerySnapshot>(
                                       stream: FirebaseFirestore.instance
-                                          .collection('posts')
+                                          .collection('jobs')
                                           .snapshots(),
                                       builder: (context, snapshot) {
                                         if (snapshot.hasError) {
@@ -480,7 +552,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                         if (snapshot.connectionState ==
                                             ConnectionState.waiting) {
                                           return const Center(
-                                            child: CircularProgressIndicator(),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.blue,
+                                            ),
                                           );
                                         }
 
@@ -508,7 +582,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                                     Navigator.of(context).push(
                                                       MaterialPageRoute(
                                                         builder: (context) =>
-                                                            PostScreen(
+                                                            jobPostScreen(
                                                           postId: data.id,
                                                           uid: data['uid'],
                                                         ),
@@ -528,7 +602,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                     )
                                   : StreamBuilder<QuerySnapshot>(
                                       stream: FirebaseFirestore.instance
-                                          .collection('posts')
+                                          .collection('jobs')
                                           //if selectedCategory is not empty then show posts from
                                           .where('category',
                                               isEqualTo: selectedCategory)
@@ -543,7 +617,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                         if (snapshot.connectionState ==
                                             ConnectionState.waiting) {
                                           return const Center(
-                                            child: CircularProgressIndicator(),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.blue,
+                                            ),
                                           );
                                         }
 
@@ -572,7 +648,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                                     Navigator.of(context).push(
                                                       MaterialPageRoute(
                                                         builder: (context) =>
-                                                            PostScreen(
+                                                            jobPostScreen(
                                                           postId: data.id,
                                                           uid: data['uid'],
                                                         ),
@@ -596,7 +672,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                               (selectedCategory == 'All')
                                   ? StreamBuilder<QuerySnapshot>(
                                       stream: FirebaseFirestore.instance
-                                          .collection('posts')
+                                          .collection('jobs')
                                           .snapshots(),
                                       builder: (context, snapshot) {
                                         if (snapshot.hasError) {
@@ -608,7 +684,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                         if (snapshot.connectionState ==
                                             ConnectionState.waiting) {
                                           return const Center(
-                                            child: CircularProgressIndicator(),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.blue,
+                                            ),
                                           );
                                         }
 
@@ -620,7 +698,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                                 isAdLoaded) {
                                               return Column(
                                                 children: [
-                                                  PostCard(
+                                                  JobCard(
                                                     isBlocked: false,
                                                     isGridView: false,
                                                     snap: snapshot
@@ -634,7 +712,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                                 ],
                                               );
                                             } else {
-                                              return PostCard(
+                                              return JobCard(
                                                 isBlocked: false,
                                                 isGridView: false,
                                                 snap:
@@ -647,7 +725,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                     )
                                   : StreamBuilder<QuerySnapshot>(
                                       stream: FirebaseFirestore.instance
-                                          .collection('posts')
+                                          .collection('jobs')
                                           // if selectedCategory is not empty then show posts from selectedCategory
                                           .where('category',
                                               isEqualTo: selectedCategory)
@@ -662,7 +740,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                         if (snapshot.connectionState ==
                                             ConnectionState.waiting) {
                                           return const Center(
-                                            child: CircularProgressIndicator(),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.blue,
+                                            ),
                                           );
                                         }
 
@@ -674,7 +754,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                                 isAdLoaded) {
                                               return Column(
                                                 children: [
-                                                  PostCard(
+                                                  JobCard(
                                                     isBlocked: false,
                                                     isGridView: false,
                                                     snap: snapshot
@@ -689,7 +769,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                                 ],
                                               );
                                             } else {
-                                              return PostCard(
+                                              return JobCard(
                                                 isBlocked: false,
                                                 isGridView: false,
                                                 snap:
@@ -707,7 +787,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                           ? (selectedCategory == 'All')
                               ? StreamBuilder<QuerySnapshot>(
                                   stream: FirebaseFirestore.instance
-                                      .collection('posts')
+                                      .collection('jobs')
                                       .snapshots(),
                                   builder: (context, snapshot) {
                                     if (snapshot.hasError) {
@@ -719,7 +799,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
                                       return const Center(
-                                        child: CircularProgressIndicator(),
+                                        child: CircularProgressIndicator(
+                                          color: Colors.blue,
+                                        ),
                                       );
                                     }
 
@@ -746,7 +828,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                                 Navigator.of(context).push(
                                                   MaterialPageRoute(
                                                     builder: (context) =>
-                                                        PostScreen(
+                                                        jobPostScreen(
                                                       postId: data.id,
                                                       uid: data['uid'],
                                                     ),
@@ -766,7 +848,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                 )
                               : StreamBuilder<QuerySnapshot>(
                                   stream: FirebaseFirestore.instance
-                                      .collection('posts')
+                                      .collection('jobs')
                                       //if selectedCategory is not empty then show posts from selectedCategory
                                       .where('category',
                                           isEqualTo: selectedCategory)
@@ -781,7 +863,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
                                       return const Center(
-                                        child: CircularProgressIndicator(),
+                                        child: CircularProgressIndicator(
+                                          color: Colors.blue,
+                                        ),
                                       );
                                     }
 
@@ -808,7 +892,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                                 Navigator.of(context).push(
                                                   MaterialPageRoute(
                                                     builder: (context) =>
-                                                        PostScreen(
+                                                        jobPostScreen(
                                                       postId: data.id,
                                                       uid: data['uid'],
                                                     ),
@@ -831,7 +915,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                           : (selectedCategory == 'All')
                               ? StreamBuilder<QuerySnapshot>(
                                   stream: FirebaseFirestore.instance
-                                      .collection('posts')
+                                      .collection('jobs')
                                       .snapshots(),
                                   builder: (context, snapshot) {
                                     if (snapshot.hasError) {
@@ -843,7 +927,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
                                       return const Center(
-                                        child: CircularProgressIndicator(),
+                                        child: CircularProgressIndicator(
+                                          color: Colors.blue,
+                                        ),
                                       );
                                     }
 
@@ -855,7 +941,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                             isAdLoaded) {
                                           return Column(
                                             children: [
-                                              PostCard(
+                                              JobCard(
                                                 isBlocked: false,
                                                 isGridView: false,
                                                 snap:
@@ -869,7 +955,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                             ],
                                           );
                                         } else {
-                                          return PostCard(
+                                          return JobCard(
                                             isBlocked: false,
                                             isGridView: false,
                                             snap: snapshot.data!.docs[index],
@@ -882,7 +968,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                               // if selected category is not 'All' then show posts from selected category
                               : StreamBuilder<QuerySnapshot>(
                                   stream: FirebaseFirestore.instance
-                                      .collection('posts')
+                                      .collection('jobs')
                                       // if selectedCategory is not empty then show posts from selectedCategory
                                       .where('category',
                                           isEqualTo: selectedCategory)
@@ -898,7 +984,9 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
                                       return const Center(
-                                        child: CircularProgressIndicator(),
+                                        child: CircularProgressIndicator(
+                                          color: Colors.blue,
+                                        ),
                                       );
                                     }
 
@@ -910,7 +998,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                             isAdLoaded) {
                                           return Column(
                                             children: [
-                                              PostCard(
+                                              JobCard(
                                                 isBlocked: false,
                                                 isGridView: false,
                                                 snap:
@@ -924,7 +1012,7 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
                                             ],
                                           );
                                         } else {
-                                          return PostCard(
+                                          return JobCard(
                                             isBlocked: false,
                                             isGridView: false,
                                             snap: snapshot.data!.docs[index],
@@ -951,14 +1039,14 @@ class _DiscoverPage2State extends State<DiscoverPage2> {
   // add to list posts liked by users who like posts the current user likes
   void _addToLikedByUsersWhoLikePostsLikedByCurrentUser(String postId) {
     FirebaseFirestore.instance
-        .collection('posts')
+        .collection('jobs')
         .doc(postId)
         .collection('likes')
         .get()
         .then((value) {
       for (var element in value.docs) {
         FirebaseFirestore.instance
-            .collection('posts')
+            .collection('jobs')
             .doc(element.id)
             .collection('likes')
             .get()

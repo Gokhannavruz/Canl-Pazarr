@@ -69,7 +69,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           builder: (context) {
                             return AlertDialog(
                               iconPadding: const EdgeInsets.all(15),
-                              backgroundColor: const Color.fromARGB(255, 41, 38, 38),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 41, 38, 38),
                               title: const Text('Select Image'),
                               content: Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -149,8 +150,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       radius: 80,
                                       backgroundImage:
                                           FileImage(File(_imageFile!.path)),
-                                      backgroundColor:
-                                          const Color.fromARGB(255, 255, 255, 255),
+                                      backgroundColor: const Color.fromARGB(
+                                          255, 255, 255, 255),
                                     )
                                   : const CircleAvatar(
                                       radius: 80,
@@ -217,7 +218,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     onPressed: () {
                       _saveChanges();
                     },
-                    child: const Text('Save Changes'),
+                    child: const Text('Save Changes',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                        )),
                   ),
                 ],
               ),

@@ -70,9 +70,9 @@ class MyApp extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               // Live blue
-              Color.fromARGB(255, 68, 118, 255),
+              Color.fromARGB(255, 16, 126, 33),
               // Live purple
-              Color.fromARGB(255, 68, 118, 255),
+              Color.fromARGB(255, 42, 80, 185),
             ],
           ),
           childWidget: SizedBox(
