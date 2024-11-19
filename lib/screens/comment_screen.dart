@@ -7,8 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:Freecycle/resources/firestore_methods.dart';
 import 'package:Freecycle/utils/colors.dart';
 import 'package:Freecycle/widgets/comments_card.dart';
-
-import '../flutter_local_notification/flutter_local_notification.dart';
 import '../providers/user_provider.dart';
 
 class CommentsScreen extends StatefulWidget {
@@ -108,28 +106,12 @@ class _CommentsScreenState extends State<CommentsScreen> {
                   if (_commentController.text.isEmpty) {
                     return;
                   }
-                  if (currentUserId != widget.snap["uid"]) {
-                    NotificationService().showNotification(
-                      id: 0,
-                      title: "New Notification",
-                      body: "${user.username} commented on your post",
-                    );
-                    // add notification
-                    await FireStoreMethods().addNotification(
-                      "commented on",
-                      widget.snap["postId"],
-                      widget.snap["uid"],
-                      user.uid,
-                      currentUserId,
-                      _commentController.text,
-                    );
-                  }
 
                   await FireStoreMethods().postComment(
                     widget.snap["postId"],
                     _commentController.text,
-                    user.uid,
-                    user.username,
+                    user.uid!,
+                    user.username!,
                     user.photoUrl!,
                   );
                   setState(() {

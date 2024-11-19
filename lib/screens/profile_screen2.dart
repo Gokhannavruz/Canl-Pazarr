@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -54,7 +56,7 @@ class ProfileScreen2State extends State<ProfileScreen2> {
   void initState() {
     super.initState();
     getData();
-    _loadNativeAd();
+    /* _loadNativeAd(); */
   }
 
   @override
@@ -62,75 +64,6 @@ class ProfileScreen2State extends State<ProfileScreen2> {
     super.dispose();
     // _nativeAd2!.dispose();
     // _loadNativeAd();
-  }
-
-  // void _loadNativeAd() {
-  //   _nativeAd2 = NativeAd(
-  //     adUnitId: 'ca-app-pub-8445989958080180/4397848656',
-  //     factoryId: 'listTile',
-  //     request: AdRequest(),
-  //     listener: NativeAdListener(
-  //       // Called when an ad is successfully received.
-  //       onAdLoaded: (Ad ad) {
-  //         var _add = ad as NativeAd;
-  //         print("**** AD ***** ${_add.responseInfo}");
-  //         setState(() {
-  //           _nativeAd2 = _add;
-  //           isAdLoaded = true;
-  //         });
-  //       },
-
-  //       // Called when an ad request failed.
-  //       onAdFailedToLoad: (Ad ad, LoadAdError error) {
-  //         // Dispose the ad here to free resources.
-  //         ad.dispose();
-  //         print('Ad load failed (code=${error.code} message=${error.message})');
-  //       },
-  //       // Called when an ad opens an overlay that covers the screen.
-  //       onAdOpened: (Ad ad) => print('Ad opened.'),
-  //       // Called when an ad removes an overlay that covers the screen.
-  //       onAdClosed: (Ad ad) => print('Ad closed.'),
-  //       // Called when an impression occurs on the ad.
-  //       onAdImpression: (Ad ad) => print('Ad impression.'),
-  //       // Called when a click is recorded for a NativeAd.
-  //       onAdClicked: (Ad ad) => print('Ad clicked.'),
-  //     ),
-  //   );
-
-  //   _nativeAd2!.load();
-  // }
-  void _loadNativeAd() {
-    _nativeAd = NativeAd(
-      adUnitId: 'ca-app-pub-8445989958080180/1071832450',
-      factoryId: 'listTile',
-      request: const AdRequest(),
-      listener: NativeAdListener(
-        // Called when an ad is successfully received.
-        onAdLoaded: (Ad ad) {
-          var add = ad as NativeAd;
-          setState(() {
-            _nativeAd = add;
-            isAdLoaded = true;
-          });
-        },
-
-        // Called when an ad request failed.
-        onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          // Dispose the ad here to free resources.
-          ad.dispose();
-        },
-        // Called when an ad opens an overlay that covers the screen.
-        onAdOpened: (Ad ad) => print('Ad opened.'),
-        // Called when an ad removes an overlay that covers the screen.
-        onAdClosed: (Ad ad) => print('Ad closed.'),
-        // Called when an impression occurs on the ad.
-        onAdImpression: (Ad ad) => print('Ad impression.'),
-        // Called when a click is recorded for a NativeAd.
-        onAdClicked: (Ad ad) => print('Ad clicked.'),
-      ),
-    );
-
-    _nativeAd!.load();
   }
 
   getData() async {
@@ -151,12 +84,6 @@ class ProfileScreen2State extends State<ProfileScreen2> {
 
       postLen = postSnap.docs.length;
       userData = userSnap.data()!;
-      sendingRate = userData['gift_sending_rate'];
-      matches = userData['match_count'];
-      sentGifts = userData['number_of_sent_gifts'];
-      giftPoint = userData['gift_point'];
-      rateCount = userData['rateCount'];
-      ratePoint = giftPoint / rateCount;
 
       if (userData['followers'] != null) {
         followers = userData['followers'].length;
@@ -471,6 +398,7 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                             if (snapshot.hasData) {
                               return CircleAvatar(
                                 radius: 80,
+                                backgroundColor: Colors.black,
                                 backgroundImage: NetworkImage(
                                   snapshot.data!['photoUrl'],
                                 ),
@@ -880,7 +808,7 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                               ),
                             ],
                           ),
-                          SizedBox(
+                          /* SizedBox(
                             height: MediaQuery.of(context).size.height *
                                 0.13, // Ekran yüksekliğinin %10'u kadar bir boşluk
                           ),
@@ -893,7 +821,7 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                               ),
                             )
                           else
-                            const SizedBox.shrink(),
+                            const SizedBox.shrink(), */
                         ],
                       ),
                     ),

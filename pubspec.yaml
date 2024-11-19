@@ -15,7 +15,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+29
+version: 1.1.7+21
 
 environment:
   sdk: ">=2.16.0 <3.0.0"
@@ -27,6 +27,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  animated_text_kit: ^4.2.2
   another_flutter_splash_screen: ^1.1.4
   cached_network_image: ^3.2.3
   change_app_package_name: ^1.1.0
@@ -37,6 +38,7 @@ dependencies:
   cryptography: ^2.5.0
   csc_picker: ^0.2.7
   cupertino_icons: ^1.0.2
+  dropdown_button2: ^2.3.9
   firebase_app_check: ^0.2.1+3
   firebase_auth: ^4.6.3
   firebase_core: ^2.13.1
@@ -66,13 +68,18 @@ dependencies:
   in_app_purchase_storekit: ^0.3.6+4
   intl_phone_field: ^3.1.0
   location: ^5.0.1
+  lottie: ^3.1.2
+  modal_progress_hud_nsn: ^0.5.1
   native_ads_flutter: ^1.0.7
+  onesignal_flutter: ^5.2.2
   permission_handler: ^11.0.1
   pin_code_fields: ^8.0.1
   pin_code_text_field: ^1.8.0
   provider: ^6.0.2
+  purchases_flutter: ^7.0.2
   rate_my_app: ^2.0.0
   shared_preferences: ^2.0.15
+  shimmer: ^3.0.0
   smooth_star_rating_nsafe: 1.0.0+1
   sqflite: ^2.2.6
   syncfusion_flutter_gauges: ^24.1.41
@@ -80,6 +87,7 @@ dependencies:
   timezone: ^0.9.2
   url_launcher: ^6.2.1
   uuid: ^4.1.0
+  user_messaging_platform: ^1.3.0
 
 dependency_overrides:
   firebase_core_platform_interface: ^4.8.0
@@ -99,20 +107,12 @@ flutter:
   uses-material-design: true
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/racetimelogo.svg
-    - assets/fire.png
-    - assets/logogifting.png
     - assets/defaultprofilephoto.png
     - assets/frees.png
-    - assets/giftbox.png
-    - assets/logo2.png
-    - assets/noun-giftbox-4804968.png
-    - assets/frees.png
     - assets/iconfrees.png
-    - assets/unsplash.png
-    - assets/check.png
     - assets/sharingimagepng.png
     - assets/jobs.png
+    - assets/freecyclelogo.png
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

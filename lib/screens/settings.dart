@@ -1,5 +1,9 @@
 import 'dart:ffi';
 
+import 'package:Freecycle/screens/country_state_city2.dart';
+import 'package:Freecycle/screens/country_state_city_picker.dart';
+import 'package:Freecycle/screens/privacy_policy.dart';
+import 'package:Freecycle/screens/terms_of_use_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    _loadNativeAd();
+    /* _loadNativeAd(); */
   }
 
   void _loadNativeAd() {
@@ -175,6 +179,88 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                 ),
+
+                // change location
+                InkWell(
+                  child: Card(
+                    color: Colors.black,
+                    child: ListTile(
+                      title: const Row(
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 10),
+                          Text('Change Location'),
+                        ],
+                      ),
+                      onTap: () {
+                        // navigate to change password page
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const CountryStateCity(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                //privacy policy
+                InkWell(
+                  child: Card(
+                    color: Colors.black,
+                    child: ListTile(
+                      title: const Row(
+                        children: [
+                          Icon(
+                            Icons.privacy_tip_outlined,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 10),
+                          Text('License Agreement (EULA)'),
+                        ],
+                      ),
+                      onTap: () {
+                        // navigate to privacy policy page
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => EulaPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                // terms of servive
+                InkWell(
+                  child: Card(
+                    color: Colors.black,
+                    child: ListTile(
+                      title: const Row(
+                        children: [
+                          Icon(
+                            Icons.rule_outlined,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 10),
+                          Text('Terms of Service'),
+                        ],
+                      ),
+                      onTap: () {
+                        // navigate to terms of service page
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => TermsOfServicePage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
                 InkWell(
                   child: Card(
                     color: Colors.black,
@@ -199,7 +285,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
           ),
-          if (isAdLoaded)
+/*           if (isAdLoaded)
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: SizedBox(
@@ -208,7 +294,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             )
           else
-            const SizedBox.shrink(),
+            const SizedBox.shrink(), */
         ],
       ),
     );

@@ -94,7 +94,7 @@ class _jobMessagesPageState extends State<jobMessagesPage> {
 
   // get current users uid
   Future<void> getCurrentUserUid() async {
-    currentUserUid = await getCurrentUser().then((value) => value.uid);
+    currentUserUid = await getCurrentUser().then((value) => value.uid!);
     setState(() {
       currentUserUid = currentUserUid;
     });
@@ -145,7 +145,7 @@ class _jobMessagesPageState extends State<jobMessagesPage> {
             recipientUser == null
                 ? Container()
                 : InkWell(
-                    child: Text(recipientUser!.username,
+                    child: Text(recipientUser!.username!,
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold)),
                     onTap: () {

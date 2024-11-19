@@ -183,6 +183,18 @@ class FireStoreMethods {
     return res;
   }
 
+  // Delete Job Post
+  Future<String> deleteJobPost(String postId) async {
+    String res = "Some error occurred";
+    try {
+      await _firestore.collection('jobs').doc(postId).delete();
+      res = 'success';
+    } catch (err) {
+      res = err.toString();
+    }
+    return res;
+  }
+
   // delete notification from notifications collection with postId
   Future<void> deleteNotification(String postId) async {
     try {

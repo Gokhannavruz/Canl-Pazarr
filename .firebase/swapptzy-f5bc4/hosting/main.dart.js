@@ -94017,10 +94017,10 @@ while(true)switch(s){case 0:return A.r(null,r)}})
 return A.t($async$$1,r)},
 $S:591}
 A.SF.prototype={
-I(a){var s=null,r=A.a([new A.Cc(new A.zN(new A.akS(),s,s,s,A.ben(),A.bcW(),t.ik),s,s,s,s,t.Cv)],t.Ds),q=A.aQT(B.ae,s).ams(B.o),p=A.ca(A.DF("assets/Freecycle.png",B.dl,s,s,s),130,130),o=$.i,n=(o==null?$.i=$.M():o).G(0,"[DEFAULT]")
+I(a){var s=null,r=A.a([new A.Cc(new A.zN(new A.akS(),s,s,s,A.ben(),A.bcW(),t.ik),s,s,s,s,t.Cv)],t.Ds),q=A.aQT(B.ae,s).ams(B.o),p=A.ca(A.DF("assets/Freebie.png",B.dl,s,s,s),130,130),o=$.i,n=(o==null?$.i=$.M():o).G(0,"[DEFAULT]")
 A.B(n,$.ae(),!0)
 o=A.b0(new A.J(n))
-return A.b6T(new A.EB(A.b5F(p,A.ck(new A.akT(),o.mH(o.gfL().jI()),t.t6),B.WW),"Freecycle",q,!1,s),r)}}
+return A.b6T(new A.EB(A.b5F(p,A.ck(new A.akT(),o.mH(o.gfL().jI()),t.t6),B.WW),"Freebie",q,!1,s),r)}}
 A.akS.prototype={
 $1(a){var s,r,q="[DEFAULT]",p=$.i,o=(p==null?$.i=$.M():p).G(0,q)
 p=$.ae()
@@ -95694,7 +95694,7 @@ r.k6(0)},
 l(){var s=this.r
 if(s!=null)$.eZ().r7(s)
 this.aB()},
-I(a){var s,r,q,p,o=this,n=null,m="[DEFAULT]",l=A.aV(n,A.DF("assets/Freecycle.png",n,40,n,40),B.f,n,n,n,n,n,n,n,n,n,n)
+I(a){var s,r,q,p,o=this,n=null,m="[DEFAULT]",l=A.aV(n,A.DF("assets/Freebie.png",n,40,n,40),B.f,n,n,n,n,n,n,n,n,n,n)
 l=A.dM(A.a([A.d0(n,n,B.W0,n,new A.aBh(a),n,n,n),A.d0(n,n,B.Vn,n,new A.aBi(o,a),n,n,n)],t.p),n,!1,B.o,n,n,1,n,n,n,!1,n,n,n,n,n,!0,n,n,n,n,n,n,l,n,n,n,1,n)
 s=o.Q
 r=s.length
@@ -97125,7 +97125,7 @@ if(a.L(k).f.a.a>600){s=a.L(k).f.a.a/3
 s=new A.ag(s,0,s,0)}else s=B.U1
 r=A.aV(l,l,B.f,l,l,l,l,l,l,l,l,l,l)
 q=t.p
-p=A.da(A.aQ(A.a([A.DF("assets/Freecycle.png",l,80,l,l),B.dT],q),B.l,B.a1,B.aI),l,l)
+p=A.da(A.aQ(A.a([A.DF("assets/Freebie.png",l,80,l,l),B.dT],q),B.l,B.a1,B.aI),l,l)
 o=A.lP(!0,B.b5,!1,l,A.o9(),m.d,l,l,l,2,A.xl(l,new A.f3(4,A.cs(20),B.Lx),l,l,l,l,l,l,!0,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,B.f1,"enter your email",l,l,l,l,!1,l,l,l,l,l,B.Vr,l,l,l,l,l,l,l,l,l,l,l),!0,l,!0,l,!1,l,l,l,B.qj,l,l,1,l,B.cl,!1,"\u2022",l,l,l,l,l,!1,l,l,B.aU,l,l,l,l,l,l,l,B.ad,l,B.bW,l,l,l)
 n=A.lP(!0,B.b5,!1,l,A.o9(),m.e,l,l,l,2,A.xl(l,new A.f3(4,A.cs(20),B.f9),l,l,l,l,l,l,!0,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,B.f1,"enter your password",l,l,l,l,!1,l,l,l,l,l,B.VJ,l,l,l,l,l,l,l,l,l,l,l),!0,l,!0,l,!1,l,l,l,B.aeD,l,l,1,l,l,!0,"\u2022",l,l,l,l,l,!1,l,l,B.aU,l,l,l,l,l,l,l,B.ad,l,B.bW,l,l,l)
 k=a.L(k).f.a.a>600?a.L(k).f.a.a/3:a.L(k).f.a.a
@@ -103450,7 +103450,7 @@ B.ft=new A.oN(0,"none")
 B.ei=new A.oN(1,"low")
 B.lD=new A.oN(2,"medium")
 B.i5=new A.oN(3,"high")
-B.UE=new A.wW("AIzaSyD3rjDYBZDtId0bcLjKnN4nQl7Dxl1gnPU","1:402375397395:web:1b8ed3117efebf4aa72fe6","402375397395","Freecycle-f5bc4","Freecycle-f5bc4.firebaseapp.com","https://Freecycle-f5bc4-default-rtdb.europe-west1.firebasedatabase.app","Freecycle-f5bc4.appspot.com","G-HSLRGPKYGW",null,null,null,null,null,null)
+B.UE=new A.wW("AIzaSyD3rjDYBZDtId0bcLjKnN4nQl7Dxl1gnPU","1:402375397395:web:1b8ed3117efebf4aa72fe6","402375397395","freebie-f5bc4","freebie-f5bc4.firebaseapp.com","https://freebie-f5bc4-default-rtdb.europe-west1.firebasedatabase.app","freebie-f5bc4.appspot.com","G-HSLRGPKYGW",null,null,null,null,null,null)
 B.v=new A.W(0,0)
 B.UF=new A.QP(B.v,B.v)
 B.dx=new A.Dm(1,"loose")
@@ -107151,7 +107151,7 @@ B.ajc=new A.ad("No",null,B.dg,null,null,null,null,null,null,null)
 B.aje=new A.ad("Are you sure you want to delete this post?",null,null,null,null,null,null,null,null,null)
 B.ajf=new A.ad("Select your country and state",null,null,null,null,null,null,null,null,null)
 B.aeN=new A.y(!0,B.i,null,null,null,null,24,B.ao,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.ajg=new A.ad("Freecycle Premium",null,B.aeN,null,null,null,null,null,null,null)
+B.ajg=new A.ad("Freebie Premium",null,B.aeN,null,null,null,null,null,null,null)
 B.ajh=new A.ad("Delete conversation",null,null,null,null,null,null,null,null,null)
 B.ajj=new A.ad("Post",null,null,null,null,null,null,null,null,null)
 B.ajk=new A.ad("Blocked users",null,null,null,null,null,null,null,null,null)

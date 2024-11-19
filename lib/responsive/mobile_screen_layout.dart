@@ -72,17 +72,6 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
             backgroundColor: primaryColor,
           ),
           BottomNavigationBarItem(
-            icon: Padding(
-              padding: const EdgeInsets.only(top: 12.0),
-              child: Icon(
-                Icons.handyman,
-                color: (_page == 1) ? primaryColor : secondaryColor,
-              ),
-            ),
-            label: '',
-            backgroundColor: primaryColor,
-          ),
-          BottomNavigationBarItem(
               // asset image
               icon: Padding(
                 padding: const EdgeInsets.only(top: 12.0),

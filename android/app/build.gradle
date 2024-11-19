@@ -13,12 +13,12 @@ if (flutterRoot == null) {
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '29'
+    flutterVersionCode = '42'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '2.0.3'
+    flutterVersionName = '2.1.4'
 }
 
 apply plugin: 'com.android.application'
@@ -35,7 +35,7 @@ def keystoreProperties = new Properties()
 
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -56,10 +56,10 @@ android {
         applicationId "com.thingsfree"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion 21
-        targetSdkVersion flutter.targetSdkVersion
+        minSdkVersion 24
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
-        versionName "2.0.3"
+        versionName "2.1.4"
         multiDexEnabled true
     }
 

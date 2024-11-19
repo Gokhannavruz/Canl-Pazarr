@@ -124,7 +124,7 @@ class _MessagesPage2State extends State<MessagesPage2> {
             recipientUser == null
                 ? Container()
                 : InkWell(
-                    child: Text(recipientUser!.username,
+                    child: Text(recipientUser!.username!,
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold)),
                     onTap: () {

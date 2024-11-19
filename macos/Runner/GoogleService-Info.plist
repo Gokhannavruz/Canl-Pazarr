@@ -3,21 +3,23 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>576415720587-ofqlmehtimdaiotfh9530uuptjasscgr.apps.googleusercontent.com</string>
+	<string>990581988375-tkoe133o6eein6k6r270iogpfttfhh1g.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.576415720587-ofqlmehtimdaiotfh9530uuptjasscgr</string>
+	<string>com.googleusercontent.apps.990581988375-tkoe133o6eein6k6r270iogpfttfhh1g</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>990581988375-3spvl0idnpfq9b5dd9p1opl89f0o6ii5.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
-	<string>AIzaSyBIMvmALjt0PKF41Kqs1HBRGaZcgcVHk2g</string>
+	<string>AIzaSyBhzlzp3DUt-OExgVgP39-XMfBoZzoC-yc</string>
 	<key>GCM_SENDER_ID</key>
-	<string>576415720587</string>
+	<string>990581988375</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.Freecycle</string>
+	<string>com.freebieapp</string>
 	<key>PROJECT_ID</key>
-	<string>gifting-relaise</string>
+	<string>freethings-257b6</string>
 	<key>STORAGE_BUCKET</key>
-	<string>gifting-relaise.appspot.com</string>
+	<string>freethings-257b6.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +31,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:576415720587:ios:5d04e19c21b90b5225208e</string>
+	<string>1:990581988375:ios:915d0e2ca34044087dd052</string>
+	<key>DATABASE_URL</key>
+	<string>https://freethings-257b6-default-rtdb.europe-west1.firebasedatabase.app</string>
 </dict>
 </plist>

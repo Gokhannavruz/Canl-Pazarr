@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:typed_data';
+import 'package:Freecycle/screens/country_state_city2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -156,7 +157,7 @@ class _AddJobsScreenState extends State<AddJobsScreen> {
     _descriptionController.text = '';
     recipient = '';
     _getUserLocation();
-    _loadNativeAd();
+    /*  _loadNativeAd(); */
 
     FirebaseAuth.instance.idTokenChanges().listen((user) {
       if (user != null) {
@@ -322,21 +323,21 @@ class _AddJobsScreenState extends State<AddJobsScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Üst reklamın gösterilmesi
-            if (isAdLoaded)
+            /*  if (isAdLoaded)
               SizedBox(
                 height: 100,
                 width: MediaQuery.of(context).size.width,
                 child: AdWidget(ad: _nativeAd!),
               )
-            else
-              SizedBox(
-                height: 100,
-                width: MediaQuery.of(context).size.width,
-                child: Container(
-                  color: Colors.transparent, // Placeholder color
-                  // You can customize the placeholder as needed
-                ),
+            else */
+            SizedBox(
+              height: 100,
+              width: MediaQuery.of(context).size.width,
+              child: Container(
+                color: Colors.transparent, // Placeholder color
+                // You can customize the placeholder as needed
               ),
+            ),
 
             Padding(
               padding: EdgeInsets.only(

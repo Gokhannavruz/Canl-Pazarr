@@ -22,7 +22,7 @@ class _jobPostScreenState extends State<jobPostScreen> {
   @override
   void initState() {
     super.initState();
-    _loadNativeAd();
+    /*  _loadNativeAd(); */
   }
 
   void _loadNativeAd() {
@@ -71,7 +71,6 @@ class _jobPostScreenState extends State<jobPostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Post"),
         backgroundColor: Colors.black,
       ),
       body: Column(
@@ -105,11 +104,11 @@ class _jobPostScreenState extends State<jobPostScreen> {
           ),
 
           // show the ad at the bottom
-          if (isAdLoaded)
+/*           if (isAdLoaded)
             SizedBox(
               height: 55,
               child: AdWidget(ad: _nativeAd!),
-            ),
+            ), */
         ],
       ),
     );

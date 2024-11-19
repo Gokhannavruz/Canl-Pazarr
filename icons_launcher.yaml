@@ -1,7 +1,0 @@
-icons_launcher:
-  image_path: "assets/iconFreecycle.png"
-  platforms:
-    android:
-      enable: true
-    ios:
-      enable: true

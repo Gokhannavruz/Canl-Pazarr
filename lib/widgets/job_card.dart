@@ -1,4 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:io';
+
 import 'package:Freecycle/screens/jobs_messages_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -466,8 +468,10 @@ class _JobCardState extends State<JobCard> {
                                         TextButton(
                                           onPressed: () async {
                                             // delete the post and set isDeleted to true
-                                            await FireStoreMethods().deletePost(
-                                                widget.snap["postId"]);
+                                            await FireStoreMethods()
+                                                .deleteJobPost(
+                                                    widget.snap["postId"]);
+                                            // close the dialog
                                             Navigator.pop(context);
 
                                             // delete notification about this post
@@ -657,7 +661,7 @@ class _JobCardState extends State<JobCard> {
           GestureDetector(
             onDoubleTap: () async {
               await FireStoreMethods().likePost(
-                  widget.snap["postId"], user!.uid, widget.snap["likes"]);
+                  widget.snap["postId"], user!.uid!, widget.snap["likes"]);
 
               // if user not liked the post before add notification
               // if (!widget.snap["likes"].contains(user.uid) &&
@@ -672,7 +676,7 @@ class _JobCardState extends State<JobCard> {
                   "liked",
                   widget.snap["postId"],
                   widget.snap["uid"],
-                  user.uid,
+                  user.uid!,
                   currentUserId,
                   "");
               setState(() {
@@ -711,25 +715,26 @@ class _JobCardState extends State<JobCard> {
                     ),
                   ),
                 // show how many credits
-                Positioned(
-                  bottom: 10,
-                  right: 10,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      "20 Credit",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                if (!Platform.isIOS)
+                  Positioned(
+                    bottom: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        "20 Credit",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
                 AnimatedOpacity(
                   duration: const Duration(milliseconds: 200),
                   opacity: isLikeAnimating ? 1 : 0,
@@ -764,154 +769,166 @@ class _JobCardState extends State<JobCard> {
               children: <Widget>[
                 Expanded(
                   child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        LikeAnimation(
-                          isAnimating: widget.snap['likes'].contains(user.uid),
-                          smallLike: true,
-                          child: IconButton(
-                            onPressed: () async {
-                              // add like to the post
-                              await FireStoreMethods().likeJobPost(
-                                  widget.snap["postId"],
-                                  user.uid,
-                                  widget.snap["likes"]);
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      LikeAnimation(
+                        isAnimating: widget.snap['likes'].contains(user.uid),
+                        smallLike: true,
+                        child: IconButton(
+                          onPressed: () async {
+                            // add like to the post
+                            await FireStoreMethods().likeJobPost(
+                                widget.snap["postId"],
+                                user.uid!,
+                                widget.snap["likes"]);
 
-                              // if user not liked the post before add notification
-                              // if (!widget.snap["likes"].contains(user.uid) &&
-                              //     currentUserId != widget.snap["uid"]) {
-                              //   NotificationService().showNotification(
-                              //     id: 0,
-                              //     title: "New Notification",
-                              //     body: "${user.username} liked your post",
-                              //   );
-                              // add notification
-                              await FireStoreMethods().addNotification(
-                                  "liked",
-                                  widget.snap["postId"],
-                                  widget.snap["uid"],
-                                  user.uid,
-                                  currentUserId,
-                                  "");
-                              // }
-                            },
-                            icon: widget.snap['likes'].contains(user.uid)
-                                ? const Icon(
-                                    Icons.favorite,
-                                    color: Colors.red,
-                                    size: 25,
-                                  )
-                                : const Icon(
-                                    Icons.favorite_border,
-                                    color: Color.fromARGB(255, 255, 255, 255),
-                                    size: 25,
-                                  ),
-                          ),
-                        ),
-
-                        DefaultTextStyle(
-                          style:
-                              Theme.of(context).textTheme.titleSmall!.copyWith(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 35,
-                                  ),
-                          child: widget.snap['likes'].length > 0
-                              ? Text(
-                                  widget.snap['likes'].length.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 18,
-                                  ),
+                            // if user not liked the post before add notification
+                            // if (!widget.snap["likes"].contains(user.uid) &&
+                            //     currentUserId != widget.snap["uid"]) {
+                            //   NotificationService().showNotification(
+                            //     id: 0,
+                            //     title: "New Notification",
+                            //     body: "${user.username} liked your post",
+                            //   );
+                            // add notification
+                            await FireStoreMethods().addNotification(
+                                "liked",
+                                widget.snap["postId"],
+                                widget.snap["uid"],
+                                user.uid!,
+                                currentUserId,
+                                "");
+                            // }
+                          },
+                          icon: widget.snap['likes'].contains(user.uid)
+                              ? const Icon(
+                                  Icons.favorite,
+                                  color: Colors.red,
+                                  size: 25,
                                 )
-                              : const Text(""),
+                              : const Icon(
+                                  Icons.favorite_border,
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                                  size: 25,
+                                ),
                         ),
+                      ),
 
-                        const SizedBox(
-                          width: 0,
-                        ),
+                      DefaultTextStyle(
+                        style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 35,
+                            ),
+                        child: widget.snap['likes'].length > 0
+                            ? Text(
+                                widget.snap['likes'].length.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18,
+                                ),
+                              )
+                            : const Text(""),
+                      ),
 
-                        // comment button
-                        // IconButton(
-                        //   onPressed: () => Navigator.of(context).push(
-                        //     MaterialPageRoute(
-                        //       builder: (context) => CommentsScreen(
-                        //         postId: widget.snap["postId"],
-                        //         uid: widget.snap["uid"],
-                        //         snap: widget.snap,
-                        //       ),
-                        //     ),
-                        //   ),
-                        //   icon: const Icon(
-                        //     Icons.chat_bubble_outline,
-                        //     size: 23,
-                        //   ),
-                        // ),
-                        // InkWell(
-                        //   onTap: () {
-                        //     Navigator.of(context).push(
-                        //       MaterialPageRoute(
-                        //         builder: (context) => CommentsScreen(
-                        //           postId: widget.snap["postId"],
-                        //           uid: widget.snap["uid"],
-                        //           snap: widget.snap,
-                        //         ),
-                        //       ),
-                        //     );
-                        //   },
-                        //   child: Padding(
-                        //     padding: const EdgeInsets.only(top: 8.0),
-                        //     child: DefaultTextStyle(
-                        //         style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                        //               fontWeight: FontWeight.w800,
-                        //               fontSize: 30,
-                        //             ),
-                        //         child: // if commentLen is 0 then show nothing else show the commentLen
-                        //             commentLen > 0
-                        //                 ? Text(
-                        //                     "$commentLen",
-                        //                     style: Theme.of(context).textTheme.bodyMedium,
-                        //                   )
-                        //                 : const Text("")),
-                        //   ),
-                        // ),
+                      const SizedBox(
+                        width: 0,
+                      ),
 
-                        // const SizedBox(
-                        //   width: 10,
-                        // ),
+                      // comment button
+                      // IconButton(
+                      //   onPressed: () => Navigator.of(context).push(
+                      //     MaterialPageRoute(
+                      //       builder: (context) => CommentsScreen(
+                      //         postId: widget.snap["postId"],
+                      //         uid: widget.snap["uid"],
+                      //         snap: widget.snap,
+                      //       ),
+                      //     ),
+                      //   ),
+                      //   icon: const Icon(
+                      //     Icons.chat_bubble_outline,
+                      //     size: 23,
+                      //   ),
+                      // ),
+                      // InkWell(
+                      //   onTap: () {
+                      //     Navigator.of(context).push(
+                      //       MaterialPageRoute(
+                      //         builder: (context) => CommentsScreen(
+                      //           postId: widget.snap["postId"],
+                      //           uid: widget.snap["uid"],
+                      //           snap: widget.snap,
+                      //         ),
+                      //       ),
+                      //     );
+                      //   },
+                      //   child: Padding(
+                      //     padding: const EdgeInsets.only(top: 8.0),
+                      //     child: DefaultTextStyle(
+                      //         style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                      //               fontWeight: FontWeight.w800,
+                      //               fontSize: 30,
+                      //             ),
+                      //         child: // if commentLen is 0 then show nothing else show the commentLen
+                      //             commentLen > 0
+                      //                 ? Text(
+                      //                     "$commentLen",
+                      //                     style: Theme.of(context).textTheme.bodyMedium,
+                      //                   )
+                      //                 : const Text("")),
+                      //   ),
+                      // ),
 
-                        // IconButton(
-                        //   icon: isSaved
-                        //       ? const Icon(Icons.bookmark, size: 23, color: Colors.green)
-                        //       : const Icon(Icons.bookmark_border,
-                        //           size: 23, color: Colors.white),
-                        //   onPressed: () {
-                        //     savePost(context, widget.snap["postId"]);
-                        //   },
-                        // ),
+                      // const SizedBox(
+                      //   width: 10,
+                      // ),
 
-                        // button to message the user
-                        // get current user credit and check if it is more than 0 then show the message button else show get credit button
-                        // if post owner current user then show nothing
-                        const SizedBox(
-                          width: 10,
-                        ),
+                      // IconButton(
+                      //   icon: isSaved
+                      //       ? const Icon(Icons.bookmark, size: 23, color: Colors.green)
+                      //       : const Icon(Icons.bookmark_border,
+                      //           size: 23, color: Colors.white),
+                      //   onPressed: () {
+                      //     savePost(context, widget.snap["postId"]);
+                      //   },
+                      // ),
+
+                      // button to message the user
+                      // get current user credit and check if it is more than 0 then show the message button else show get credit button
+                      // if post owner current user then show nothing
+                      const SizedBox(
+                        width: 10,
+                      ),
 
 // show message button but if user not premium show premium alert
-                        if (currentUserId != widget.snap["uid"])
-                          StreamBuilder(
-                            stream: FirebaseFirestore.instance
-                                .collection("users")
-                                .doc(currentUserId)
-                                .snapshots(),
-                            builder: (context, AsyncSnapshot snapshot) {
-                              if (snapshot.hasData) {
-                                int userCredits = snapshot.data["credit"];
+                      if (currentUserId != widget.snap["uid"])
+                        StreamBuilder(
+                          stream: FirebaseFirestore.instance
+                              .collection("users")
+                              .doc(currentUserId)
+                              .snapshots(),
+                          builder: (context, AsyncSnapshot snapshot) {
+                            if (snapshot.hasData) {
+                              int userCredits = snapshot.data["credit"];
 
-                                return Row(children: [
-                                  IconButton(
-                                    onPressed: () async {
-                                      int requiredCredit = 20;
+                              return Row(children: [
+                                IconButton(
+                                  onPressed: () async {
+                                    int requiredCredit = 20;
+                                    if (Platform.isIOS) {
+                                      // iOS platformunda doğrudan mesaj sayfasına yönlendirme
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) => jobMessagesPage(
+                                            currentUserUid: currentUserId,
+                                            recipientUid: widget.snap["uid"],
+                                            postId: widget.snap["postId"],
+                                          ),
+                                        ),
+                                      );
+                                    } else if (Platform.isAndroid) {
+                                      // Android platformunda kredi kontrolü
                                       if (userCredits < requiredCredit) {
                                         showDialog(
                                           context: context,
@@ -991,6 +1008,7 @@ class _JobCardState extends State<JobCard> {
                                           },
                                         );
                                       } else {
+                                        // Kullanıcının yeterli kredisi varsa mesaj sayfasına yönlendirme
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
                                             builder: (context) =>
@@ -1002,24 +1020,23 @@ class _JobCardState extends State<JobCard> {
                                           ),
                                         );
                                       }
-                                    },
-                                    icon: const Icon(
-                                      Icons.mail,
-                                      size: 23,
-                                    ),
+                                    }
+                                  },
+                                  icon: const Icon(
+                                    Icons.mail,
+                                    size: 23,
                                   ),
-                                ]);
-                              } else {
-                                return const SizedBox();
-                              }
-                            },
-                          )
-                      ]),
+                                ),
+                              ]);
+                            } else {
+                              return const SizedBox();
+                            }
+                          },
+                        ),
+                    ],
+                  ),
                 ),
-
-                // show current user credit
-                // if post owner current user then show nothing
-                if (currentUserId != widget.snap["uid"])
+                if (currentUserId != widget.snap["uid"] && !Platform.isIOS)
                   StreamBuilder(
                     stream: FirebaseFirestore.instance
                         .collection("users")

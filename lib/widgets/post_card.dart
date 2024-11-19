@@ -1,8 +1,17 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:io';
+
+import 'package:Freecycle/src/components/native_dialog.dart';
+import 'package:Freecycle/src/model/singletons_data.dart';
+import 'package:Freecycle/src/model/weather_data.dart';
+import 'package:Freecycle/src/rvncat_constant.dart';
+import 'package:Freecycle/src/views/paywall.dart';
+import 'package:Freecycle/src/views/paywallfirstlaunch.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +21,8 @@ import 'package:Freecycle/screens/message_screen.dart';
 import 'package:Freecycle/utils/colors.dart';
 import 'package:Freecycle/utils/utils.dart';
 import 'package:Freecycle/widgets/like_animation.dart';
+import 'package:purchases_flutter/models/customer_info_wrapper.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import '../providers/user_provider.dart';
 import '../resources/firestore_methods.dart';
 import '../screens/profile_screen2.dart';
@@ -20,6 +31,7 @@ class PostCard extends StatefulWidget {
   final snap;
   final bool isGridView;
   final bool isBlocked;
+
   const PostCard({
     Key? key,
     required this.snap,
@@ -44,6 +56,7 @@ class _PostCardState extends State<PostCard> {
   String country = "";
   String state = "";
   String city = "";
+  late bool _isLoading;
   bool isWanted = false;
 
   @override
@@ -247,7 +260,7 @@ class _PostCardState extends State<PostCard> {
                           ),
                           child: Row(
                             children: [
-                              // show user profile and username with stream builder
+                              // Kullanıcı profili ve kullanıcı adı ile ilgili StreamBuilder (değişmedi)
                               StreamBuilder(
                                 stream: FirebaseFirestore.instance
                                     .collection("users")
@@ -258,79 +271,26 @@ class _PostCardState extends State<PostCard> {
                                     return Row(
                                       children: [
                                         Container(
-                                          margin: const EdgeInsets.only(
-                                            left: 10,
-                                          ),
+                                          margin:
+                                              const EdgeInsets.only(left: 10),
                                           width: 40,
                                           height: 40,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             image: DecorationImage(
                                               image: NetworkImage(
-                                                snapshot.data["photoUrl"],
-                                              ),
+                                                  snapshot.data["photoUrl"]),
                                               fit: BoxFit.cover,
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(
-                                          width: 10,
-                                        ),
+                                        const SizedBox(width: 10),
                                         Text(
                                           snapshot.data["username"],
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 3),
-                                        // if sent gifts / match count == %100 show verified icon
-                                        if (snapshot.data!['match_count'] !=
-                                                null &&
-                                            snapshot.data![
-                                                    'number_of_sent_gifts'] !=
-                                                null &&
-                                            snapshot.data!['match_count'] !=
-                                                0 &&
-                                            snapshot.data![
-                                                    'number_of_sent_gifts'] !=
-                                                0 &&
-                                            snapshot.data!['match_count'] /
-                                                    snapshot.data![
-                                                        'number_of_sent_gifts'] >=
-                                                9)
-                                          const Padding(
-                                            padding: EdgeInsets.only(top: 2),
-                                            child: Icon(
-                                              Icons.verified,
-                                              size: 15,
-                                              color: Colors.blue,
-                                            ),
-                                          ),
-
-                                        // show middle dot
-                                        Container(
-                                          margin: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                          ),
-                                          width: 3,
-                                          height: 3,
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 8.0),
-                                          child: Text(
-                                            _getTimeAgo(widget
-                                                .snap["datePublished"]
-                                                .toDate()),
-                                            style: const TextStyle(
-                                                color: Colors.grey,
-                                                fontWeight: FontWeight.normal),
                                           ),
                                         ),
                                       ],
@@ -341,9 +301,8 @@ class _PostCardState extends State<PostCard> {
                                 },
                               ),
                               Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                ),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 10),
                                 width: 3,
                                 height: 3,
                                 decoration: const BoxDecoration(
@@ -351,55 +310,29 @@ class _PostCardState extends State<PostCard> {
                                   color: Colors.grey,
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  if (country != "")
-                                    Text(
-                                      country,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  if (country != "" && state != "")
-                                    const SizedBox(
-                                      width: 3,
-                                    ),
-                                  if (state != "")
+                              Expanded(
+                                child: Row(
+                                  children: [
                                     Flexible(
                                       child: Text(
-                                        state,
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
+                                        city.isNotEmpty
+                                            ? city
+                                            : state.isNotEmpty
+                                                ? state
+                                                : country.isNotEmpty
+                                                    ? country
+                                                    : '',
                                         style: const TextStyle(
                                           color: Colors.grey,
                                           fontSize: 12,
                                           fontWeight: FontWeight.w400,
                                         ),
-                                      ),
-                                    ),
-                                  if (state != "" && city != "")
-                                    const SizedBox(
-                                      width: 3,
-                                    ),
-                                  if (city != "")
-                                    Flexible(
-                                      child: Text(
-                                        city,
                                         overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w400,
-                                        ),
                                       ),
                                     ),
-                                ],
-                              )
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -656,7 +589,7 @@ class _PostCardState extends State<PostCard> {
           GestureDetector(
             onDoubleTap: () async {
               await FireStoreMethods().likePost(
-                  widget.snap["postId"], user!.uid, widget.snap["likes"]);
+                  widget.snap["postId"], user!.uid!, widget.snap["likes"]);
 
               // if user not liked the post before add notification
               // if (!widget.snap["likes"].contains(user.uid) &&
@@ -667,16 +600,7 @@ class _PostCardState extends State<PostCard> {
               //     body: "${user.username} liked your post",
               //   );
               // add notification
-              await FireStoreMethods().addNotification(
-                  "liked",
-                  widget.snap["postId"],
-                  widget.snap["uid"],
-                  user.uid,
-                  currentUserId,
-                  "");
-              setState(() {
-                isLikeAnimating = true;
-              });
+
               // }
             },
             child: Stack(
@@ -713,24 +637,29 @@ class _PostCardState extends State<PostCard> {
                 Positioned(
                   bottom: 10,
                   right: 10,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      widget.snap["category"] == "Electronics"
-                          ? "30 Credit"
-                          : "30 Credit",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  child: (
+
+                      // if iswanted false show how much credit else show nothing
+                      isWanted == false
+                          ? Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                widget.snap["category"] == "Electronics"
+                                    ? "30 credits"
+                                    : "20 credits",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                          : const SizedBox()),
                 ),
+
                 AnimatedOpacity(
                   duration: const Duration(milliseconds: 200),
                   opacity: isLikeAnimating ? 1 : 0,
@@ -759,261 +688,332 @@ class _PostCardState extends State<PostCard> {
 
           // like comment section
           // if post owner current user then show nothing
-          if (currentUserId != widget.snap["uid"])
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        LikeAnimation(
-                          isAnimating: widget.snap['likes'].contains(user.uid),
-                          smallLike: true,
-                          child: IconButton(
-                            onPressed: () async {
-                              // add like to the post
-                              await FireStoreMethods().likePost(
-                                  widget.snap["postId"],
-                                  user.uid,
-                                  widget.snap["likes"]);
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    LikeAnimation(
+                      isAnimating: widget.snap['likes'].contains(user.uid),
+                      smallLike: true,
+                      child: IconButton(
+                        onPressed: () async {
+                          // add like to the post
+                          await FireStoreMethods().likePost(
+                              widget.snap["postId"],
+                              user.uid!,
+                              widget.snap["likes"]);
 
-                              // if user not liked the post before add notification
-                              // if (!widget.snap["likes"].contains(user.uid) &&
-                              //     currentUserId != widget.snap["uid"]) {
-                              //   NotificationService().showNotification(
-                              //     id: 0,
-                              //     title: "New Notification",
-                              //     body: "${user.username} liked your post",
-                              //   );
-                              // add notification
-                              await FireStoreMethods().addNotification(
-                                  "liked",
-                                  widget.snap["postId"],
-                                  widget.snap["uid"],
-                                  user.uid,
-                                  currentUserId,
-                                  "");
-                              // }
-                            },
-                            icon: widget.snap['likes'].contains(user.uid)
-                                ? const Icon(
-                                    Icons.favorite,
-                                    color: Colors.red,
-                                    size: 25,
-                                  )
-                                : const Icon(
-                                    Icons.favorite_border,
-                                    color: Color.fromARGB(255, 255, 255, 255),
-                                    size: 25,
-                                  ),
+                          // if user not liked the post before add notification
+                          // if (!widget.snap["likes"].contains(user.uid) &&
+                          //     currentUserId != widget.snap["uid"]) {
+                          //   NotificationService().showNotification(
+                          //     id: 0,
+                          //     title: "New Notification",
+                          //     body: "${user.username} liked your post",
+                          //   );
+                          // add notification
+                          await FireStoreMethods().addNotification(
+                              "liked",
+                              widget.snap["postId"],
+                              widget.snap["uid"],
+                              user.uid!,
+                              currentUserId,
+                              "");
+                          // }
+                        },
+                        icon: widget.snap['likes'].contains(user.uid)
+                            ? const Icon(
+                                Icons.favorite,
+                                color: Colors.red,
+                                size: 25,
+                              )
+                            : const Icon(
+                                Icons.favorite_border,
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                size: 25,
+                              ),
+                      ),
+                    ),
+
+                    DefaultTextStyle(
+                      style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 35,
                           ),
-                        ),
+                      child: widget.snap['likes'].length > 0
+                          ? Text(
+                              widget.snap['likes'].length.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 18,
+                              ),
+                            )
+                          : const Text(""),
+                    ),
 
-                        DefaultTextStyle(
-                          style:
-                              Theme.of(context).textTheme.titleSmall!.copyWith(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 35,
-                                  ),
-                          child: widget.snap['likes'].length > 0
-                              ? Text(
-                                  widget.snap['likes'].length.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 18,
-                                  ),
-                                )
-                              : const Text(""),
-                        ),
+                    const SizedBox(
+                      width: 0,
+                    ),
 
-                        const SizedBox(
-                          width: 0,
-                        ),
+                    // comment button
+                    // IconButton(
+                    //   onPressed: () => Navigator.of(context).push(
+                    //     MaterialPageRoute(
+                    //       builder: (context) => CommentsScreen(
+                    //         postId: widget.snap["postId"],
+                    //         uid: widget.snap["uid"],
+                    //         snap: widget.snap,
+                    //       ),
+                    //     ),
+                    //   ),
+                    //   icon: const Icon(
+                    //     Icons.chat_bubble_outline,
+                    //     size: 23,
+                    //   ),
+                    // ),
+                    // InkWell(
+                    //   onTap: () {
+                    //     Navigator.of(context).push(
+                    //       MaterialPageRoute(
+                    //         builder: (context) => CommentsScreen(
+                    //           postId: widget.snap["postId"],
+                    //           uid: widget.snap["uid"],
+                    //           snap: widget.snap,
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    //   child: Padding(
+                    //     padding: const EdgeInsets.only(top: 8.0),
+                    //     child: DefaultTextStyle(
+                    //         style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                    //               fontWeight: FontWeight.w800,
+                    //               fontSize: 30,
+                    //             ),
+                    //         child: // if commentLen is 0 then show nothing else show the commentLen
+                    //             commentLen > 0
+                    //                 ? Text(
+                    //                     "$commentLen",
+                    //                     style: Theme.of(context).textTheme.bodyMedium,
+                    //                   )
+                    //                 : const Text("")),
+                    //   ),
+                    // ),
 
-                        // comment button
-                        // IconButton(
-                        //   onPressed: () => Navigator.of(context).push(
-                        //     MaterialPageRoute(
-                        //       builder: (context) => CommentsScreen(
-                        //         postId: widget.snap["postId"],
-                        //         uid: widget.snap["uid"],
-                        //         snap: widget.snap,
-                        //       ),
-                        //     ),
-                        //   ),
-                        //   icon: const Icon(
-                        //     Icons.chat_bubble_outline,
-                        //     size: 23,
-                        //   ),
-                        // ),
-                        // InkWell(
-                        //   onTap: () {
-                        //     Navigator.of(context).push(
-                        //       MaterialPageRoute(
-                        //         builder: (context) => CommentsScreen(
-                        //           postId: widget.snap["postId"],
-                        //           uid: widget.snap["uid"],
-                        //           snap: widget.snap,
-                        //         ),
-                        //       ),
-                        //     );
-                        //   },
-                        //   child: Padding(
-                        //     padding: const EdgeInsets.only(top: 8.0),
-                        //     child: DefaultTextStyle(
-                        //         style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                        //               fontWeight: FontWeight.w800,
-                        //               fontSize: 30,
-                        //             ),
-                        //         child: // if commentLen is 0 then show nothing else show the commentLen
-                        //             commentLen > 0
-                        //                 ? Text(
-                        //                     "$commentLen",
-                        //                     style: Theme.of(context).textTheme.bodyMedium,
-                        //                   )
-                        //                 : const Text("")),
-                        //   ),
-                        // ),
+                    // const SizedBox(
+                    //   width: 10,
+                    // ),
 
-                        // const SizedBox(
-                        //   width: 10,
-                        // ),
+                    // IconButton(
+                    //   icon: isSaved
+                    //       ? const Icon(Icons.bookmark, size: 23, color: Colors.green)
+                    //       : const Icon(Icons.bookmark_border,
+                    //           size: 23, color: Colors.white),
+                    //   onPressed: () {
+                    //     savePost(context, widget.snap["postId"]);
+                    //   },
+                    // ),
 
-                        // IconButton(
-                        //   icon: isSaved
-                        //       ? const Icon(Icons.bookmark, size: 23, color: Colors.green)
-                        //       : const Icon(Icons.bookmark_border,
-                        //           size: 23, color: Colors.white),
-                        //   onPressed: () {
-                        //     savePost(context, widget.snap["postId"]);
-                        //   },
-                        // ),
+                    // button to message the user
+                    // get current user credit and check if it is more than 0 then show the message button else show get credit button
+                    // if post owner current user then show nothing
+                    const SizedBox(
+                      width: 10,
+                    ),
 
-                        // button to message the user
-                        // get current user credit and check if it is more than 0 then show the message button else show get credit button
-                        // if post owner current user then show nothing
-                        const SizedBox(
-                          width: 10,
-                        ),
+                    if (currentUserId != widget.snap["uid"])
+                      StreamBuilder(
+                        stream: FirebaseFirestore.instance
+                            .collection("users")
+                            .doc(currentUserId)
+                            .snapshots(),
+                        builder: (context, AsyncSnapshot snapshot) {
+                          if (snapshot.hasData) {
+                            int userCredits = snapshot.data["credit"];
 
-// show message button but if user not premium show premium alert
-                        if (currentUserId != widget.snap["uid"])
-                          StreamBuilder(
-                            stream: FirebaseFirestore.instance
-                                .collection("users")
-                                .doc(currentUserId)
-                                .snapshots(),
-                            builder: (context, AsyncSnapshot snapshot) {
-                              if (snapshot.hasData) {
-                                int userCredits = snapshot.data["credit"];
-
-                                return Row(children: [
-                                  IconButton(
-                                    onPressed: () async {
-                                      int requiredCredit =
-                                          widget.snap["category"] ==
-                                                  "Electronics"
-                                              ? 20
-                                              : 30;
-                                      if (userCredits < requiredCredit) {
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              backgroundColor: Colors.grey[900],
-                                              title: const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
+                            return Row(children: [
+                              IconButton(
+                                onPressed: () async {
+                                  int requiredCredit =
+                                      widget.snap["category"] == "Electronics"
+                                          ? 30
+                                          : 20;
+                                  if (userCredits < requiredCredit) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          backgroundColor: Colors.grey[850],
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          title: Row(
+                                            children: [
+                                              Icon(Icons.warning_amber_rounded,
+                                                  color: Colors.amber,
+                                                  size: 28),
+                                              SizedBox(width: 10),
+                                              Text(
+                                                "Not enough credit",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                widget.snap["category"] ==
+                                                        "Electronics"
+                                                    ? "You need at least 30 credits to message this user."
+                                                    : "You need at least 20 credits to message this user.",
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 16),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                "Since there is a limited number of free products, we have implemented a credit system. You can earn credits by watching ads to get products for free before other users.",
+                                                style: TextStyle(
+                                                    color: Colors.grey[400],
+                                                    fontSize: 14),
+                                              ),
+                                            ],
+                                          ),
+                                          actions: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 8),
+                                              child: Column(
                                                 children: [
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                const CreditPage()),
+                                                      );
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      primary: Colors.blue,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                      minimumSize: Size(
+                                                          double.infinity, 50),
+                                                    ),
+                                                    child: Text(
+                                                      'Earn Free Credit',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 12),
                                                   Text(
-                                                    "Not enough credit",
+                                                    "Or you can get unlimited credit",
                                                     style: TextStyle(
-                                                      color: Color.fromARGB(
-                                                          255, 255, 255, 255),
+                                                        color: Colors.white,
+                                                        fontSize: 14),
+                                                  ),
+                                                  SizedBox(height: 8),
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      perfomMagic();
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      primary: Colors.green,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                      minimumSize: Size(
+                                                          double.infinity, 50),
+                                                    ),
+                                                    child: Text(
+                                                      'Get Unlimited Credit',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
                                                     ),
                                                   ),
                                                 ],
                                               ),
-                                              content: Text(
-                                                widget.snap["category"] ==
-                                                        "Electronics"
-                                                    ? "You need at least 20 credits to message this user.\n\nSince there is a limited number of free products, we have implemented a credit system. You can earn credits by watching ads to get products for free before other users."
-                                                    : "You need at least 30 credits to message this user.\n\nSince there is a limited number of free products, we have implemented a credit system. You can earn credits by watching ads to get products for free before other users.",
-                                                style: const TextStyle(
-                                                    color: Colors.white),
-                                              ),
-                                              actions: [
-                                                const SizedBox(width: 10),
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            const CreditPage(),
-                                                      ),
-                                                    );
-                                                  },
-                                                  style: TextButton.styleFrom(
-                                                    padding: EdgeInsets.zero,
-                                                    backgroundColor:
-                                                        Colors.blue,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                  ),
-                                                  child: Container(
-                                                    height: 35,
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            10),
-                                                    child: const Center(
-                                                      child: Text(
-                                                        'Earn Free Credit',
-                                                        style: TextStyle(
-                                                          fontSize: 13,
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                      } else {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) => MessagesPage(
-                                              currentUserUid: currentUserId,
-                                              recipientUid: widget.snap["uid"],
-                                              postId: widget.snap["postId"],
                                             ),
-                                          ),
+                                          ],
                                         );
-                                      }
-                                    },
-                                    icon: const Icon(
+                                      },
+                                    );
+                                  } else {
+                                    // Kullanıcıya mesaj gönderme izni ver
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => MessagesPage(
+                                          currentUserUid: currentUserId,
+                                          recipientUid: widget.snap["uid"],
+                                          postId: widget.snap["postId"],
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                icon: const Row(
+                                  children: [
+                                    Icon(
                                       Icons.mail,
                                       size: 23,
                                     ),
-                                  ),
-                                ]);
-                              } else {
-                                return const SizedBox();
-                              }
-                            },
-                          )
-                      ]),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      "Message",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ]);
+                          } else {
+                            return const SizedBox();
+                          }
+                        },
+                      )
+                  ],
                 ),
+              ),
+              if (currentUserId != widget.snap["uid"])
 
                 // show current user credit
                 // if post owner current user then show nothing
@@ -1047,8 +1047,8 @@ class _PostCardState extends State<PostCard> {
                       }
                     },
                   ),
-              ],
-            ),
+            ],
+          ),
 
           Container(
             padding: const EdgeInsets.symmetric(
@@ -1183,6 +1183,56 @@ class _PostCardState extends State<PostCard> {
         },
         'to': receiverToken,
       };
+    }
+  }
+
+  void perfomMagic() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+
+    if (customerInfo.entitlements.all[entitlementID] != null &&
+        customerInfo.entitlements.all[entitlementID]?.isActive == true) {
+      appData.currentData = WeatherData.generateData();
+
+      setState(() {
+        _isLoading = false;
+      });
+    } else {
+      Offerings? offerings;
+      try {
+        offerings = await Purchases.getOfferings();
+      } on PlatformException catch (e) {
+        await showDialog(
+            context: context,
+            builder: (BuildContext context) => ShowDialogToDismiss(
+                title: "Error",
+                content: e.message ?? "Unknown error",
+                buttonText: 'OK'));
+      }
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (offerings == null || offerings.current == null) {
+        // offerings are empty, show a message to your user
+        await showDialog(
+            context: context,
+            builder: (BuildContext context) => ShowDialogToDismiss(
+                title: "Error",
+                content: "No offerings available",
+                buttonText: 'OK'));
+      } else {
+        // current offering is available, show paywall
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => Paywall(offering: offerings!.current!)),
+        );
+      }
     }
   }
 }

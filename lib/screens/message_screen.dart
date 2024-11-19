@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:Freecycle/screens/profile_screen2.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../models/user.dart';
 
@@ -33,6 +36,8 @@ class _MessagesPageState extends State<MessagesPage> {
   late bool _isListViewRendered;
   String currentUserUid = "";
   String PostUid = "";
+  String? _senderToken;
+  String? _recipientToken;
 
   late String conversationId =
       widget.currentUserUid.hashCode <= widget.recipientUid.hashCode
@@ -42,11 +47,15 @@ class _MessagesPageState extends State<MessagesPage> {
   @override
   void initState() {
     super.initState();
+    FirebaseMessaging.instance.onTokenRefresh.listen((String token) {
+      print('FCM token refreshed');
+      _updateToken(widget.currentUserUid, token);
+    });
     // initialize _conversationId
     _isListViewRendered = false;
     getCurrentUserUid();
     getPostUid(widget.postId);
-    getCurrentUser();
+    _loadTokens();
     getUserProfile().then((_) {
       _loadMessages();
       _messagesCollection = FirebaseFirestore.instance
@@ -60,6 +69,57 @@ class _MessagesPageState extends State<MessagesPage> {
         setState(() {});
       });
     });
+  }
+
+  Future<void> _updateToken(String uid, String token) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .update({'fcmToken': token});
+      print('Token updated for $uid: $token');
+    } catch (e) {
+      print('Error updating token: $e');
+    }
+  }
+
+  Future<void> _loadTokens() async {
+    _senderToken = await _getAndUpdateToken(widget.currentUserUid);
+    _recipientToken = await _getAndUpdateToken(widget.recipientUid);
+  }
+
+  Future<String?> _getToken(String uid) async {
+    DocumentSnapshot doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    print(doc.get('fcmToken'));
+    return doc.get('fcmToken');
+  }
+
+  Future<String?> _getAndUpdateToken(String uid) async {
+    try {
+      String? token = await FirebaseMessaging.instance.getToken();
+      if (token != null && token.isNotEmpty) {
+        // Mevcut token'ı kontrol et
+        DocumentSnapshot doc =
+            await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        String currentToken = doc.get('fcmToken') ?? "";
+
+        // Eğer mevcut token boşsa veya yeni token'dan farklıysa güncelle
+        if (currentToken.isEmpty || currentToken != token) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .update({'fcmToken': token});
+          print('Updated token for $uid: $token');
+        } else {
+          print('Token for $uid is up to date');
+        }
+        return token;
+      }
+    } catch (e) {
+      print('Error getting/updating FCM token: $e');
+    }
+    return null;
   }
 
   // reduce cureent user's credit, if post category is "Electronics" reduce 30, else reduce 20
@@ -118,7 +178,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
   // get current users uid
   Future<void> getCurrentUserUid() async {
-    currentUserUid = await getCurrentUser().then((value) => value.uid);
+    currentUserUid = await getCurrentUser().then((value) => value.uid!);
     setState(() {
       currentUserUid = currentUserUid;
     });
@@ -169,7 +229,7 @@ class _MessagesPageState extends State<MessagesPage> {
             recipientUser == null
                 ? Container()
                 : InkWell(
-                    child: Text(recipientUser!.username,
+                    child: Text(recipientUser!.username!,
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold)),
                     onTap: () {
@@ -598,7 +658,10 @@ class _MessagesPageState extends State<MessagesPage> {
                     _textController.text.isNotEmpty
                         ? _handleSubmitted(_textController.text)
                         : null;
-                    reduceCredit();
+                    // İF PLATFORM İS REDUCE CREDİT ELSE DO NOT
+                    if (Platform.isAndroid) {
+                      reduceCredit();
+                    }
                   }),
             )
           ],
@@ -643,22 +706,27 @@ class _MessagesPageState extends State<MessagesPage> {
     });
   }
 
-  void _handleSubmitted(String text) {
+  void _handleSubmitted(String text) async {
     _textController.clear();
+
+    // Gönderen kullanıcının token'ını güncelle
+    await _updateSenderFCMToken();
+
     FirebaseFirestore.instance.collection("conversations").add({
-      "text": // encrypt text
-          text,
+      "text": text,
       "sender": widget.currentUserUid,
       "recipient": widget.recipientUid,
       "timestamp": DateTime.now(),
       "messagesId": conversationId,
       "users": [widget.currentUserUid, widget.recipientUid],
       "postId": widget.postId,
-    });
+    }).then((_) async {});
+
     // Update the key to force the ListView to rebuild
     _listKey = UniqueKey();
 
     // load messages from database and if there are none, create a conversation
+    _loadMessages();
   }
 
   void _loadMessages() async {
@@ -670,6 +738,38 @@ class _MessagesPageState extends State<MessagesPage> {
     for (var doc in messages.docs) {
       var message = Message.fromSnapshot(doc);
       _addMessage(message);
+    }
+  }
+
+  Future<String?> _updateRecipientFCMToken() async {
+    try {
+      String? newToken = await FirebaseMessaging.instance.getToken();
+      if (newToken != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.recipientUid)
+            .update({'fcmToken': newToken});
+        _recipientToken = newToken;
+        return newToken;
+      }
+    } catch (e) {
+      print('Error updating FCM token: $e');
+    }
+    return null;
+  }
+
+  Future<void> _updateSenderFCMToken() async {
+    try {
+      String? newToken = await FirebaseMessaging.instance.getToken();
+      if (newToken != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.currentUserUid)
+            .update({'fcmToken': newToken});
+        _senderToken = newToken;
+      }
+    } catch (e) {
+      print('Error updating sender FCM token: $e');
     }
   }
 }

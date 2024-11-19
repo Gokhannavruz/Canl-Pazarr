@@ -67,15 +67,14 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBhzlzp3DUt-OExgVgP39-XMfBoZzoC-yc',
-    appId: '1:990581988375:ios:27dd261e8a176e087dd052',
+    appId: '1:990581988375:ios:e53b4e20d479cd677dd052',
     messagingSenderId: '990581988375',
     projectId: 'freethings-257b6',
-    databaseURL:
-        'https://freethings-257b6-default-rtdb.europe-west1.firebasedatabase.app',
+    databaseURL: 'https://freethings-257b6-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'freethings-257b6.appspot.com',
-    iosClientId:
-        '990581988375-947gsnkgc9so4shs08qtrnrave4n0j9a.apps.googleusercontent.com',
-    iosBundleId: 'com.example.Freecycle',
+    androidClientId: '990581988375-3spvl0idnpfq9b5dd9p1opl89f0o6ii5.apps.googleusercontent.com',
+    iosClientId: '990581988375-n5913t4nsfk1trsdhcb3vi3992tqsbqc.apps.googleusercontent.com',
+    iosBundleId: 'com.freecycle',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(

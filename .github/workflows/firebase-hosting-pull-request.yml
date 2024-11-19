@@ -13,5 +13,5 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_Freecycle_F5BC4 }}'
-          projectId: Freecycle-f5bc4
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_Freebie_F5BC4 }}'
+          projectId: freebie-f5bc4

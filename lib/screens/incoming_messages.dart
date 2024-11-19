@@ -88,7 +88,7 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
     super.initState();
     _futureConversations = _loadConversations();
 
-    _loadNativeAd();
+    /* _loadNativeAd(); */
     // Listen for new messages
     FirebaseFirestore.instance
         .collection("conversations")
@@ -191,19 +191,38 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
-                        child: CircularProgressIndicator(
-                      color: Colors.white,
-                    ));
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    );
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.only(top: 20.0),
-                      child: Row(
+                    return Center(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          Icon(
+                            Icons.inbox_outlined,
+                            size: 80,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 20),
                           Text(
                             "Your inbox is as empty as a desert!",
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
+                          const SizedBox(height: 10),
+                          Text(
+                            "Messages will appear here when you receive them.",
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
                         ],
                       ),
                     );
@@ -237,7 +256,7 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
                             return const SizedBox.shrink();
                           }
                           User user = snapshot.data!;
-                          String username = user.username;
+                          String username = user.username!;
                           String profilePhotoUrl = user.photoUrl ?? "";
                           bool isCurrentUser =
                               senderUid == widget.currentUserUid;
@@ -317,7 +336,7 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
               ),
             ),
             // show native ad
-            if (isAdLoaded)
+            /*  if (isAdLoaded)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: SizedBox(
@@ -326,7 +345,7 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
                 ),
               )
             else
-              const SizedBox.shrink(),
+              const SizedBox.shrink(), */
           ],
         ));
     // floatingActionButton: FloatingActionButton(

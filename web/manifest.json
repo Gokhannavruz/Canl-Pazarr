@@ -1,11 +1,11 @@
 {
-    "name": "Freecycle",
-    "short_name": "Freecycle",
+    "name": "Freebie",
+    "short_name": "Freebie",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#hexcode",
     "theme_color": "#hexcode",
-    "description": "Freecycle",
+    "description": "Freebie",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

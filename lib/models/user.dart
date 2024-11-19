@@ -1,95 +1,93 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class User {
-  final String email;
-  final String uid;
-  late String? photoUrl;
-  late String username;
-  final String bio;
-  final List followers;
-  late final List following;
-  final List blocked;
-  final List blockedBy;
-  String? matchedWith;
-  String country;
-  String state;
-  String city;
-  int numberOfSentGifts = 0;
-  int numberOfUnsentGifts = 0;
-  String giftSendingRate = "0";
-  double giftPoint = 0;
-  int matchCount = 0;
-  int rateCount = 0;
-  bool isRated = false;
-  bool isPremium = false;
-  bool isVerified = false;
-  bool isConfirmed = false;
-  int credit = 0;
-  // FCMTokens
-  final String fcmToken;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-  // final int matchCount;
-  // final bool isPremium;
+class User {
+  final String? email;
+  final String? uid;
+  String? photoUrl;
+  String? username;
+  final String? bio;
+  final List<dynamic>? followers;
+  final List<dynamic>? following;
+  final List<dynamic>? blocked;
+  final List<dynamic>? blockedBy;
+  String? matchedWith;
+  String? country;
+  String? state;
+  String? city;
+  int? numberOfSentGifts;
+  int? numberOfUnsentGifts;
+  String? giftSendingRate;
+  double? giftPoint;
+  int? matchCount;
+  int? rateCount;
+  bool? isRated;
+  bool? isPremium;
+  bool? isVerified;
+  bool? isConfirmed;
+  int? credit;
+  String? fcmToken;
 
   User({
-    required this.username,
-    required this.uid,
-    required this.photoUrl,
-    required this.email,
-    required this.bio,
-    required this.followers,
-    required this.following,
-    required this.blocked,
-    required this.blockedBy,
-    required this.matchedWith,
-    required this.country,
-    required this.state,
-    required this.city,
-    required this.matchCount,
-    required this.isPremium,
-    required this.numberOfSentGifts,
-    required this.numberOfUnsentGifts,
-    required this.giftSendingRate,
-    required this.isVerified,
-    required this.isConfirmed,
-    required this.giftPoint,
-    required this.isRated,
-    required this.rateCount,
-    required this.fcmToken,
-    required this.credit,
+    this.username,
+    this.uid,
+    this.photoUrl,
+    this.email,
+    this.bio,
+    this.followers,
+    this.following,
+    this.blocked,
+    this.blockedBy,
+    this.matchedWith,
+    this.country,
+    this.state,
+    this.city,
+    this.matchCount,
+    this.isPremium,
+    this.numberOfSentGifts,
+    this.numberOfUnsentGifts,
+    this.giftSendingRate,
+    this.isVerified,
+    this.isConfirmed,
+    this.giftPoint,
+    this.isRated,
+    this.rateCount,
+    this.fcmToken,
+    this.credit,
   });
 
-  get blockedUsers => null;
+  List<dynamic>? get blockedUsers => blocked;
 
   static User fromSnap(DocumentSnapshot snap) {
-    Map<String, dynamic> snapshot = snap.data() as Map<String, dynamic>;
+    var snapshot = snap.data() as Map<String, dynamic>;
 
     return User(
-      username: snapshot['username'],
-      uid: snapshot['uid'],
-      email: snapshot['email'],
-      photoUrl: snapshot['photoUrl'],
-      bio: snapshot['bio'],
-      followers: snapshot['followers'],
-      following: snapshot['following'],
-      blocked: snapshot['blocked'],
-      blockedBy: snapshot['blockedBy'],
-      matchedWith: snapshot['matched_with'],
-      city: snapshot['city'],
-      country: snapshot['country'],
-      state: snapshot['state'],
-      matchCount: snapshot['match_count'],
-      isPremium: snapshot['is_premium'],
-      numberOfSentGifts: snapshot['number_of_sent_gifts'],
-      numberOfUnsentGifts: snapshot['number_of_unsent_gifts'],
-      giftSendingRate: snapshot['gift_sending_rate'],
-      isVerified: snapshot['isVerified'],
-      isConfirmed: snapshot['isConfirmed'],
-      giftPoint: snapshot['gift_point'],
-      isRated: snapshot['isRated'],
-      rateCount: snapshot['rateCount'],
-      fcmToken: snapshot['fcmToken'],
-      credit: snapshot['credit'],
+      username: snapshot['username'] as String?,
+      uid: snapshot['uid'] as String?,
+      email: snapshot['email'] as String?,
+      photoUrl: snapshot['photoUrl'] as String?,
+      bio: snapshot['bio'] as String?,
+      followers: snapshot['followers'] as List<dynamic>?,
+      following: snapshot['following'] as List<dynamic>?,
+      blocked: snapshot['blocked'] as List<dynamic>?,
+      blockedBy: snapshot['blockedBy'] as List<dynamic>?,
+      matchedWith: snapshot['matched_with'] as String?,
+      city: snapshot['city'] as String?,
+      country: snapshot['country'] as String?,
+      state: snapshot['state'] as String?,
+      matchCount: snapshot['match_count'] as int?,
+      isPremium: snapshot['is_premium'] as bool?,
+      numberOfSentGifts: snapshot['number_of_sent_gifts'] as int?,
+      numberOfUnsentGifts: snapshot['number_of_unsent_gifts'] as int?,
+      giftSendingRate: snapshot['gift_sending_rate'] as String?,
+      isVerified: snapshot['isVerified'] as bool?,
+      isConfirmed: snapshot['isConfirmed'] as bool?,
+      giftPoint: (snapshot['gift_point'] as num?)?.toDouble(),
+      isRated: snapshot['isRated'] as bool?,
+      rateCount: snapshot['rateCount'] as int?,
+      fcmToken: snapshot['fcmToken'] as String?,
+      credit: snapshot['credit'] as int?,
     );
   }
 
@@ -123,31 +121,31 @@ class User {
 
   static User fromJson(Map<String, dynamic> json) {
     return User(
-      email: json['email'],
-      uid: json['uid'],
-      photoUrl: json['photoUrl'],
-      username: json['username'],
-      bio: json['bio'],
-      followers: json['followers'],
-      following: json['following'],
-      blocked: json['blocked'],
-      blockedBy: json['blockedBy'],
-      matchedWith: json['matched_with'],
-      country: json['country'],
-      state: json['state'],
-      city: json['city'],
-      matchCount: json['match_count'],
-      isPremium: json['is_premium'],
-      numberOfSentGifts: json['number_of_sent_gifts'],
-      numberOfUnsentGifts: json['number_of_unsent_gifts'],
-      giftSendingRate: json['gift_sending_rate'],
-      isVerified: json['isVerified'],
-      isConfirmed: json['isConfirmed'],
-      giftPoint: json['gift_point'],
-      isRated: json['isRated'],
-      rateCount: json['rateCount'],
-      fcmToken: json['fcmToken'],
-      credit: json['credit'],
+      email: json['email'] as String?,
+      uid: json['uid'] as String?,
+      photoUrl: json['photoUrl'] as String?,
+      username: json['username'] as String?,
+      bio: json['bio'] as String?,
+      followers: json['followers'] as List<dynamic>?,
+      following: json['following'] as List<dynamic>?,
+      blocked: json['blocked'] as List<dynamic>?,
+      blockedBy: json['blockedBy'] as List<dynamic>?,
+      matchedWith: json['matched_with'] as String?,
+      country: json['country'] as String?,
+      state: json['state'] as String?,
+      city: json['city'] as String?,
+      matchCount: json['match_count'] as int?,
+      isPremium: json['is_premium'] as bool?,
+      numberOfSentGifts: json['number_of_sent_gifts'] as int?,
+      numberOfUnsentGifts: json['number_of_unsent_gifts'] as int?,
+      giftSendingRate: json['gift_sending_rate'] as String?,
+      isVerified: json['isVerified'] as bool?,
+      isConfirmed: json['isConfirmed'] as bool?,
+      giftPoint: (json['gift_point'] as num?)?.toDouble(),
+      isRated: json['isRated'] as bool?,
+      rateCount: json['rateCount'] as int?,
+      fcmToken: json['fcmToken'] as String?,
+      credit: json['credit'] as int?,
     );
   }
 }

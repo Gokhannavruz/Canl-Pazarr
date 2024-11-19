@@ -1,16 +1,21 @@
+import 'package:Freecycle/screens/phone_verificication.dart';
+import 'package:Freecycle/screens/reset_password.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:Freecycle/resources/auth_methods.dart';
-import 'package:Freecycle/screens/phone_verificication.dart';
-import 'package:Freecycle/screens/reset_password.dart';
-import 'package:Freecycle/utils/colors.dart';
-import 'package:Freecycle/utils/global_variables.dart';
+
 import 'package:Freecycle/utils/utils.dart';
 
 import '../responsive/mobile_screen_layout.dart';
 import '../responsive/responsive_layout_screen.dart';
 import '../responsive/web_screen_layout.dart';
+
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -23,12 +28,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscureText = true;
 
   @override
   void dispose() {
-    super.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    super.dispose();
   }
 
   void loginUser() async {
@@ -68,227 +74,114 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      backgroundColor: Colors.black,
       body: SafeArea(
-        child: Container(
-          padding: MediaQuery.of(context).size.width > webScreenSize
-              ? EdgeInsets.symmetric(
-                  horizontal: MediaQuery.of(context).size.width / 3)
-              : const EdgeInsets.symmetric(horizontal: 15),
-          width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // flex: 2,
-              Flexible(
-                flex: 1,
-                child: Container(),
-              ),
-              // Freecycle logo
-              Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/frees.png',
-                      height: 80,
-                    ),
-                    const SizedBox(
-                      width: 5,
-                    ),
-                  ],
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 30.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/frees.png',
+                  height: 80, // Logo rengi beyaz olarak değiştirildi
                 ),
-              ),
-              const SizedBox(
-                height: 3,
-              ),
-              // login text
-              // const Center(
-              //   child: Text(
-              //     'Nice to see you!',
-              //     style: TextStyle(
-              //       fontSize: 24,
-              //       fontWeight: FontWeight.bold,
-              //     ),
-              //   ),
-              // ),
-              const SizedBox(
-                height: 30,
-              ),
-
-              TextField(
-                keyboardType: TextInputType.emailAddress,
-                mouseCursor: MouseCursor.defer,
-                controller: _emailController,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(
-                    Icons.email_outlined,
-                    color: Colors.grey,
-                    size: 20,
-                  ),
-                  hintText: 'enter your email',
-                  hintStyle: const TextStyle(
-                    color: Colors.grey,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: const BorderSide(
-                      color: Colors.blue,
-                    ),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: const BorderSide(
-                      color: Colors.grey,
-                    ),
-                  ),
+                SizedBox(height: 30),
+                Text(
+                  'Freecycle: Share, Reuse, Be Sustainable',
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(
-                height: 24,
-              ),
-              // password text field not from the widget
-              TextField(
-                keyboardType: TextInputType.visiblePassword,
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(
-                    Icons.lock_outline,
-                    color: Colors.grey,
-                    size: 20,
-                  ),
-                  hintText: 'enter your password',
-                  hintStyle: const TextStyle(
-                    color: Colors.grey,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(
-                      color: Colors.blue,
+                SizedBox(height: 40),
+                TextField(
+                  cursorColor: Colors.white,
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    hintText: 'Email',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    filled: true,
+                    fillColor: Colors.grey[900],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
-                    borderRadius: BorderRadius.circular(20),
                   ),
-                  border: OutlineInputBorder(
-                    borderSide: const BorderSide(
-                      color: Colors.grey,
+                  style: TextStyle(color: Colors.white),
+                ),
+                SizedBox(height: 16),
+                TextField(
+                  cursorColor: Colors.white,
+                  controller: _passwordController,
+                  obscureText: _obscureText,
+                  decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureText ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    hintText: 'Password',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    filled: true,
+                    fillColor: Colors.grey[900],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  style: TextStyle(color: Colors.white),
+                ),
+                SizedBox(height: 16),
+                OutlinedButton(
+                  onPressed: _isLoading ? null : loginUser,
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text('Login',
+                          style: TextStyle(fontSize: 16, color: Colors.white)),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.white),
+                    minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              Center(
-                child: InkWell(
-                  onTap: () {
-                    loginUser();
+                SizedBox(height: 36),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => PhoneVerificationScreen(),
+                    ));
                   },
-                  child: Container(
-                    width: MediaQuery.of(context).size.width > webScreenSize
-                        ? MediaQuery.of(context).size.width / 3
-                        : MediaQuery.of(context).size.width,
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: const ShapeDecoration(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
-                      ),
-                      color: Color.fromARGB(255, 21, 113, 199),
+                  child: Text('Register',
+                      style: TextStyle(fontSize: 16, color: Colors.black)),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.white,
+                    minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: !_isLoading
-                        ? const Text(
-                            'Log in',
-                          )
-                        : const CircularProgressIndicator(
-                            color: primaryColor,
-                          ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              // GoogleSignInButton(),
-
-              // forgot password?
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      // navigate to forgot password screen
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const ForgetPassword(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: const Text(
-                        'Forgot Password?',
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Flexible(
-                flex: 2,
-                child: Container(),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: const Text(
-                      'Dont have an account?',
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const PhoneVerificationScreen(),
-                      ),
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: const Text(
-                        ' Signup.',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => ForgetPassword(),
+                    ));
+                  },
+                  child: Text('Forgot Password?',
+                      style: TextStyle(fontSize: 14, color: Colors.grey)),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
-  }
-
-  Future<UserCredential> signInWithGoogle() async {
-    // Trigger the authentication flow
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
-    // Obtain the auth details from the request
-    final GoogleSignInAuthentication? googleAuth =
-        await googleUser?.authentication;
-
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
-
-    // Once signed in, return the UserCredential
-    return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 }
