@@ -9,7 +9,7 @@ class TermsOfServicePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: Text('Freecycle Terms of Service'),
+        title: Text('freecycle Terms of Service'),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
@@ -18,10 +18,10 @@ class TermsOfServicePage extends StatelessWidget {
           children: [
             _buildSectionTitle('1. Acceptance of Terms'),
             _buildText(
-                'By accessing or using Freecycle, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree with any part of these terms, you must not use our services.'),
+                'By accessing or using freecycle, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree with any part of these terms, you must not use our services.'),
             SizedBox(height: 20),
             _buildSectionTitle('2. User Conduct'),
-            _buildText('You agree not to use Freecycle to:\n\n'
+            _buildText('You agree not to use freecycle to:\n\n'
                 '- Post, upload, or share any content that is illegal, harmful, threatening, abusive, harassing, defamatory, vulgar, obscene, hateful, or otherwise objectionable.\n\n'
                 '- Impersonate any person or entity or falsely state or otherwise misrepresent your affiliation with a person or entity.\n\n'
                 '- Engage in any form of bullying, harassment, or intimidation.\n\n'
@@ -34,11 +34,11 @@ class TermsOfServicePage extends StatelessWidget {
             SizedBox(height: 20),
             _buildSectionTitle('4. Reporting and Blocking'),
             _buildText(
-                'Users can report offensive content or behavior by using the report feature within Freecycle. We will review and take appropriate action on reported content or users promptly. Users also have the ability to block other users to prevent further interaction.'),
+                'Users can report offensive content or behavior by using the report feature within freecycle. We will review and take appropriate action on reported content or users promptly. Users also have the ability to block other users to prevent further interaction.'),
             SizedBox(height: 20),
             _buildSectionTitle('5. Termination'),
             _buildText(
-                'We reserve the right to terminate or suspend your account and access to Freecycle without notice if we determine, in our sole discretion, that you have violated these terms or engaged in any conduct that we consider inappropriate or harmful.'),
+                'We reserve the right to terminate or suspend your account and access to freecycle without notice if we determine, in our sole discretion, that you have violated these terms or engaged in any conduct that we consider inappropriate or harmful.'),
             SizedBox(height: 20),
             _buildSectionTitle('6. Changes to Terms'),
             _buildText(
@@ -55,8 +55,8 @@ class TermsOfServicePage extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.black,
-                    onPrimary: Colors.white,
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.black,
                   ),
                   onPressed: () async {
                     if (await canLaunch(privacyPolicyUrl)) {

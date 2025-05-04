@@ -1,18 +1,21 @@
-import 'dart:ffi';
-
-import 'package:Freecycle/screens/country_state_city2.dart';
-import 'package:Freecycle/screens/country_state_city_picker.dart';
-import 'package:Freecycle/screens/privacy_policy.dart';
-import 'package:Freecycle/screens/terms_of_use_page.dart';
+import 'package:freecycle/screens/country_state_city2.dart';
+import 'package:freecycle/screens/country_state_city_picker.dart';
+import 'package:freecycle/screens/privacy_policy.dart';
+import 'package:freecycle/screens/terms_of_use_page.dart';
+import 'package:freecycle/screens/welcomepage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:Freecycle/screens/blocked_users.dart';
-import 'package:Freecycle/screens/liked_posts_screen.dart';
-import 'package:Freecycle/screens/login_screen.dart';
+import 'package:freecycle/screens/blocked_users.dart';
+import 'package:freecycle/screens/liked_posts_screen.dart';
+import 'package:freecycle/screens/login_screen.dart';
+import 'package:freecycle/screens/location_picker_demo.dart';
 
-import 'package:Freecycle/screens/reset_password.dart';
+import 'package:freecycle/screens/reset_password.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter/services.dart';
+import 'package:freecycle/utils/utils.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -64,301 +67,448 @@ class _SettingsPageState extends State<SettingsPage> {
     _nativeAd!.load();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Row(
-          children: [
-            Text('Settings'),
-          ],
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
+  void _showReferralInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.grey[900],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey[800]!, width: 1),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Card(
-                  color: Colors.black,
-                  child: ListTile(
-                    // icon and text for liked posts
-                    title: const Row(
-                      children: [
-                        Icon(Icons.favorite_border_outlined, size: 25),
-                        SizedBox(width: 10),
-                        Text('Favorites'),
-                      ],
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.card_giftcard,
+                      color: Colors.blue,
+                      size: 24,
                     ),
-                    onTap: () {
-                      // Navigate to blocked users page
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LikedPostsScreen(
-                            userId: FirebaseAuth.instance.currentUser!.uid,
-                          ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Referral System',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Points info
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.stars, color: Colors.amber, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Earn 10 credits per referral',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
                         ),
-                      );
-                    },
-                  ),
-                ),
-                // Card(
-                //   color: Colors.black,
-                //   child: ListTile(
-                //     // icon and text for liked posts
-                //     title: Row(
-                //       children: const [
-                //         Icon(Icons.person_pin_circle_outlined, size: 25),
-                //         SizedBox(width: 10),
-                //         Text('Tagged posts'),
-                //       ],
-                //     ),
-                //     onTap: () {
-                //       // Navigate to blocked users page
-                //       Navigator.push(
-                //         context,
-                //         MaterialPageRoute(
-                //           builder: (context) => RecipientScreen(
-                //             userId: FirebaseAuth.instance.currentUser!.uid,
-                //           ),
-                //         ),
-                //       );
-                //     },
-                //   ),
-                // ),
-                Card(
-                  color: Colors.black,
-                  child: ListTile(
-                    title: const Row(
-                      children: [
-                        Icon(
-                          Icons.person_off_outlined,
-                          size: 25,
-                        ),
-                        SizedBox(width: 10),
-                        Text('Blocked Users'),
-                      ],
-                    ),
-                    onTap: () {
-                      // Navigate to blocked users page
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BlockedListScreen(
-                            userId: FirebaseAuth.instance.currentUser!.uid,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                InkWell(
-                  child: Card(
-                    color: Colors.black,
-                    child: ListTile(
-                      title: const Row(
-                        children: [
-                          Icon(
-                            Icons.lock_outline_sharp,
-                            color: Colors.white,
-                          ),
-                          SizedBox(width: 10),
-                          Text('Change Password'),
-                        ],
                       ),
-                      onTap: () {
-                        // navigate to change password page
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const ForgetPassword(),
-                          ),
-                        );
-                      },
-                    ),
+                    ],
                   ),
                 ),
+                const SizedBox(height: 20),
 
-                // change location
-                InkWell(
-                  child: Card(
-                    color: Colors.black,
-                    child: ListTile(
-                      title: const Row(
-                        children: [
-                          Icon(
-                            Icons.location_on_outlined,
-                            color: Colors.white,
-                          ),
-                          SizedBox(width: 10),
-                          Text('Change Location'),
-                        ],
-                      ),
-                      onTap: () {
-                        // navigate to change password page
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const CountryStateCity(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                // Rules
+                Column(
+                  children: [
+                    _buildRule(Icons.calendar_today, 'Max 2 referrals per day'),
+                    const SizedBox(height: 12),
+                    _buildRule(
+                        Icons.people_outline, 'Max 3 referrals in total'),
+                    const SizedBox(height: 12),
+                    _buildRule(Icons.phone_android, 'One referral per device'),
+                    const SizedBox(height: 12),
+                    _buildRule(Icons.person_add, 'New users only'),
+                  ],
                 ),
+                const SizedBox(height: 24),
 
-                //privacy policy
-                InkWell(
-                  child: Card(
-                    color: Colors.black,
-                    child: ListTile(
-                      title: const Row(
-                        children: [
-                          Icon(
-                            Icons.privacy_tip_outlined,
-                            color: Colors.white,
-                          ),
-                          SizedBox(width: 10),
-                          Text('License Agreement (EULA)'),
-                        ],
-                      ),
-                      onTap: () {
-                        // navigate to privacy policy page
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => EulaPage(),
-                          ),
-                        );
-                      },
+                // Close button
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                ),
-
-                // terms of servive
-                InkWell(
-                  child: Card(
-                    color: Colors.black,
-                    child: ListTile(
-                      title: const Row(
-                        children: [
-                          Icon(
-                            Icons.rule_outlined,
-                            color: Colors.white,
-                          ),
-                          SizedBox(width: 10),
-                          Text('Terms of Service'),
-                        ],
+                    child: Text(
+                      'Got it',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
-                      onTap: () {
-                        // navigate to terms of service page
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => TermsOfServicePage(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-
-                InkWell(
-                  child: Card(
-                    color: Colors.black,
-                    child: ListTile(
-                      title: const Row(
-                        children: [
-                          Icon(
-                            Icons.delete_forever,
-                            color: Colors.red,
-                          ),
-                          SizedBox(width: 10),
-                          Text('Delete account'),
-                        ],
-                      ),
-                      onTap: () {
-                        // Show confirm delete account dialog
-                        deleteAccount(context);
-                      },
                     ),
                   ),
                 ),
               ],
             ),
           ),
-/*           if (isAdLoaded)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: SizedBox(
-                height: 55,
-                child: AdWidget(ad: _nativeAd!),
-              ),
-            )
-          else
-            const SizedBox.shrink(), */
+        );
+      },
+    );
+  }
+
+  Widget _buildRule(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: Colors.grey[400],
+          size: 18,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.grey[300],
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      child: Text(
+        title,
+        style: GoogleFonts.poppins(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.white.withOpacity(0.6),
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? iconColor,
+    Widget? trailing,
+    bool isDestructive = false,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: (iconColor ?? Colors.blue).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: iconColor ?? Colors.blue,
+            size: 20,
+          ),
+        ),
+        title: Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: isDestructive ? Colors.red : Colors.white,
+          ),
+        ),
+        trailing: trailing ??
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.grey,
+              size: 20,
+            ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: Text(
+          'Settings',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: ListView(
+        children: [
+          _buildSectionHeader('Content'),
+          _buildSettingsTile(
+            icon: Icons.favorite_rounded,
+            iconColor: Colors.pink,
+            title: 'Favorites',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LikedPostsScreen(
+                    userId: FirebaseAuth.instance.currentUser!.uid,
+                  ),
+                ),
+              );
+            },
+          ),
+          _buildSettingsTile(
+            icon: Icons.block_rounded,
+            iconColor: Colors.orange,
+            title: 'Blocked Users',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BlockedListScreen(
+                    userId: FirebaseAuth.instance.currentUser!.uid,
+                  ),
+                ),
+              );
+            },
+          ),
+          _buildSectionHeader('Account'),
+          _buildSettingsTile(
+            icon: Icons.lock_rounded,
+            iconColor: Colors.green,
+            title: 'Change Password',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ForgetPassword(),
+                ),
+              );
+            },
+          ),
+          _buildSettingsTile(
+            icon: Icons.location_on_rounded,
+            iconColor: Colors.purple,
+            title: 'Change Location',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const CountryStateCity(),
+                ),
+              );
+            },
+          ),
+
+          _buildSectionHeader('Legal'),
+          _buildSettingsTile(
+            icon: Icons.verified_user_rounded,
+            iconColor: Colors.blue,
+            title: 'License Agreement (EULA)',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => EulaPage(),
+                ),
+              );
+            },
+          ),
+          _buildSettingsTile(
+            icon: Icons.gavel_rounded,
+            iconColor: Colors.amber,
+            title: 'Terms of Service',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TermsOfServicePage(),
+                ),
+              );
+            },
+          ),
+          _buildSectionHeader('Danger Zone'),
+          _buildSettingsTile(
+            icon: Icons.delete_forever_rounded,
+            iconColor: Colors.red,
+            title: 'Delete Account',
+            isDestructive: true,
+            onTap: () => deleteAccount(context),
+          ),
+
+          // welcome page
         ],
       ),
     );
   }
 
   void deleteAccount(BuildContext context) async {
-    // Show confirmation dialog
-    bool confirm = await showDialog(
+    showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E1E),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.warning_rounded,
+                color: Colors.red,
+                size: 48,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Delete Account',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Are you sure you want to delete your account? This action cannot be undone.',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.white.withOpacity(0.8),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You will lose all your data and won\'t be able to use your phone number again.',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: Colors.white.withOpacity(0.6),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Delete',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        backgroundColor: const Color.fromARGB(255, 24, 22, 22),
-        title: const Text('Delete account'),
-        content: const Text(
-            'Are you sure you want to delete your account? \n \n If you delete your account, you will lose all your data and you will not be able to use your phone number again.'),
-        actions: [
-          TextButton(
-            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          TextButton(
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-            onPressed: () => Navigator.pop(context, true),
-          ),
-        ],
       ),
-    );
+    ).then((confirmed) async {
+      if (confirmed == true) {
+        try {
+          final userId = FirebaseAuth.instance.currentUser!.uid;
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .get();
 
-    if (confirm) {
-      // Delete user data from database but create deleted user document and save user data in it
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .get()
-          .then(
-        (doc) {
-          if (doc.exists) {
-            // Create deleted user document
-            FirebaseFirestore.instance
+          if (userDoc.exists) {
+            await FirebaseFirestore.instance
                 .collection('deleted_users')
-                .doc(FirebaseAuth.instance.currentUser!.uid)
-                .set(doc.data()!);
+                .doc(userId)
+                .set(userDoc.data()!);
 
-            // Delete user document
-            FirebaseFirestore.instance
+            await FirebaseFirestore.instance
                 .collection('users')
-                .doc(FirebaseAuth.instance.currentUser!.uid)
+                .doc(userId)
                 .delete();
           }
-        },
-      );
-      // Sign out user
-      await FirebaseAuth.instance.signOut();
 
-      // Navigate to login page with material page route
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
-        ),
-        (route) => false,
-      );
-    }
+          await FirebaseAuth.instance.signOut();
+
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const LoginScreen(),
+            ),
+            (route) => false,
+          );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Error deleting account: $e',
+                style: GoogleFonts.poppins(),
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    });
   }
-  // blocked users lists
 }

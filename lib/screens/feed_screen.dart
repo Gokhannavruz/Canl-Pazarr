@@ -4,10 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:Freecycle/screens/incoming_messages.dart';
-import 'package:Freecycle/screens/login_screen.dart';
-import 'package:Freecycle/screens/notification_page.dart';
-import 'package:Freecycle/widgets/post_card.dart';
+import 'package:freecycle/screens/incoming_messages.dart';
+import 'package:freecycle/screens/login_screen.dart';
+import 'package:freecycle/screens/notification_page.dart';
+import 'package:freecycle/widgets/post_card.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class FeedScreen extends StatefulWidget {
@@ -164,7 +164,7 @@ class _FeedScreenState extends State<FeedScreen> {
         automaticallyImplyLeading: false,
         title: Container(
           child: Image.asset(
-            "assets/Freecycle.png",
+            "assets/freecycle.png",
             width: 40,
             height: 40,
           ),
@@ -199,14 +199,20 @@ class _FeedScreenState extends State<FeedScreen> {
           ),
           // sign out user
           IconButton(
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LoginScreen(),
-                ),
-              );
+            onPressed: () async {
+              try {
+                await FirebaseAuth.instance.signOut();
+                if (mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                    (route) => false,
+                  );
+                }
+              } catch (e) {
+                print('Error signing out: $e');
+              }
             },
             icon: const Icon(Icons.logout),
           ),

@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-
 class ForgetPassword extends StatefulWidget {
   const ForgetPassword({Key? key}) : super(key: key);
 
@@ -12,6 +11,10 @@ class ForgetPassword extends StatefulWidget {
 class _ForgetPasswordState extends State<ForgetPassword> {
   @override
   void dispose() {
+    /// Clean up the controller when the widget is disposed.
+    ///
+    /// This is required to prevent memory leaks when the user navigates
+    /// away from the page.
     _emailController.dispose();
     super.dispose();
   }

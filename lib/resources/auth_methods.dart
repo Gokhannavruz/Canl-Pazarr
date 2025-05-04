@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:Freecycle/models/user.dart' as model;
-import 'package:Freecycle/resources/storage_methods.dart';
+import 'package:freecycle/models/user.dart' as model;
+import 'package:freecycle/resources/storage_methods.dart';
 
 class AuthMethods {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -13,11 +13,44 @@ class AuthMethods {
   // get user details
   Future<model.User> getUserDetails() async {
     User currentUser = _auth.currentUser!;
+    return await getUserDetailsFromFirestore(currentUser.uid);
+  }
 
-    DocumentSnapshot documentSnapshot =
-        await _firestore.collection('users').doc(currentUser.uid).get();
+  // Get user details from Firestore using uid
+  Future<model.User> getUserDetailsFromFirestore(String uid) async {
+    try {
+      DocumentSnapshot documentSnapshot =
+          await _firestore.collection('users').doc(uid).get();
 
-    return model.User.fromSnap(documentSnapshot);
+      if (documentSnapshot.exists) {
+        return model.User.fromSnap(documentSnapshot);
+      } else {
+        // Return a default user if document doesn't exist
+        return model.User(
+          username: "",
+          uid: uid,
+          email: "",
+          bio: "",
+          followers: [],
+          following: [],
+          blocked: [],
+          blockedBy: [],
+        );
+      }
+    } catch (e) {
+      print("Error getting user details: $e");
+      // Return a default user on error
+      return model.User(
+        username: "",
+        uid: uid,
+        email: "",
+        bio: "",
+        followers: [],
+        following: [],
+        blocked: [],
+        blockedBy: [],
+      );
+    }
   }
 
   // Signing Up User
@@ -41,19 +74,13 @@ class AuthMethods {
       } else if (bio.length > 100) {
         res = "Bio should be at most 150 characters long";
       } else {
-        FirebaseAuth.instance.idTokenChanges().listen((User? user) {
-          if (user == null) {
-            print('User is currently signed out!');
-          } else {
-            print('User is signed in!');
-          }
-        });
-
+        // Create user with email and password
         UserCredential cred = await _auth.createUserWithEmailAndPassword(
           email: email,
           password: password,
         );
 
+        // Prepare profile picture
         if (file != null) {
           photoUrl = await StorageMethods()
               .uploadImageToStorage('profilePics', file, true);
@@ -62,43 +89,44 @@ class AuthMethods {
               "https://firebasestorage.googleapis.com/v0/b/freethings-257b6.appspot.com/o/defaulprofilephoto%2FdefaultProfilePhoto.png?alt=media&token=f2500621-2916-4601-bcbe-93c63d7fa802";
         }
 
-        model.User user = model.User(
-          // matchCount: 0,
-          // isPremium: false,
-          username: username,
-          uid: cred.user!.uid,
-          photoUrl: photoUrl,
-          email: email,
-          bio: bio,
-          matchedWith: null,
-          followers: [],
-          following: [],
-          blocked: [],
-          blockedBy: [],
-          country: "",
-          state: "",
-          city: "",
-          numberOfSentGifts: 0,
-          numberOfUnsentGifts: 0,
-          matchCount: 0,
-          isPremium: false,
-          isVerified: false,
-          giftSendingRate: "",
-          isConfirmed: false,
-          isRated: false,
-          giftPoint: 0,
-          rateCount: 0,
-          fcmToken: "",
-          credit: 0,
-        );
-        await _firestore
-            .collection("users")
-            .doc(cred.user!.uid)
-            .set(user.toJson());
+        // Prepare user data as a Map directly, avoiding potential issues with User model
+        final userData = {
+          'username': username,
+          'uid': cred.user!.uid,
+          'photoUrl': photoUrl,
+          'email': email,
+          'bio': bio,
+          'matched_with': null,
+          'followers': [],
+          'following': [],
+          'blocked': [],
+          'blockedBy': [],
+          'country': "",
+          'state': "",
+          'city': "",
+          'match_count': 0,
+          'is_premium': false,
+          'number_of_sent_gifts': 0,
+          'number_of_unsent_gifts': 0,
+          'gift_sending_rate': "",
+          'isVerified': false,
+          'isConfirmed': false,
+          'gift_point': 0.0,
+          'isRated': false,
+          'rateCount': 0,
+          'fcmToken': "",
+          'credit': 0,
+          'referralCode': "",
+          'referredBy': "",
+        };
+
+        // Save user data to Firestore
+        await _firestore.collection("users").doc(cred.user!.uid).set(userData);
 
         res = "success";
       }
     } catch (err) {
+      print("Error during signup: $err");
       return err.toString();
     }
     return res;

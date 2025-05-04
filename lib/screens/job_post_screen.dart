@@ -1,21 +1,21 @@
-import 'package:Freecycle/widgets/job_card.dart';
+import 'package:freecycle/widgets/job_card.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:Freecycle/widgets/post_card.dart';
+import 'package:freecycle/widgets/post_card.dart';
 
-class jobPostScreen extends StatefulWidget {
+class jobscreen extends StatefulWidget {
   final String postId;
   final String uid;
 
-  const jobPostScreen({Key? key, required this.postId, required this.uid})
+  const jobscreen({Key? key, required this.postId, required this.uid})
       : super(key: key);
 
   @override
-  State<jobPostScreen> createState() => _jobPostScreenState();
+  State<jobscreen> createState() => _jobscreenState();
 }
 
-class _jobPostScreenState extends State<jobPostScreen> {
+class _jobscreenState extends State<jobscreen> {
   NativeAd? _nativeAd;
   bool isAdLoaded = false;
 

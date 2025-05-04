@@ -1,17 +1,15 @@
-# Minimum iOS platform version.
+# Uncomment this line to define a global platform for your project
 platform :ios, '13.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-# Specify the target project and its configurations.
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
   'Release' => :release,
 }
 
-# Define the root directory of Flutter.
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
@@ -25,47 +23,57 @@ def flutter_root
   raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
 end
 
-# Include Flutter-specific configurations for iOS.
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
 flutter_ios_podfile_setup
 
-# Define the target for the project.
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
-
-
-
-  # Install all required pods for Flutter.
+  
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-
-  # Define the target for tests.
+  
   target 'RunnerTests' do
     inherit! :search_paths
   end
 end
 
-
-
-# Apply additional Flutter-specific build settings after installation.
 post_install do |installer|
   installer.pods_project.targets.each do |target|
-    flutter_additional_ios_build_settings(target)
-  end
-
-  # Set additional build settings after installation.
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
-      config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
-
-      # Exclude arm64 for the simulator.
-      if config.name == 'Debug' || config.name == 'Release'
-        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+    # Fix for BoringSSL-GRPC flag issues
+    if target.name == 'BoringSSL-GRPC'
+      target.source_build_phase.files.each do |file|
+        if file.settings && file.settings['COMPILER_FLAGS']
+          flags = file.settings['COMPILER_FLAGS'].split
+          flags.reject! { |flag| flag == '-GCC_WARN_INHIBIT_ALL_WARNINGS' || flag == '-G' }
+          file.settings['COMPILER_FLAGS'] = flags.join(' ')
+        end
       end
-
-      # Ensure the iOS 13 deployment target is set for all configurations.
+    end
+    
+    # Standard Flutter settings
+    flutter_additional_ios_build_settings(target)
+    
+    # Set minimum deployment target for all pods
+    target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      
+      # Fix for -G flag issue
+      if config.build_settings['OTHER_CFLAGS']
+        if config.build_settings['OTHER_CFLAGS'].kind_of?(Array)
+          config.build_settings['OTHER_CFLAGS'] = config.build_settings['OTHER_CFLAGS'].reject { |flag| flag == '-G' }
+        elsif config.build_settings['OTHER_CFLAGS'].kind_of?(String)
+          config.build_settings['OTHER_CFLAGS'] = config.build_settings['OTHER_CFLAGS'].gsub(/-G\b/, '')
+        end
+      end
+      
+      # Fix for simulator architecture
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386'
+      
+      # Debug-specific settings
+      if config.name == 'Debug' 
+        config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
+      end
     end
   end
 end

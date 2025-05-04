@@ -16,7 +16,7 @@ class EulaPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: Text(
-          'Freecycle EULA',
+          'freecycle EULA',
           style: TextStyle(color: Colors.white, fontSize: 17),
         ),
       ),
@@ -26,23 +26,23 @@ class EulaPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Freecycle End User License Agreement (EULA)',
+              'freecycle End User License Agreement (EULA)',
               style: TextStyle(color: Colors.white, fontSize: 15),
             ),
             SizedBox(height: 20),
             _buildSectionTitle('1. License Grant'),
             _buildText(
-                'We grant you a limited, non-exclusive, non-transferable, revocable license to use Freecycle in accordance with these terms.'),
+                'We grant you a limited, non-exclusive, non-transferable, revocable license to use freecycle in accordance with these terms.'),
             SizedBox(height: 20),
             _buildSectionTitle('2. Restrictions'),
             _buildText('You may not:\n\n'
-                '- Decompile, reverse engineer, disassemble, attempt to derive the source code of, or decrypt Freecycle.\n\n'
-                '- Make any modification, adaptation, improvement, enhancement, translation, or derivative work from Freecycle.\n\n'
-                '- Use Freecycle for any unlawful or illegal activity, or to facilitate any illegal activity.'),
+                '- Decompile, reverse engineer, disassemble, attempt to derive the source code of, or decrypt freecycle.\n\n'
+                '- Make any modification, adaptation, improvement, enhancement, translation, or derivative work from freecycle.\n\n'
+                '- Use freecycle for any unlawful or illegal activity, or to facilitate any illegal activity.'),
             SizedBox(height: 20),
             _buildSectionTitle('3. User Content'),
             _buildText(
-                'You are responsible for the content you post on or through Freecycle. By posting content, you grant us a worldwide, non-exclusive, royalty-free, transferable license to use, reproduce, distribute, prepare derivative works of, display, and perform that content in connection with the service.'),
+                'You are responsible for the content you post on or through freecycle. By posting content, you grant us a worldwide, non-exclusive, royalty-free, transferable license to use, reproduce, distribute, prepare derivative works of, display, and perform that content in connection with the service.'),
             SizedBox(height: 20),
             _buildSectionTitle('4. No Tolerance for Objectionable Content'),
             _buildText(
@@ -50,11 +50,11 @@ class EulaPage extends StatelessWidget {
             SizedBox(height: 20),
             _buildSectionTitle('5. Termination'),
             _buildText(
-                'We may terminate your access to Freecycle if you fail to comply with any of the terms and conditions of this EULA. Upon termination, you must cease all use of Freecycle and delete all copies of Freecycle from your devices.'),
+                'We may terminate your access to freecycle if you fail to comply with any of the terms and conditions of this EULA. Upon termination, you must cease all use of freecycle and delete all copies of freecycle from your devices.'),
             SizedBox(height: 20),
             _buildSectionTitle('6. Changes to EULA'),
             _buildText(
-                'We may update this EULA from time to time. The most current version will always be available on our website. Your continued use of Freecycle after any updates indicates your acceptance of the new terms.'),
+                'We may update this EULA from time to time. The most current version will always be available on our website. Your continued use of freecycle after any updates indicates your acceptance of the new terms.'),
             SizedBox(height: 20),
             _buildSectionTitle('7. Contact Us'),
             // contact us
@@ -65,8 +65,8 @@ class EulaPage extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.black,
-                    onPrimary: Colors.white,
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.black,
                   ),
                   onPressed: () async {
                     if (await canLaunch(privacyPolicyUrl)) {

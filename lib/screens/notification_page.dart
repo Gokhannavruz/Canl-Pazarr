@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:Freecycle/screens/post_screen.dart';
-import 'package:Freecycle/screens/profile_screen2.dart';
+import 'package:freecycle/screens/post_screen.dart';
+import 'package:freecycle/screens/profile_screen2.dart';
 
 class NotificationPage extends StatefulWidget {
   final snap;

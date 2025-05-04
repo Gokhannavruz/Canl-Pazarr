@@ -1,18 +1,19 @@
-import 'package:Freecycle/src/components/native_dialog.dart';
-import 'package:Freecycle/src/model/singletons_data.dart';
-import 'package:Freecycle/src/model/weather_data.dart';
-import 'package:Freecycle/src/rvncat_constant.dart';
-import 'package:Freecycle/src/views/paywall.dart';
-import 'package:Freecycle/src/views/paywallfirstlaunch.dart';
+import 'package:freecycle/src/components/native_dialog.dart';
+import 'package:freecycle/src/model/singletons_data.dart';
+import 'package:freecycle/src/model/weather_data.dart';
+import 'package:freecycle/src/rvncat_constant.dart';
+import 'package:freecycle/src/views/paywall.dart';
+import 'package:freecycle/src/views/paywallfirstlaunch.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:Freecycle/widgets/post_card.dart';
+import 'package:freecycle/widgets/post_card.dart';
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:freecycle/src/model/experiment_manager.dart';
 
 class PostScreen extends StatefulWidget {
   final String postId;
@@ -31,15 +32,39 @@ class _PostScreenState extends State<PostScreen> {
   String country = '';
   bool _isLoading = false;
   bool _isPremium = false;
+  DocumentSnapshot? _postData;
+  bool _isDataLoaded = false;
 
   @override
   void initState() {
     super.initState();
     _checkPremiumStatus();
+    _fetchPostDataOnce();
+  }
+
+  Future<void> _fetchPostDataOnce() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .get();
+
+      if (mounted) {
+        setState(() {
+          _postData = doc;
+          _isDataLoaded = true;
+        });
+      }
+    } catch (e) {
+      print("Error fetching post data: $e");
+    }
   }
 
   void _checkPremiumStatus() async {
     CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+
+    if (!mounted) return;
+
     setState(() {
       _isPremium =
           customerInfo.entitlements.all[entitlementID]?.isActive ?? false;
@@ -49,122 +74,226 @@ class _PostScreenState extends State<PostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-      ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('posts')
-            .doc(widget.postId)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(
-                child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-            ));
-          }
-          var postData = snapshot.data!;
-          return ListView(
-            children: [
-              PostCard(
-                snap: postData,
-                isBlocked: false,
-                isGridView: false,
+      backgroundColor: Colors.black,
+      body: !_isDataLoaded
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF36B37E)),
               ),
-              const SizedBox(height: 20),
-              Builder(
-                builder: (BuildContext context) {
-                  final Size screenSize = MediaQuery.of(context).size;
-                  final double width = screenSize.width;
-                  final double height = screenSize.height;
+            )
+          : _postData == null || !_postData!.exists
+              ? const Center(
+                  child: Text('Post not found',
+                      style: TextStyle(color: Colors.white)),
+                )
+              : _buildPostContent(),
+    );
+  }
 
-                  return Container(
-                    padding: EdgeInsets.all(width * 0.04),
-                    margin: EdgeInsets.symmetric(horizontal: width * 0.04),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 33, 32, 32),
-                      borderRadius: BorderRadius.circular(width * 0.03),
-                    ),
-                    child: _isPremium
-                        ? _buildPremiumMessage(width, height)
-                        : _buildNonPremiumMessage(width, height),
-                  );
-                },
+  Widget _buildPostContent() {
+    final Size screenSize = MediaQuery.of(context).size;
+    final double width = screenSize.width;
+    final double height = screenSize.height;
+
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      children: [
+        PostCard(
+          snap: _postData!,
+          isBlocked: false,
+          isGridView: false,
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: EdgeInsets.all(width * 0.035),
+          margin: EdgeInsets.symmetric(horizontal: width * 0.04),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.green.shade800,
+                Colors.green.shade900,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.green.shade500,
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.green.shade700.withOpacity(0.3),
+                blurRadius: 8,
+                spreadRadius: 0,
+                offset: Offset(0, 2),
               ),
-              SizedBox(height: 20),
             ],
-          );
-        },
-      ),
+          ),
+          child: _isPremium
+              ? _buildPremiumMessage(width, height)
+              : _buildNonPremiumMessage(width, height),
+        ),
+        SizedBox(height: 20),
+      ],
     );
   }
 
   Widget _buildPremiumMessage(double width, double height) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Text(
-          'Thank You, Premium Member!',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: width * 0.045,
+        Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.3),
+                Colors.white.withOpacity(0.1)
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                spreadRadius: 0,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.verified_user_rounded,
             color: Colors.white,
+            size: 22,
           ),
         ),
-        SizedBox(height: height * 0.015),
-        Text(
-          'We appreciate your support in keeping our platform sustainable. Enjoy your ad-free experience and all the premium features!',
-          style: TextStyle(fontSize: width * 0.035, color: Colors.white),
-        ),
-        SizedBox(height: height * 0.015),
-        Text(
-          'Your contribution helps us maintain and improve our free item exchange service for the community.',
-          style: TextStyle(fontSize: width * 0.035, color: Colors.white),
-        ),
+        SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Premium Experience',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: width * 0.04,
+                  color: Colors.white,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              SizedBox(height: 3),
+              Text(
+                'Ad-free browsing with all premium benefits',
+                style: TextStyle(
+                  fontSize: width * 0.032,
+                  color: Colors.white,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+        )
       ],
     );
   }
 
   Widget _buildNonPremiumMessage(double width, double height) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          'Dear User,',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: width * 0.045,
+        Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.3),
+                Colors.white.withOpacity(0.1)
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                spreadRadius: 0,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.volunteer_activism_rounded,
             color: Colors.white,
+            size: 22,
           ),
         ),
-        SizedBox(height: height * 0.015),
-        Text(
-          'Our app provides a platform for people to give away their unused items to other users for free. To keep this service free, we rely on ad revenue. However, we understand that ads can sometimes be disruptive.',
-          style: TextStyle(fontSize: width * 0.035, color: Colors.white),
+        SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Support Us',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: width * 0.04,
+                  color: Colors.white,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              SizedBox(height: 3),
+              Text(
+                'Ads help keep this platform free for everyone. Premium removes ads and adds unlimited messaging.',
+                style: TextStyle(
+                  fontSize: width * 0.032,
+                  color: Colors.white,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
         ),
-        SizedBox(height: height * 0.015),
-        Text(
-          'For an ad-free experience, consider our subscriptions. You\'ll enjoy a smoother app usage while supporting the sustainability of our platform.',
-          style: TextStyle(fontSize: width * 0.035, color: Colors.white),
-        ),
-        SizedBox(height: height * 0.025),
-        Center(
+        SizedBox(width: 10),
+        Container(
+          height: 36,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 4,
+                spreadRadius: 0,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
           child: ElevatedButton(
             onPressed: perfomMagic,
             child: Text(
-              'Subscribe for Ad-Free Experience',
+              'Go Premium',
               style: TextStyle(
-                fontSize: width * 0.04,
-                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.green.shade600,
+                letterSpacing: 0.5,
               ),
             ),
             style: ElevatedButton.styleFrom(
-              primary: Colors.green,
+              backgroundColor: Colors.white,
+              shadowColor: Colors.transparent,
               padding: EdgeInsets.symmetric(
-                horizontal: width * 0.05,
-                vertical: height * 0.018,
+                horizontal: 14,
+                vertical: 8,
               ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              elevation: 0,
             ),
           ),
         ),
@@ -173,16 +302,21 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   void perfomMagic() async {
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
     });
 
     CustomerInfo customerInfo = await Purchases.getCustomerInfo();
 
+    if (!mounted) return;
+
     if (customerInfo.entitlements.all[entitlementID] != null &&
         customerInfo.entitlements.all[entitlementID]?.isActive == true) {
       appData.currentData = WeatherData.generateData();
 
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -191,6 +325,7 @@ class _PostScreenState extends State<PostScreen> {
       try {
         offerings = await Purchases.getOfferings();
       } on PlatformException catch (e) {
+        if (!mounted) return;
         await showDialog(
             context: context,
             builder: (BuildContext context) => ShowDialogToDismiss(
@@ -199,12 +334,14 @@ class _PostScreenState extends State<PostScreen> {
                 buttonText: 'OK'));
       }
 
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
 
       if (offerings == null || offerings.current == null) {
         // offerings are empty, show a message to your user
+        if (!mounted) return;
         await showDialog(
             context: context,
             builder: (BuildContext context) => ShowDialogToDismiss(
@@ -213,6 +350,7 @@ class _PostScreenState extends State<PostScreen> {
                 buttonText: 'OK'));
       } else {
         // current offering is available, show paywall
+        if (!mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(

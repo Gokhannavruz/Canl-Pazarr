@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../providers/user_provider.dart';
 import '../utils/colors.dart';
@@ -21,6 +23,9 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
   void initState() {
     super.initState();
     pageController = PageController();
+
+    // Uygulama başladığında FCM token'ı güncelle
+    _updateFCMToken();
   }
 
   @override
@@ -38,6 +43,27 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
   void navigationTapped(int page) {
     //Animating Page
     pageController.jumpToPage(page);
+  }
+
+  // FCM token'ı güncelleyen method
+  void _updateFCMToken() async {
+    try {
+      final currentUser =
+          Provider.of<UserProvider>(context, listen: false).getUser;
+      if (currentUser != null && currentUser.uid != null) {
+        // Get and update FCM token
+        final fcmToken = await FirebaseMessaging.instance.getToken();
+        if (fcmToken != null) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentUser.uid)
+              .update({'fcmToken': fcmToken});
+          print('FCM token updated on app startup: $fcmToken');
+        }
+      }
+    } catch (e) {
+      print('Error updating FCM token on startup: $e');
+    }
   }
 
   @override

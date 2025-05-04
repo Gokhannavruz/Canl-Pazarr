@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
 
-import 'package:Freecycle/screens/jobs_messages_page.dart';
+import 'package:freecycle/screens/jobs_messages_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -9,12 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
-import 'package:Freecycle/models/user.dart' as model;
-import 'package:Freecycle/screens/credit_page.dart';
-import 'package:Freecycle/screens/message_screen.dart';
-import 'package:Freecycle/utils/colors.dart';
-import 'package:Freecycle/utils/utils.dart';
-import 'package:Freecycle/widgets/like_animation.dart';
+import 'package:freecycle/models/user.dart' as model;
+import 'package:freecycle/screens/credit_page.dart';
+import 'package:freecycle/screens/message_screen.dart';
+import 'package:freecycle/utils/colors.dart';
+import 'package:freecycle/utils/utils.dart';
+import 'package:freecycle/widgets/like_animation.dart';
 import '../providers/user_provider.dart';
 import '../resources/firestore_methods.dart';
 import '../screens/profile_screen2.dart';

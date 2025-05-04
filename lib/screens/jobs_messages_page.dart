@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:Freecycle/screens/profile_screen2.dart';
+import 'package:freecycle/screens/profile_screen2.dart';
 import 'package:intl/intl.dart';
 
 import '../models/user.dart';
@@ -45,7 +45,7 @@ class _jobMessagesPageState extends State<jobMessagesPage> {
     // initialize _conversationId
     _isListViewRendered = false;
     getCurrentUserUid();
-    getPostUid(widget.postId);
+    getPostUid();
     getCurrentUser();
     getUserProfile().then((_) {
       _loadMessages();
@@ -101,13 +101,26 @@ class _jobMessagesPageState extends State<jobMessagesPage> {
   }
 
   // get uid field from posts collection with postId
-  Future<String> getPostUid(String postId) async {
-    DocumentSnapshot doc =
-        await FirebaseFirestore.instance.collection("jobs").doc(postId).get();
-    setState(() {
-      PostUid = doc["uid"];
-    });
-    return PostUid;
+  Future<void> getPostUid() async {
+    try {
+      DocumentSnapshot postDoc = await FirebaseFirestore.instance
+          .collection('jobs')
+          .doc(widget.postId)
+          .get();
+
+      if (!mounted) return;
+
+      if (postDoc.exists) {
+        final data = postDoc.data() as Map<String, dynamic>?;
+        if (data != null) {
+          setState(() {
+            PostUid = data['uid'] ?? '';
+          });
+        }
+      }
+    } catch (e) {
+      print("Error getting post uid: $e");
+    }
   }
 
   @override
@@ -170,19 +183,121 @@ class _jobMessagesPageState extends State<jobMessagesPage> {
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                widget.postId != ""
+                widget.postId.isNotEmpty
                     ? StreamBuilder<DocumentSnapshot>(
                         stream: FirebaseFirestore.instance
-                            .collection('jobs')
+                            .collection('jobPosts')
                             .doc(widget.postId)
                             .snapshots(),
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) {
-                            return const SizedBox.shrink();
+                            return Container(
+                              width: MediaQuery.of(context).size.width - 40,
+                              margin: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.orange.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.info_outline,
+                                      color: Colors.orange, size: 20),
+                                  SizedBox(width: 12),
+                                  Flexible(
+                                    child: Text(
+                                      "Loading job post information...",
+                                      style: TextStyle(
+                                          color: Colors.orange, fontSize: 14),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
                           }
-                          final String postUrl = snapshot.data!['postUrl'];
+
+                          if (!snapshot.data!.exists) {
+                            return Container(
+                              width: MediaQuery.of(context).size.width - 40,
+                              margin: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.red.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.error_outline,
+                                      color: Colors.red, size: 20),
+                                  SizedBox(width: 12),
+                                  Flexible(
+                                    child: Text(
+                                      "This job posting has been removed or is no longer available",
+                                      style: TextStyle(
+                                          color: Colors.red, fontSize: 14),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+
+                          // Safe access to data
+                          final data =
+                              snapshot.data!.data() as Map<String, dynamic>?;
+
+                          // Check if data is null or required fields are missing
+                          if (data == null || !data.containsKey('category')) {
+                            return Container(
+                              width: MediaQuery.of(context).size.width - 40,
+                              margin: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.red.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.error_outline,
+                                      color: Colors.red, size: 20),
+                                  SizedBox(width: 12),
+                                  Flexible(
+                                    child: Text(
+                                      "This job posting has been removed or is no longer available",
+                                      style: TextStyle(
+                                          color: Colors.red, fontSize: 14),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+
+                          // If we get here, the data exists and has the required fields
+                          final String postUrl = data['postUrl'] ?? '';
+                          final String category = data['category'] ?? '';
+                          final String isGiven =
+                              data['isGiven']?.toString() ?? '';
+
                           return Container(
                             height: 80,
                             width: 80,
@@ -198,65 +313,87 @@ class _jobMessagesPageState extends State<jobMessagesPage> {
                       )
                     : Container(),
                 // get post category and location information
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    widget.postId != ""
-                        ? StreamBuilder<DocumentSnapshot>(
-                            stream: FirebaseFirestore.instance
-                                .collection('jobs')
-                                .doc(widget.postId)
-                                .snapshots(),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return const SizedBox.shrink();
-                              }
-                              final String category =
-                                  snapshot.data!['category'];
-                              final String country = snapshot.data!['country'];
-                              final String state = snapshot.data!['state'];
-                              final String city = snapshot.data!['city'];
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      widget.postId.isNotEmpty
+                          ? StreamBuilder<DocumentSnapshot>(
+                              stream: FirebaseFirestore.instance
+                                  .collection('jobPosts')
+                                  .doc(widget.postId)
+                                  .snapshots(),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return const SizedBox.shrink();
+                                }
 
-                              return Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Row(
-                                  children: [
-                                    const SizedBox(width: 4),
-                                    // location information
-                                    if (city != "")
-                                      Text(
-                                        "- $city, $state, $country",
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey,
-                                        ),
-                                      )
-                                    else if (state != "")
-                                      Text(
-                                        "- $state, $country",
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey,
-                                        ),
-                                      )
-                                    else
-                                      Text(
-                                        "- $country",
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey,
-                                        ),
+                                if (!snapshot.data!.exists) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                // Safe data access
+                                final data = snapshot.data!.data()
+                                    as Map<String, dynamic>?;
+                                if (data == null) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                final String category = data['category'] ?? '';
+                                final String country = data['country'] ?? '';
+                                final String state = data['state'] ?? '';
+                                final String city = data['city'] ?? '';
+
+                                return Container(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const SizedBox(width: 4),
+                                      // location information
+                                      Flexible(
+                                        child: city.isNotEmpty
+                                            ? Text(
+                                                "- $city, $state, $country",
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              )
+                                            : state.isNotEmpty
+                                                ? Text(
+                                                    "- $state, $country",
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.grey,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  )
+                                                : Text(
+                                                    "- $country",
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.grey,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
                                       ),
-                                  ],
-                                ),
-                              );
-                            },
-                          )
-                        : Container(),
-                  ],
+                                    ],
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -272,7 +409,19 @@ class _jobMessagesPageState extends State<jobMessagesPage> {
                     if (!snapshot.hasData) {
                       return const SizedBox.shrink();
                     }
-                    final bool isGiven = snapshot.data!['isGiven'];
+
+                    if (!snapshot.data!.exists) {
+                      return const SizedBox.shrink();
+                    }
+
+                    // Safe data access
+                    final data = snapshot.data!.data() as Map<String, dynamic>?;
+                    if (data == null) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final bool isGiven = data['isGiven'] ?? false;
+
                     return Padding(
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Row(

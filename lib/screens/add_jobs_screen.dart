@@ -1,17 +1,17 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:typed_data';
-import 'package:Freecycle/screens/country_state_city2.dart';
+import 'package:freecycle/screens/country_state_city2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:Freecycle/screens/country_state_city_picker.dart';
-import 'package:Freecycle/screens/credit_page.dart';
+import 'package:freecycle/screens/country_state_city_picker.dart';
+import 'package:freecycle/screens/credit_page.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:Freecycle/resources/firestore_methods.dart';
-import 'package:Freecycle/utils/colors.dart';
-import 'package:Freecycle/utils/utils.dart';
+import 'package:freecycle/resources/firestore_methods.dart';
+import 'package:freecycle/utils/colors.dart';
+import 'package:freecycle/utils/utils.dart';
 
 class AddJobsScreen extends StatefulWidget {
   const AddJobsScreen({
@@ -175,11 +175,21 @@ class _AddJobsScreenState extends State<AddJobsScreen> {
         .doc(uid)
         .snapshots()
         .listen((event) {
-      setState(() {
-        _country = event.get('country');
-        _state = event.get('state');
-        _city = event.get('city');
-      });
+      if (event.exists) {
+        final data = event.data();
+        setState(() {
+          _country = data?['country'] as String? ?? "";
+          _state = data?['state'] as String? ?? "";
+          _city = data?['city'] as String? ?? "";
+        });
+      } else {
+        setState(() {
+          _country = "";
+          _state = "";
+          _city = "";
+        });
+        print("User document doesn't exist in Firestore");
+      }
     });
   }
 
@@ -207,10 +217,15 @@ class _AddJobsScreenState extends State<AddJobsScreen> {
                   ),
                   onPressed: () async {
                     Navigator.pop(context);
-                    Uint8List file = await pickImage(ImageSource.camera);
-                    setState(() {
-                      _file = file;
-                    });
+                    Uint8List? fileData = await pickImage(ImageSource.camera);
+                    if (fileData != null) {
+                      setState(() {
+                        _file = fileData;
+                      });
+                    } else {
+                      // Eğer kullanıcı görsel seçmeyi iptal ederse veya bir hata oluşursa
+                      showSnackBar(context, 'No image selected');
+                    }
                   }),
             ),
             Padding(
@@ -229,10 +244,15 @@ class _AddJobsScreenState extends State<AddJobsScreen> {
                   ),
                   onPressed: () async {
                     Navigator.of(context).pop();
-                    Uint8List file = await pickImage(ImageSource.gallery);
-                    setState(() {
-                      _file = file;
-                    });
+                    Uint8List? fileData = await pickImage(ImageSource.gallery);
+                    if (fileData != null) {
+                      setState(() {
+                        _file = fileData;
+                      });
+                    } else {
+                      // Eğer kullanıcı görsel seçmeyi iptal ederse veya bir hata oluşursa
+                      showSnackBar(context, 'No image selected');
+                    }
                   }),
             ),
             Padding(

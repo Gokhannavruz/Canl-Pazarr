@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:Freecycle/models/user.dart';
-import 'package:Freecycle/resources/auth_methods.dart';
+import 'package:freecycle/models/user.dart';
+import 'package:freecycle/resources/auth_methods.dart';
 
 class UserProvider with ChangeNotifier {
   User? _user;

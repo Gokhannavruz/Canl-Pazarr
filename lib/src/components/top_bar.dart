@@ -1,4 +1,4 @@
-import 'package:Freecycle/src/model/styles.dart';
+import 'package:freecycle/src/model/styles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

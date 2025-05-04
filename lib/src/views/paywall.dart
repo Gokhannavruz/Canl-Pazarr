@@ -1,18 +1,18 @@
 import 'dart:io';
 
-import 'package:Freecycle/screens/android_substermsofuse.dart';
-import 'package:Freecycle/screens/country_state_city_picker.dart';
-import 'package:Freecycle/screens/discoverPage2.dart';
+import 'package:freecycle/screens/android_substermsofuse.dart';
+import 'package:freecycle/screens/country_state_city_picker.dart';
+import 'package:freecycle/screens/discoverPage2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
-import 'package:Freecycle/responsive/mobile_screen_layout.dart';
-import 'package:Freecycle/responsive/responsive_layout_screen.dart';
-import 'package:Freecycle/responsive/web_screen_layout.dart';
-import 'package:Freecycle/src/model/singletons_data.dart';
-import 'package:Freecycle/src/rvncat_constant.dart';
-import 'package:Freecycle/src/views/subscriptionterms_page.dart';
+import 'package:freecycle/responsive/mobile_screen_layout.dart';
+import 'package:freecycle/responsive/responsive_layout_screen.dart';
+import 'package:freecycle/responsive/web_screen_layout.dart';
+import 'package:freecycle/src/model/singletons_data.dart';
+import 'package:freecycle/src/rvncat_constant.dart';
+import 'package:freecycle/src/views/subscriptionterms_page.dart';
 
 class Paywall extends StatefulWidget {
   final Offering offering;
@@ -118,8 +118,8 @@ class _PaywallState extends State<Paywall> {
                                 ? _subscribeNow
                                 : null,
                             style: ElevatedButton.styleFrom(
-                              primary: Colors.white,
-                              onPrimary: Color(0xFF1565C0),
+                              foregroundColor: Color(0xFF1565C0),
+                              backgroundColor: Colors.white,
                               padding: EdgeInsets.symmetric(
                                   vertical: constraints.maxHeight * 0.02),
                               shape: RoundedRectangleBorder(

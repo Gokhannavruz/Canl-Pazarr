@@ -19,6 +19,7 @@ class Post {
   final String category;
   bool isGiven = false;
   bool isWanted = false;
+  final List<String>? postUrls;
 
   Post({
     this.recipient,
@@ -39,6 +40,7 @@ class Post {
     required this.category,
     required this.isGiven,
     required this.isWanted,
+    this.postUrls,
   });
 
   static Post fromSnap(DocumentSnapshot snap) {
@@ -51,7 +53,7 @@ class Post {
       postId: snapshot["postId"],
       datePublished: snapshot["datePublished"],
       username: snapshot["username"],
-      postUrl: snapshot['postUrl'],
+      postUrl: snapshot['postUrl'] ?? '',
       profImage: snapshot['profImage'],
       recipient: snapshot['recipient'],
       saved: snapshot['saved'],
@@ -63,6 +65,9 @@ class Post {
       category: snapshot['category'],
       isGiven: snapshot['isGiven'],
       isWanted: snapshot['isWanted'],
+      postUrls: snapshot.containsKey('postUrls')
+          ? List<String>.from(snapshot['postUrls'])
+          : null,
     );
   }
 
@@ -85,5 +90,6 @@ class Post {
         'category': category,
         'isGiven': isGiven,
         'isWanted': isWanted,
+        'postUrls': postUrls,
       };
 }

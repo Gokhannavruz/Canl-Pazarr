@@ -4,19 +4,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:Freecycle/resources/auth_methods.dart';
-import 'package:Freecycle/resources/firestore_methods.dart';
-import 'package:Freecycle/screens/bio_and_profil.dart';
-import 'package:Freecycle/screens/credit_page.dart';
-import 'package:Freecycle/screens/following_Page.dart';
-import 'package:Freecycle/screens/login_screen.dart';
-import 'package:Freecycle/screens/post_screen.dart';
-import 'package:Freecycle/screens/settings.dart';
-import 'package:Freecycle/utils/colors.dart';
-import 'package:Freecycle/utils/utils.dart';
+import 'package:freecycle/resources/auth_methods.dart';
+import 'package:freecycle/resources/firestore_methods.dart';
+import 'package:freecycle/screens/bio_and_profil.dart';
+import 'package:freecycle/screens/credit_page.dart';
+import 'package:freecycle/screens/following_Page.dart';
+import 'package:freecycle/screens/login_screen.dart';
+import 'package:freecycle/screens/post_screen.dart';
+import 'package:freecycle/screens/settings.dart';
+import 'package:freecycle/utils/colors.dart';
+import 'package:freecycle/utils/utils.dart';
 import '../widgets/follow_button.dart';
 import '../widgets/post_card.dart';
 import 'followers_list_page.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ProfileScreen2 extends StatefulWidget {
   final String uid;
@@ -28,10 +30,12 @@ class ProfileScreen2 extends StatefulWidget {
   ProfileScreen2State createState() => ProfileScreen2State();
 }
 
-class ProfileScreen2State extends State<ProfileScreen2> {
+class ProfileScreen2State extends State<ProfileScreen2>
+    with SingleTickerProviderStateMixin {
   final user = FirebaseAuth.instance.currentUser!;
   late bool _isGridView = false;
   final PageController _pageController = PageController(initialPage: 0);
+  late TabController _tabController;
 
   var userData = {};
   int postLen = 0;
@@ -56,14 +60,17 @@ class ProfileScreen2State extends State<ProfileScreen2> {
   void initState() {
     super.initState();
     getData();
-    /* _loadNativeAd(); */
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      animationDuration: const Duration(milliseconds: 200),
+    );
   }
 
   @override
   void dispose() {
+    _tabController.dispose();
     super.dispose();
-    // _nativeAd2!.dispose();
-    // _loadNativeAd();
   }
 
   getData() async {
@@ -76,7 +83,10 @@ class ProfileScreen2State extends State<ProfileScreen2> {
           .doc(widget.uid)
           .get();
 
-      // get post lENGTH
+      if (!userSnap.exists) {
+        throw 'User data not found';
+      }
+
       var postSnap = await FirebaseFirestore.instance
           .collection('posts')
           .where('uid', isEqualTo: widget.uid)
@@ -85,45 +95,37 @@ class ProfileScreen2State extends State<ProfileScreen2> {
       postLen = postSnap.docs.length;
       userData = userSnap.data()!;
 
-      if (userData['followers'] != null) {
-        followers = userData['followers'].length;
-      } else {
-        followers = 0;
-      }
+      followers = userData['followers']?.length ?? 0;
+      following = userData['following']?.length ?? 0;
 
-      if (userData['blocked'] != null &&
-          userData['blocked']
-              .contains(FirebaseAuth.instance.currentUser!.uid)) {
-        isBlocked = true;
-      } else {
-        isBlocked = false;
-      }
+      isBlocked = (userData['blocked'] != null &&
+              userData['blocked']
+                  .contains(FirebaseAuth.instance.currentUser!.uid)) ||
+          (userData['blockedBy'] != null &&
+              userData['blockedBy']
+                  .contains(FirebaseAuth.instance.currentUser!.uid));
 
-      if (userData['following'] != null) {
-        following = userData['following'].length;
-      } else {
-        following = 0;
-      }
-      isFollowing = userSnap
-          .data()!['followers']
-          .contains(FirebaseAuth.instance.currentUser!.uid);
+      isFollowing = userData['followers']
+              ?.contains(FirebaseAuth.instance.currentUser!.uid) ??
+          false;
 
-      if (userData['blockedBy'] != null) {
-        isBlocked = userData['blockedBy']
-            .contains(FirebaseAuth.instance.currentUser!.uid);
-      } else {
-        isBlocked = false;
-      }
       setState(() {});
     } catch (e) {
-      showSnackBar(
-        context,
-        e.toString(),
-      );
+      if (mounted) {
+        showSnackBar(context, 'Error loading profile data');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const LoginScreen(),
+          ),
+        );
+      }
     }
-    setState(() {
-      isLoading = false;
-    });
+
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -136,259 +138,292 @@ class ProfileScreen2State extends State<ProfileScreen2> {
             ),
           )
         : Scaffold(
+            backgroundColor: Colors.black,
             appBar: AppBar(
-              automaticallyImplyLeading:
-                  widget.uid == currentUserId ? false : false, // false
-              backgroundColor: mobileBackgroundColor,
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // show edit button if your profile else show back button
-                  widget.uid == currentUserId
-                      ? Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.edit_attributes,
-                                color: Colors.white,
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EditProfileScreen(
-                                      userId: currentUserId,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        )
-                      : IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // when profile changes, it will update
-                      StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                        stream: FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(widget.uid)
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return Row(
-                              // space between
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Text(
-                                  snapshot.data!['username'],
-                                  style: const TextStyle(
-                                    color: Color.fromARGB(255, 255, 255, 255),
-                                    fontSize: 17,
-                                  ),
-                                ),
-                                const SizedBox(width: 3),
-                                // if sent gifts / match count == %90 show verified icon
-                                snapshot.data!['match_count'] != null &&
-                                        snapshot.data![
-                                                'number_of_sent_gifts'] !=
-                                            null &&
-                                        snapshot.data!['match_count'] != 0 &&
-                                        snapshot.data![
-                                                'number_of_sent_gifts'] !=
-                                            0 &&
-                                        snapshot.data!['number_of_sent_gifts'] /
-                                                snapshot.data!['match_count'] >=
-                                            0.9
-                                    ? Padding(
-                                        padding: const EdgeInsets.only(top: 4),
-                                        child: InkWell(
-                                          child: const Icon(
-                                            Icons.verified,
-                                            size: 15,
-                                            color: Colors.blue,
-                                          ),
-                                          // show verified user info if clicked
-                                          onTap: () {
-                                            // show bottom sheet verified user info if clicked
-                                            showModalBottomSheet(
-                                              context: context,
-                                              builder: (context) {
-                                                return Container(
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                    color: Color.fromARGB(
-                                                        255, 0, 0, 0),
-                                                    borderRadius:
-                                                        BorderRadius.only(
-                                                      topLeft:
-                                                          Radius.circular(20),
-                                                      topRight:
-                                                          Radius.circular(20),
-                                                    ),
-                                                  ),
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 20),
-                                                  height: 100,
-                                                  child: const Column(
-                                                    children: [
-                                                      SizedBox(
-                                                        height: 10,
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                            'Verified User',
-                                                            style: TextStyle(
-                                                              fontSize: 17,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          SizedBox(
-                                                            width: 5,
-                                                          ),
-                                                          Padding(
-                                                              padding: EdgeInsets
-                                                                  .only(top: 2),
-                                                              child: InkWell(
-                                                                child: Icon(
-                                                                  Icons
-                                                                      .verified,
-                                                                  size: 18,
-                                                                  color: Colors
-                                                                      .blue,
-                                                                ),
-                                                              ))
-                                                        ],
-                                                      ),
-                                                      SizedBox(
-                                                        height: 10,
-                                                      ),
-                                                      Text(
-                                                        'This user has been verified by our system, which means that they have a sending rate of over 90%',
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: 15,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              },
-                                            );
-                                          },
-                                        ),
-                                      )
-                                    : const SizedBox(),
-                              ],
-                            );
-                          } else {
-                            return Container();
-                          }
-                        },
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.transparent,
+              leading: widget.uid != currentUserId
+                  ? IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.white,
                       ),
-                    ],
-                  ),
-                  // dont show edit profile button if not your profile
-                  if (FirebaseAuth.instance.currentUser!.uid == widget.uid)
-                    IconButton(
                       onPressed: () {
-                        Navigator.of(context).push(
+                        Navigator.pop(context);
+                      },
+                    )
+                  : IconButton(
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
                           MaterialPageRoute(
-                            builder: (context) => const SettingsPage(),
+                            builder: (context) => EditProfileScreen(
+                              userId: currentUserId,
+                            ),
                           ),
                         );
                       },
-                      icon: const Icon(
-                        Icons.menu,
-                        color: Color.fromARGB(255, 188, 180, 180),
-                      ),
                     ),
-                  // show options if not your profile
-                  if (FirebaseAuth.instance.currentUser!.uid != widget.uid)
-                    PopupMenuButton(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+              titleSpacing: 0,
+              centerTitle: true,
+              title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(widget.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData || !snapshot.data!.exists) {
+                    return const SizedBox();
+                  }
+
+                  final data = snapshot.data!.data()!;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          data['username'],
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
-                      splashRadius: 0.1,
-                      onSelected: (value) {
-                        if (value == 1) {
-                          // block user, if blocked user dont show block option
-                          if (isBlocked) {
-                            showSnackBar(
-                              context,
-                              'User already blocked',
-                            );
-                          } else {
-                            FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(widget.uid)
-                                .update({
-                              'blockedBy': FieldValue.arrayUnion(
-                                [currentUserId],
-                              ),
-                            });
-                            FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(currentUserId)
-                                .update({
-                              'blocked': FieldValue.arrayUnion(
-                                [widget.uid],
-                              ),
-                            });
-                            setState(() {
-                              isBlocked = true;
-                            });
-                            showSnackBar(
-                              context,
-                              'User blocked',
-                            );
-                          }
-                        } else if (value == 2) {
-                          //
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 1,
-                          child: Text('Block'),
+                      const SizedBox(width: 8),
+                      if (data['is_premium'] == true)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF36B37E).withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.verified,
+                            size: 16,
+                            color: Color(0xFF36B37E),
+                          ),
                         ),
-                        const PopupMenuItem(
-                          value: 2,
-                          child: Text('Report'),
-                        ),
-                      ],
-                    ),
-                ],
+                    ],
+                  );
+                },
               ),
-              centerTitle: false,
+              actions: [
+                widget.uid == currentUserId
+                    ? IconButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsPage(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.settings_outlined,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      )
+                    : PopupMenuButton<String>(
+                        color: Colors.grey[900],
+                        icon: const Icon(
+                          Icons.more_vert,
+                          color: Colors.white,
+                        ),
+                        onSelected: (value) async {
+                          if (value == 'block') {
+                            final BuildContext outerContext = context;
+
+                            final shouldBlock = await showDialog<bool>(
+                                  context: context,
+                                  builder: (dialogContext) => AlertDialog(
+                                    backgroundColor: Color(0xFF222222),
+                                    title: Text(
+                                      'Block User',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    content: Text(
+                                      'Are you sure you want to block this user? You will no longer see their posts and they will not be able to see yours.',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white.withOpacity(0.8),
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(dialogContext, false),
+                                        child: Text(
+                                          'Cancel',
+                                          style: GoogleFonts.poppins(
+                                            color:
+                                                Colors.white.withOpacity(0.7),
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(dialogContext, true),
+                                        child: Text(
+                                          'Block',
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ) ??
+                                false;
+
+                            if (shouldBlock) {
+                              Navigator.of(outerContext).pop();
+
+                              FireStoreMethods()
+                                  .blockUser(
+                                FirebaseAuth.instance.currentUser!.uid,
+                                userData['uid'],
+                              )
+                                  .catchError((e) {
+                                print("Error blocking user: $e");
+                              });
+                            }
+                          } else if (value == 'report') {
+                            final BuildContext outerContext = context;
+
+                            final shouldReport = await showDialog<bool>(
+                                  context: context,
+                                  builder: (dialogContext) => AlertDialog(
+                                    backgroundColor: Color(0xFF222222),
+                                    title: Text(
+                                      'Report User',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    content: Text(
+                                      'Are you sure you want to report this user? Our team will review this account.',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white.withOpacity(0.8),
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(dialogContext, false),
+                                        child: Text(
+                                          'Cancel',
+                                          style: GoogleFonts.poppins(
+                                            color:
+                                                Colors.white.withOpacity(0.7),
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(dialogContext, true),
+                                        child: Text(
+                                          'Report',
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ) ??
+                                false;
+
+                            if (shouldReport) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(outerContext).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'User reported successfully',
+                                      style: GoogleFonts.poppins(),
+                                    ),
+                                    backgroundColor: Colors.orange,
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+
+                              FireStoreMethods()
+                                  .reportUser(
+                                FirebaseAuth.instance.currentUser!.uid,
+                                userData['uid'],
+                              )
+                                  .catchError((e) {
+                                print("Error reporting user: $e");
+                              });
+                            }
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem<String>(
+                            value: 'block',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.block,
+                                  color: Colors.red[300],
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Block User',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'report',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.report_problem,
+                                  color: Colors.orange[300],
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Report User',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+              ],
             ),
             body: RefreshIndicator(
               color: Colors.white,
               onRefresh: _refresh,
-              child: ListView(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16, right: 16, top: 5),
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
                     child: Column(
                       children: [
-                        // user profile with future builder to get user profile
+                        const SizedBox(height: 20),
+                        // Profile Image
                         StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                           stream: FirebaseFirestore.instance
                               .collection('users')
@@ -396,457 +431,253 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                               .snapshots(),
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
-                              return CircleAvatar(
-                                radius: 80,
-                                backgroundColor: Colors.black,
-                                backgroundImage: NetworkImage(
-                                  snapshot.data!['photoUrl'],
+                              return Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.2),
+                                    width: 3,
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(60),
+                                  child: Image.network(
+                                    snapshot.data!['photoUrl'],
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               );
-                            } else {
-                              return const CircleAvatar(
-                                radius: 80,
-                                backgroundColor: Colors.black,
-                              );
                             }
+                            return const SizedBox();
                           },
                         ),
+                        const SizedBox(height: 24),
 
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        // show only if your profile
-
-                        Row(
-                          children: [
-                            Expanded(
-                              flex: 1,
-                              child: Column(
-                                children: [
-                                  // show user credit count with stream builder
-                                  if (FirebaseAuth.instance.currentUser!.uid ==
-                                      widget.uid)
-                                    StreamBuilder<
-                                            DocumentSnapshot<
-                                                Map<String, dynamic>>>(
-                                        stream: FirebaseFirestore.instance
-                                            .collection('users')
-                                            .doc(widget.uid)
-                                            .snapshots(),
-                                        builder: (context, snapshot) {
-                                          if (snapshot.hasData) {
-                                            if (snapshot.data!['credit'] !=
-                                                null) {
-                                              return Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    "Your credit: ${snapshot.data!['credit']}",
-                                                    style: const TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 2,
-                                                  ),
-                                                  const Icon(
-                                                    // coin icon
-                                                    Icons.monetization_on,
-                                                    size: 18,
-                                                    color: Colors.yellow,
-                                                  ),
-                                                ],
-                                              );
-                                            } else {
-                                              return const SizedBox();
-                                            }
-                                          } else {
-                                            return const SizedBox();
-                                          }
-                                        }),
-                                  const SizedBox(
-                                    height: 7,
-                                  ),
-                                  // earn more credit button
-                                  if (FirebaseAuth.instance.currentUser!.uid ==
-                                      widget.uid)
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const CreditPage(),
-                                          ),
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal:
-                                                5), // Adjust the horizontal padding
-                                      ),
-                                      child: const SizedBox(
-                                        width:
-                                            120, // Set a specific width for the button
-                                        child: Center(
-                                          child: Text(
-                                            'Earn Free Credit',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      InkWell(
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  FollowersListScreen(
-                                                      userId: widget.uid),
-                                            ),
-                                          );
-                                        },
-                                        child: buildStatColumn(
-                                            followers, "followers"),
-                                      ),
-                                      InkWell(
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    FollowingListScreen(
-                                                        userId: widget.uid)),
-                                          );
-                                        },
-                                        child: buildStatColumn(
-                                            following, "following"),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      if (FirebaseAuth
-                                              .instance.currentUser!.uid ==
-                                          widget.uid)
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 35),
-                                          child: FollowButton(
-                                            size: // media query
-                                                (MediaQuery.of(context)
-                                                            .size
-                                                            .width /
-                                                        1 -
-                                                    MediaQuery.of(context)
-                                                            .size
-                                                            .width /
-                                                        3.1),
-                                            text: 'Sign Out',
-                                            backgroundColor:
-                                                mobileBackgroundColor,
-                                            textColor: primaryColor,
-                                            borderColor: Colors.grey,
-                                            function: () async {
-                                              await AuthMethods().signOut();
-                                              Navigator.of(context)
-                                                  .pushAndRemoveUntil(
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        const LoginScreen()),
-                                                (Route<dynamic> route) =>
-                                                    false, // Tüm sayfaları kaldır
-                                              );
-                                            },
-                                          ),
-                                        )
-                                      else if (isBlocked)
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 39),
-                                          child: FollowButton(
-                                            size: // media query  size = horizontal padding
-                                                (MediaQuery.of(context)
-                                                            .size
-                                                            .width /
-                                                        1 -
-                                                    MediaQuery.of(context)
-                                                            .size
-                                                            .width /
-                                                        3.1),
-                                            text: 'Unblock',
-                                            backgroundColor: Colors.white,
-                                            textColor: Colors.black,
-                                            borderColor: Colors.grey,
-                                            function: () async {
-                                              await FireStoreMethods()
-                                                  .unblockUser(
-                                                      FirebaseAuth.instance
-                                                          .currentUser!.uid,
-                                                      userData['uid']);
-
-                                              setState(() {
-                                                isBlocked = false;
-                                              });
-                                            },
-                                          ),
-                                        )
-                                      else if (isFollowing)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 42),
-                                          child: FollowButton(
-                                            size: // mobile width / 2 - 44 - 44 - 44
-                                                (MediaQuery.of(context)
-                                                            .size
-                                                            .width /
-                                                        1 -
-                                                    MediaQuery.of(context)
-                                                            .size
-                                                            .width /
-                                                        2.3),
-                                            text: 'Unfollow',
-                                            backgroundColor: Colors.white,
-                                            textColor: Colors.black,
-                                            borderColor: Colors.white,
-                                            function: () async {
-                                              await FireStoreMethods()
-                                                  .unfollowUser(
-                                                      FirebaseAuth.instance
-                                                          .currentUser!.uid,
-                                                      userData['uid']);
-
-                                              setState(() {
-                                                isFollowing = false;
-                                                followers--;
-                                              });
-                                            },
-                                          ),
-                                        )
-                                      else
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 67),
-                                          child: FollowButton(
-                                            // responsive button
-                                            size: // screen width / 2 - 44 - 44 - 44
-                                                (MediaQuery.of(context)
-                                                            .size
-                                                            .width /
-                                                        1 -
-                                                    MediaQuery.of(context)
-                                                            .size
-                                                            .width /
-                                                        2.3),
-                                            text: 'Follow',
-                                            backgroundColor: Colors.blue,
-                                            textColor: Colors.white,
-                                            borderColor: Colors.blue,
-                                            function: () async {
-                                              await FireStoreMethods()
-                                                  .followUser(
-                                                      FirebaseAuth.instance
-                                                          .currentUser!.uid,
-                                                      userData['uid']);
-
-                                              setState(() {
-                                                isFollowing = true;
-                                                followers++;
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                      // show message button if not your profile and not blocked
-                                      // if (FirebaseAuth
-                                      //             .instance.currentUser!.uid !=
-                                      //         widget.uid &&
-                                      //     !isBlocked)
-                                      //   IconButton(
-                                      //     onPressed: () {
-                                      //       // Navigator.of(context).push(
-                                      //       //   MaterialPageRoute(
-                                      //       //     builder: (context) =>
-                                      //       //         MessagesPage(
-                                      //       //             currentUserUid:
-                                      //       //                 FirebaseAuth
-                                      //       //                     .instance
-                                      //       //                     .currentUser!
-                                      //       //                     .uid,
-                                      //       //             recipientUid:
-                                      //       //                 widget.uid),
-                                      //       //   ),
-                                      //       // );
-                                      //     },
-                                      //     icon: const Icon(
-                                      //       Icons.mail,
-                                      //       color: Colors.white,
-                                      //     ),
-                                      //   ),
-                                    ],
-                                  ),
-                                ],
+                        // Stats Row
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildStatItem(postLen, "Posts"),
+                              Container(
+                                height: 30,
+                                width: 1,
+                                color: Colors.white.withOpacity(0.2),
                               ),
-                            ),
-                          ],
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => FollowersListScreen(
+                                          userId: widget.uid),
+                                    ),
+                                  );
+                                },
+                                child: _buildStatItem(followers, "Followers"),
+                              ),
+                              Container(
+                                height: 30,
+                                width: 1,
+                                color: Colors.white.withOpacity(0.2),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => FollowingListScreen(
+                                          userId: widget.uid),
+                                    ),
+                                  );
+                                },
+                                child: _buildStatItem(following, "Following"),
+                              ),
+                            ],
+                          ),
                         ),
-                        //bio with stream builder
+
+                        const SizedBox(height: 24),
+
+                        // Bio
                         StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                           stream: FirebaseFirestore.instance
                               .collection('users')
                               .doc(widget.uid)
                               .snapshots(),
                           builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return Column(
-                                children: [
-                                  Container(
-                                    alignment: Alignment.centerLeft,
-                                    padding: const EdgeInsets.only(
-                                      top: 1,
-                                      left: 15,
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(top: 6.0),
-                                      child: Text(
-                                        snapshot.data!['bio'],
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            } else {
-                              return const SizedBox(
-                                height: 0,
-                              );
+                            if (!snapshot.hasData || !snapshot.data!.exists) {
+                              return const SizedBox();
                             }
+
+                            final data = snapshot.data!.data() ?? {};
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                data['bio'] ?? '',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  color: Colors.white.withOpacity(0.8),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            );
                           },
                         ),
 
-                        // icon button for changing grid view
+                        const SizedBox(height: 24),
+
+                        // Action Buttons
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Row(
+                            children: [
+                              if (FirebaseAuth.instance.currentUser!.uid ==
+                                  widget.uid)
+                                Expanded(
+                                  child: _buildActionButton(
+                                    'Sign Out',
+                                    Icons.logout,
+                                    () async {
+                                      await AuthMethods().signOut();
+                                      Navigator.of(context).pushAndRemoveUntil(
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const LoginScreen(),
+                                        ),
+                                        (Route<dynamic> route) => false,
+                                      );
+                                    },
+                                  ),
+                                )
+                              else if (isBlocked)
+                                Expanded(
+                                  child: _buildActionButton(
+                                    'Unblock',
+                                    Icons.block_outlined,
+                                    () async {
+                                      await FireStoreMethods().unblockUser(
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                        userData['uid'],
+                                      );
+                                      setState(() {
+                                        isBlocked = false;
+                                      });
+                                    },
+                                  ),
+                                )
+                              else
+                                Expanded(
+                                  child: _buildActionButton(
+                                    isFollowing ? 'Unfollow' : 'Follow',
+                                    isFollowing
+                                        ? Icons.person_remove
+                                        : Icons.person_add,
+                                    () async {
+                                      if (isFollowing) {
+                                        await FireStoreMethods().unfollowUser(
+                                          FirebaseAuth
+                                              .instance.currentUser!.uid,
+                                          userData['uid'],
+                                        );
+                                        setState(() {
+                                          isFollowing = false;
+                                          followers--;
+                                        });
+                                      } else {
+                                        await FireStoreMethods().followUser(
+                                          FirebaseAuth
+                                              .instance.currentUser!.uid,
+                                          userData['uid'],
+                                        );
+                                        setState(() {
+                                          isFollowing = true;
+                                          followers++;
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Posts Section
+                        if (postLen > 0)
+                          TabBar(
+                            controller: _tabController,
+                            indicatorColor: Colors.white,
+                            labelColor: Colors.white,
+                            unselectedLabelColor: Colors.white.withOpacity(0.7),
+                            tabs: const [
+                              Tab(icon: Icon(Icons.grid_on_outlined)),
+                              Tab(icon: Icon(Icons.list_outlined)),
+                            ],
+                          ),
                       ],
                     ),
                   ),
-                  //if post len is 0 show nothing else show grid view or list view
-                  if (postLen != 0)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                  if (postLen == 0)
+                    SliverToBoxAdapter(
+                      child: Column(
                         children: [
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _isGridView = !_isGridView;
-                              });
-                            },
-                            icon: Icon(
-                              _isGridView
-                                  ? Icons.grid_view_rounded
-                                  : Icons.notes_rounded,
-                              color: Colors.white,
+                          const SizedBox(height: 48),
+                          Icon(
+                            Icons.photo_camera_outlined,
+                            size: 64,
+                            color: Colors.white.withOpacity(0.4),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            FirebaseAuth.instance.currentUser!.uid == widget.uid
+                                ? 'You have no posts yet'
+                                : '${userData['username']} has no posts yet',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withOpacity(0.6),
+                              fontSize: 16,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  // if post len is 0 and if this is your profile show text else show username
-                  if (postLen == 0)
-                    const Padding(
-                      padding: EdgeInsets.only(left: 20.0, right: 20),
-                      child: Divider(
-                        thickness: 0.2,
-                        color: Color.fromARGB(255, 179, 167, 167),
-                      ),
-                    ),
-                  if (postLen == 0)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20),
-                      child: Column(
-                        children: [
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.photo_camera_outlined,
-                                size: 50,
-                                color: Color.fromARGB(255, 112, 107, 107),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                FirebaseAuth.instance.currentUser!.uid ==
-                                        widget.uid
-                                    ? 'You have no posts yet'
-                                    : '${userData['username']} has no posts yet',
-                                style: const TextStyle(
-                                  color: Color.fromARGB(255, 151, 143, 143),
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                          /* SizedBox(
-                            height: MediaQuery.of(context).size.height *
-                                0.13, // Ekran yüksekliğinin %10'u kadar bir boşluk
-                          ),
-                          if (isAdLoaded)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 4.0),
-                              child: SizedBox(
-                                height: 55,
-                                child: AdWidget(ad: _nativeAd!),
-                              ),
-                            )
-                          else
-                            const SizedBox.shrink(), */
-                        ],
-                      ),
-                    ),
-                  // show user's posts with stream builder
-                  _isGridView
-                      ? StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                          stream: FirebaseFirestore.instance
-                              .collection('posts')
-                              .where('uid', isEqualTo: widget.uid)
-                              .orderBy('datePublished', descending: true)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: snapshot.data!.docs.length,
+                    )
+                  else
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.7,
+                        child: TabBarView(
+                          controller: _tabController,
+                          physics: const ClampingScrollPhysics(),
+                          children: [
+                            // Grid View
+                            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                              stream: FirebaseFirestore.instance
+                                  .collection('posts')
+                                  .where('uid', isEqualTo: widget.uid)
+                                  .orderBy('datePublished', descending: true)
+                                  .snapshots(),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                }
+
+                                return GridView.builder(
+                                  physics: const BouncingScrollPhysics(),
+                                  padding: const EdgeInsets.all(2),
                                   gridDelegate:
                                       const SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 3,
                                     crossAxisSpacing: 2,
                                     mainAxisSpacing: 2,
                                   ),
+                                  itemCount: snapshot.data!.docs.length,
                                   itemBuilder: (context, index) {
                                     return GestureDetector(
                                       onTap: () {
@@ -860,121 +691,131 @@ class ProfileScreen2State extends State<ProfileScreen2> {
                                           ),
                                         );
                                       },
-                                      child: Image.network(
-                                        snapshot.data!.docs[index]['postUrl'],
-                                        fit: BoxFit.cover,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          image: DecorationImage(
+                                            image: NetworkImage(
+                                              snapshot.data!.docs[index]
+                                                  ['postUrl'],
+                                            ),
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
                                       ),
                                     );
                                   },
-                                ),
-                              );
-                            } else {
-                              return const Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              );
-                            }
-                          },
-                        )
-                      : // show user's posts with stream builder with listview use postCard
-                      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                          stream: FirebaseFirestore.instance
-                              .collection('posts')
-                              .where('uid', isEqualTo: widget.uid)
-                              .orderBy('datePublished', descending: true)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: snapshot.data!.docs.length,
-                                itemBuilder: (context, index) {
-                                  return PostCard(
-                                    snap: snapshot.data!.docs[index],
-                                    isBlocked: false,
-                                    isGridView: false,
+                                );
+                              },
+                            ),
+
+                            // List View
+                            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                              stream: FirebaseFirestore.instance
+                                  .collection('posts')
+                                  .where('uid', isEqualTo: widget.uid)
+                                  .orderBy('datePublished', descending: true)
+                                  .snapshots(),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
                                   );
-                                },
-                              );
-                            } else {
-                              return const Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              );
-                            }
-                          },
+                                }
+
+                                return ListView.builder(
+                                  physics: const BouncingScrollPhysics(),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  itemCount: snapshot.data!.docs.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 16),
+                                      child: PostCard(
+                                        snap: snapshot.data!.docs[index],
+                                        isBlocked: false,
+                                        isGridView: false,
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
                         ),
+                      ),
+                    ),
                 ],
               ),
-            ));
+            ),
+          );
   }
 
-  Column buildStatColumn(int num, String label) {
+  Widget _buildStatItem(int value, String label) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          num.toString(),
-          style: const TextStyle(
+          value.toString(),
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: GoogleFonts.poppins(
             fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.only(top: 4),
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey,
-            ),
+            color: Colors.white.withOpacity(0.6),
           ),
         ),
       ],
     );
   }
 
-  Column buildStatColumn2(double num, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Row(
-          children: [
-            Text(
-              num.toString(),
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        Container(
-          margin: const EdgeInsets.only(top: 4),
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey,
-            ),
+  Widget _buildActionButton(
+      String text, IconData icon, VoidCallback onPressed) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: text == 'Follow' ? Colors.blue : Colors.transparent,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: text == 'Follow'
+                ? Colors.transparent
+                : Colors.white.withOpacity(0.2),
           ),
         ),
-      ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 20, color: Colors.white),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  //if there is new info in the database, it will refresh the page
   Future<void> _refresh() async {
     setState(() {});
-    await Future.delayed(
-      const Duration(seconds: 1),
-    );
+    await Future.delayed(const Duration(seconds: 1));
   }
 }

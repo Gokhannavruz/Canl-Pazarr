@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'package:Freecycle/src/views/paywall.dart';
+import 'package:freecycle/src/views/paywall.dart';
 import 'package:intl/intl.dart';
-import 'package:Freecycle/src/components/native_dialog.dart';
-import 'package:Freecycle/src/model/singletons_data.dart';
-import 'package:Freecycle/src/model/weather_data.dart';
-import 'package:Freecycle/src/rvncat_constant.dart';
-import 'package:Freecycle/src/views/paywallfirstlaunch.dart';
+import 'package:freecycle/src/components/native_dialog.dart';
+import 'package:freecycle/src/model/singletons_data.dart';
+import 'package:freecycle/src/model/weather_data.dart';
+import 'package:freecycle/src/rvncat_constant.dart';
+import 'package:freecycle/src/views/paywallfirstlaunch.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +16,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:purchases_flutter/models/offerings_wrapper.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:freecycle/src/model/experiment_manager.dart';
 
 class CreditPage extends StatefulWidget {
   const CreditPage({Key? key}) : super(key: key);
@@ -447,7 +448,16 @@ class _CreditPageState extends State<CreditPage>
     } else {
       Offerings? offerings;
       try {
+        // Get the appropriate offerings based on experiment variant
         offerings = await Purchases.getOfferings();
+
+        // Log the experiment variant for analytics
+        final variant = await ExperimentManager.getCurrentVariant();
+        print('RevenueCat Experiment Variant: $variant');
+
+        // Track experiment view for analytics
+        final isInTreatment = await ExperimentManager.isInTreatmentGroup();
+        print('User is in treatment group: $isInTreatment');
       } on PlatformException catch (e) {
         await showDialog(
             context: context,

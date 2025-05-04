@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:Freecycle/src/model/singletons_data.dart';
-import 'package:Freecycle/src/model/styles.dart';
-import 'package:Freecycle/src/rvncat_constant.dart';
-import 'package:Freecycle/src/views/user.dart';
-import 'package:Freecycle/src/views/weather.dart';
+import 'package:freecycle/src/model/singletons_data.dart';
+import 'package:freecycle/src/model/styles.dart';
+import 'package:freecycle/src/rvncat_constant.dart';
+import 'package:freecycle/src/views/user.dart';
+import 'package:freecycle/src/views/weather.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 final GlobalKey<NavigatorState> firstTabNavKey = GlobalKey<NavigatorState>();

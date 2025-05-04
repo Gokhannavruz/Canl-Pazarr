@@ -1,34 +1,50 @@
 import 'dart:io';
-import 'package:Freecycle/screens/message_screen.dart';
-import 'package:Freecycle/src/rvncat_constant.dart';
-import 'package:Freecycle/store_config.dart';
-import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
+import 'dart:convert';
+import 'package:freecycle/screens/country_state_city_picker.dart';
+import 'package:freecycle/screens/message_screen.dart';
+import 'package:freecycle/screens/services/firebase_messaging_service.dart';
+import 'package:freecycle/src/rvncat_constant.dart';
+import 'package:freecycle/store_config.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
-import 'package:Freecycle/providers/user_provider.dart';
-import 'package:Freecycle/responsive/mobile_screen_layout.dart';
-import 'package:Freecycle/responsive/responsive_layout_screen.dart';
-import 'package:Freecycle/responsive/web_screen_layout.dart';
-import 'package:Freecycle/screens/login_screen.dart';
-import 'package:Freecycle/utils/colors.dart';
+import 'package:freecycle/providers/user_provider.dart';
+import 'package:freecycle/responsive/mobile_screen_layout.dart';
+import 'package:freecycle/responsive/responsive_layout_screen.dart';
+import 'package:freecycle/responsive/web_screen_layout.dart';
+import 'package:freecycle/screens/login_screen.dart';
+import 'package:freecycle/utils/colors.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:purchases_flutter/models/store.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 
-import 'dart:io' show Platform;
+// Conditionally import dart:io
+import 'dart:io' if (dart.library.html) 'package:freecycle/utils/web_stub.dart'
+    as io;
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'screens/location_picker_demo.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   print("Handling a background message: ${message.messageId}");
+
+  // Mesaj tipine göre işlem yapma
+  if (message.data['type'] == 'message') {
+    print("Yeni mesaj bildirimi alındı: ${message.notification?.title}");
+
+    // FCM tarafından gönderilen default notification,
+    // UI'a tıklanabilir bir bildirim olarak zaten gösterilecek
+    // Arka planda çalışan bu handler'da fazla işlem yapmıyoruz
+    // Eğer ihtiyaç olursa burada Flutter Local Notifications kullanılabilir
+  }
 }
 
 Future<void> requestNotificationPermissions() async {
@@ -48,6 +64,12 @@ Future<void> requestNotificationPermissions() async {
 }
 
 Future<void> _configureSDK() async {
+  // Skip RevenueCat configuration on web
+  if (kIsWeb) {
+    print("Skipping RevenueCat configuration on web platform");
+    return;
+  }
+
   await Purchases.setLogLevel(LogLevel.debug);
 
   PurchasesConfiguration configuration;
@@ -62,6 +84,50 @@ Future<void> _configureSDK() async {
   }
 
   await Purchases.configure(configuration);
+
+  // Enable RevenueCat experiments
+  await Purchases.enableAdServicesAttributionTokenCollection();
+}
+
+Future<void> setupLocalNotifications() async {
+  // Skip local notifications setup on web
+  if (kIsWeb) {
+    print("Skipping local notifications setup on web platform");
+    return;
+  }
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  // Android için
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  // iOS için
+  const DarwinInitializationSettings initializationSettingsIOS =
+      DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
+
+  // Ayarları birleştir
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS,
+  );
+
+  // Bildirim tıklandığında
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: (NotificationResponse response) {
+      if (response.payload != null) {
+        Map<String, dynamic> data = jsonDecode(response.payload!);
+        print('Bildirim tıklandı, yük: $data');
+        // Burada bildirime tıklandığında yapılacak işlemleri belirleyebilirsiniz
+      }
+    },
+  );
 }
 
 class SplashScreen extends StatefulWidget {
@@ -107,7 +173,7 @@ class _SplashScreenState extends State<SplashScreen> {
             AnimatedTextKit(
               animatedTexts: [
                 TypewriterAnimatedText(
-                  'Freecycle',
+                  'freecycle',
                   textStyle: TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
@@ -125,50 +191,112 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-void main() async {
+Future<void> _handleBackgroundMessage(RemoteMessage message) async {
+  print("Handling background message: ${message.messageId}");
+  // Burada minimum işlem yapın, yalnızca loglama gibi hafif işlemler olmalı
+}
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Firebase initialization
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  // AdMob initialization ve consent yönetimi
-  await MobileAds.instance.initialize();
-
-  await ConsentManager.initializeConsent();
-  // Notification permissions
-  await requestNotificationPermissions();
-
-  // Store configuration
-  if (Platform.isIOS || Platform.isMacOS) {
-    StoreConfig(
-      store: Store.appStore,
-      apiKey: appleApiKey,
+  // Firebase initialization with better error handling
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
     );
-  } else if (Platform.isAndroid) {
-    const useAmazon = bool.fromEnvironment("amazon");
-    StoreConfig(
-      store: useAmazon ? Store.amazon : Store.playStore,
-      apiKey: useAmazon ? amazonApiKey : googleApiKey,
-    );
+    print("Firebase initialized successfully in Flutter");
+  } catch (e) {
+    print("Firebase initialization error in Flutter: $e");
+    // Continue with the app even if Firebase fails
   }
 
-  await _configureSDK();
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: AndroidProvider.debug,
-    appleProvider: AppleProvider.debug,
-  );
+  // FCM handling (skip on web or handle differently)
+  try {
+    if (!kIsWeb) {
+      // Set background message handler BEFORE FCM service initialization
+      FirebaseMessaging.onBackgroundMessage(
+          _firebaseMessagingBackgroundHandler);
+    }
 
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-  await flutterLocalNotificationsPlugin.initialize(
-    InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      iOS: DarwinInitializationSettings(),
-    ),
-  );
+    // Initialize FCM service
+    await FCMService().initialize();
+  } catch (e) {
+    print("FCM initialization error: $e");
+    // Continue with the app even if FCM fails
+  }
+
+  // AdMob initialization (with web check)
+  try {
+    // AdMob initialization
+    if (!kIsWeb) {
+      await MobileAds.instance.initialize();
+      print("AdMob initialized successfully");
+
+      // Initialize consent after successful AdMob initialization
+      await ConsentManager.initializeConsent();
+    } else {
+      print("Skipping AdMob initialization on web");
+    }
+  } catch (e) {
+    print("Error initializing AdMob: $e");
+  }
+
+  // Notification permissions (skip on web or handle differently)
+  if (!kIsWeb) {
+    await requestNotificationPermissions();
+    await setupLocalNotifications();
+  }
+
+  // Store configuration (skip on web)
+  if (!kIsWeb) {
+    bool isIOS = false;
+    bool isAndroid = false;
+    bool isMacOS = false;
+
+    try {
+      isIOS = io.Platform.isIOS;
+      isAndroid = io.Platform.isAndroid;
+      isMacOS = io.Platform.isMacOS;
+    } catch (e) {
+      print("Error detecting platform: $e");
+    }
+
+    if (isIOS || isMacOS) {
+      StoreConfig(
+        store: Store.appStore,
+        apiKey: appleApiKey,
+      );
+    } else if (isAndroid) {
+      const useAmazon = bool.fromEnvironment("amazon");
+      StoreConfig(
+        store: useAmazon ? Store.amazon : Store.playStore,
+        apiKey: useAmazon ? amazonApiKey : googleApiKey,
+      );
+    }
+
+    await _configureSDK();
+  }
+
+  // FirebaseAppCheck initialization (with web handling)
+  try {
+    if (kIsWeb) {
+      await FirebaseAppCheck.instance.activate(
+        webProvider: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY_HERE'),
+      );
+    } else {
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.debug,
+        appleProvider: AppleProvider.debug,
+      );
+    }
+  } catch (e) {
+    print("Error initializing Firebase App Check: $e");
+  }
+
+  // Arka plan mesaj işleyicisini ayarla (skip on web)
+  if (!kIsWeb) {
+    FirebaseMessaging.onBackgroundMessage(_handleBackgroundMessage);
+  }
 
   runApp(MyApp());
 }
@@ -184,6 +312,12 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+
+    // FCM mesaj işleme için gerekli dinleyicileri kuralım
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Uygulama açıldığında bildirim kontrolü
+    _checkForInitialMessage();
   }
 
   SystemUiOverlayStyle _systemUiOverlayStyle() {
@@ -196,6 +330,11 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Call setupInteractedMessage here, after the context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setupInteractedMessage(context);
+    });
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<UserProvider>(
@@ -204,26 +343,25 @@ class _MyAppState extends State<MyApp> {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Freecycle',
+        title: 'freecycle',
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: mobileBackgroundColor,
         ),
         routes: {
-          '/chat': (context) {
-            final args = ModalRoute.of(context)!.settings.arguments
-                as Map<String, dynamic>;
-            return MessagesPage(
-              currentUserUid: args['currentUserUid'] ?? '',
-              recipientUid: args['recipientUid'] ?? '',
-              postId: args['postId'] ?? '',
-            );
-          },
+          '/login': (context) => const LoginScreen(),
+          '/location': (context) => const CountryStateCityForFirstSelect(),
+          '/location_picker': (context) => const LocationPickerDemo(),
         },
-        home: SplashScreen(
-          child: Builder(
-            builder: (BuildContext context) {
-              setupInteractedMessage(context);
-              return StreamBuilder(
+        onUnknownRoute: (settings) {
+          return MaterialPageRoute(
+            builder: (context) => const LoginScreen(),
+          );
+        },
+        initialRoute: '/',
+        onGenerateRoute: (settings) {
+          if (settings.name == '/') {
+            return MaterialPageRoute(
+              builder: (context) => StreamBuilder(
                 stream: FirebaseAuth.instance.authStateChanges(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.active) {
@@ -234,23 +372,17 @@ class _MyAppState extends State<MyApp> {
                       );
                     } else if (snapshot.hasError) {
                       return Center(
-                        child: Text("${snapshot.error}"),
+                        child: Text('${snapshot.error}'),
                       );
                     }
                   }
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: primaryColor,
-                      ),
-                    );
-                  }
                   return const LoginScreen();
                 },
-              );
-            },
-          ),
-        ),
+              ),
+            );
+          }
+          return null;
+        },
       ),
     );
   }
@@ -269,16 +401,33 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _handleMessage(RemoteMessage message, BuildContext context) {
-    if (message.data['type'] == 'chat') {
-      Navigator.pushNamed(
+    if (message.data['type'] == 'message') {
+      // Mesaj sayfasına yönlendirme
+      Navigator.push(
         context,
-        '/chat',
-        arguments: {
-          'currentUserUid': FirebaseAuth.instance.currentUser?.uid ?? '',
-          'recipientUid': message.data['recipientUid'] ?? '',
-          'postId': message.data['postId'] ?? '',
-        },
+        MaterialPageRoute(
+          builder: (context) => MessagesPage(
+            currentUserUid: FirebaseAuth.instance.currentUser?.uid ?? '',
+            recipientUid: message.data['sender_id'] ?? '',
+            postId: message.data['post_id'] ?? '',
+          ),
+        ),
       );
+    }
+  }
+
+  Future<void> _checkForInitialMessage() async {
+    // Uygulama bildirimden başlatıldı mı kontrol et
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    if (initialMessage != null) {
+      // Burada direkt yönlendirme yapamazsınız, çünkü uygulama henüz tam olarak başlamadı
+      // Veriyi saklayın ve uygulama başladıktan sonra yönlendirin
+      print('Initial message: ${initialMessage.data}');
+
+      // Bu veriyi bir global değişkende veya bir serviste saklayın
+      // Daha sonra ana sayfaya geçildiğinde kontrol edin
     }
   }
 }
@@ -287,41 +436,49 @@ class ConsentManager {
   static const String _consentShownKey = 'gdpr_consent_shown';
 
   static Future<void> initializeConsent() async {
-    final prefs = await SharedPreferences.getInstance();
-    final bool consentShown = prefs.getBool(_consentShownKey) ?? false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final bool consentShown = prefs.getBool(_consentShownKey) ?? false;
 
-    // Eğer daha önce consent gösterilmemişse devam et
-    if (!consentShown) {
-      ConsentRequestParameters params = ConsentRequestParameters(
-        consentDebugSettings: ConsentDebugSettings(
-          debugGeography:
-              DebugGeography.debugGeographyDisabled, // Production için
-        ),
-      );
+      // Eğer daha önce consent gösterilmemişse devam et
+      if (!consentShown) {
+        ConsentRequestParameters params = ConsentRequestParameters(
+          consentDebugSettings: ConsentDebugSettings(
+            debugGeography:
+                DebugGeography.debugGeographyDisabled, // Production için
+          ),
+        );
 
-      ConsentInformation.instance.requestConsentInfoUpdate(
-        params,
-        () async {
-          // Kullanıcının GDPR bölgesinde olup olmadığını kontrol et
-          bool isConsentRequired =
-              await ConsentInformation.instance.isConsentFormAvailable();
+        ConsentInformation.instance.requestConsentInfoUpdate(
+          params,
+          () async {
+            try {
+              // Kullanıcının GDPR bölgesinde olup olmadığını kontrol et
+              bool isConsentRequired =
+                  await ConsentInformation.instance.isConsentFormAvailable();
 
-          if (isConsentRequired) {
-            await loadAndShowConsentForm();
-            // Consent form gösterildi olarak işaretle
-            await prefs.setBool(_consentShownKey, true);
-          } else {
-            // GDPR bölgesi dışındaki kullanıcılar için
-            print("Consent form is not required for this region");
-            await prefs.setBool(_consentShownKey, true);
-          }
-        },
-        (FormError error) {
-          print("Consent form error: ${error.message}");
-        },
-      );
-    } else {
-      print("Consent form has already been shown before");
+              if (isConsentRequired) {
+                await loadAndShowConsentForm();
+                // Consent form gösterildi olarak işaretle
+                await prefs.setBool(_consentShownKey, true);
+              } else {
+                // GDPR bölgesi dışındaki kullanıcılar için
+                print("Consent form is not required for this region");
+                await prefs.setBool(_consentShownKey, true);
+              }
+            } catch (e) {
+              print("Error during consent check: $e");
+            }
+          },
+          (FormError error) {
+            print("Consent form error: ${error.message}");
+          },
+        );
+      } else {
+        print("Consent form has already been shown before");
+      }
+    } catch (e) {
+      print("ConsentManager initialization error: $e");
     }
   }
 
@@ -329,29 +486,37 @@ class ConsentManager {
     try {
       ConsentForm.loadConsentForm(
         (ConsentForm consentForm) async {
-          consentForm.show(
-            (FormError? formError) {
-              if (formError != null) {
-                print("Consent form show error: ${formError.message}");
-                return;
-              }
-              print("Consent form shown successfully");
-            },
-          );
+          try {
+            consentForm.show(
+              (FormError? formError) {
+                if (formError != null) {
+                  print("Consent form show error: ${formError.message}");
+                  return;
+                }
+                print("Consent form shown successfully");
+              },
+            );
+          } catch (e) {
+            print("Error showing consent form: $e");
+          }
         },
         (FormError formError) {
           print("Consent form load error: ${formError.message}");
         },
       );
     } catch (e) {
-      print("Error showing consent form: $e");
+      print("Error loading consent form: $e");
     }
   }
 
   // Consent durumunu sıfırlamak için (test amaçlı)
   static Future<void> resetConsentStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_consentShownKey);
-    await ConsentInformation.instance.reset();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_consentShownKey);
+      await ConsentInformation.instance.reset();
+    } catch (e) {
+      print("Error resetting consent status: $e");
+    }
   }
 }

@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Freecycle/utils/global_variables.dart';
+import 'package:freecycle/utils/global_variables.dart';
 
 import '../providers/user_provider.dart';
 
@@ -28,11 +28,16 @@ class _ResponsiveLayoutState extends State<ResponsiveLayout> {
   // listen to user changes
   void addData() {
     FirebaseAuth.instance.idTokenChanges().listen((User? user) {
+      if (!mounted)
+        return; // Check if widget is still mounted before proceeding
+
       if (user == null) {
         print('User is currently signed out!');
       } else {
         // get user data from firestore
-        Provider.of<UserProvider>(context, listen: false).refreshUser();
+        if (mounted) {
+          Provider.of<UserProvider>(context, listen: false).refreshUser();
+        }
         print('User is signed in!');
       }
     });

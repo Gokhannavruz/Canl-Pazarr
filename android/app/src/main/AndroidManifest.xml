@@ -7,10 +7,19 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     
+    <!-- Google Sign-In için gerekli queries bloğu -->
+    <queries>
+        <package android:name="com.google.android.gms" />
+        <package android:name="com.google.android.apps.maps" />
+        <provider android:authorities="com.google.android.gms.games.provider" />
+        <provider android:authorities="com.google.android.gms.matchstatus" />
+    </queries>
+
     <application
         android:label="Freecycle"
         android:name="${applicationName}"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/launcher_icon"
+        android:enableOnBackInvokedCallback="true">  <!-- Back handler için eklendi -->
         
         <activity
             android:name=".MainActivity"
@@ -22,6 +31,16 @@
             android:windowSoftInputMode="adjustResize"
             android:showWhenLocked="true"
             android:turnScreenOn="true">
+
+            <!-- Google Sign-In için gerekli intent filter -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:host="oauth2redirect"
+                    android:scheme="${applicationId}"/>
+            </intent-filter>
 
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
@@ -60,5 +79,10 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-8445989958080180~3693921827"/>
+            
+        <!-- Google Play Services versiyon bilgisi -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 </manifest>

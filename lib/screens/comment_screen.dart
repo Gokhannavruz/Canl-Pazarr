@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 
-import 'package:Freecycle/resources/firestore_methods.dart';
-import 'package:Freecycle/utils/colors.dart';
-import 'package:Freecycle/widgets/comments_card.dart';
+import 'package:freecycle/resources/firestore_methods.dart';
+import 'package:freecycle/utils/colors.dart';
+import 'package:freecycle/widgets/comments_card.dart';
 import '../providers/user_provider.dart';
 
 class CommentsScreen extends StatefulWidget {

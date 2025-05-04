@@ -1,14 +1,15 @@
-import 'package:Freecycle/screens/discoverPage2.dart';
-import 'package:Freecycle/screens/discover_jobs_page.dart';
-import 'package:Freecycle/screens/welcomepage.dart';
+import 'package:freecycle/screens/discoverPage2.dart';
+import 'package:freecycle/screens/discover_jobs_page.dart';
+import 'package:freecycle/screens/welcomepage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:Freecycle/screens/add_post_screen.dart';
-import 'package:Freecycle/screens/incoming_messages.dart';
-import 'package:Freecycle/screens/profile_screen2.dart';
+import 'package:freecycle/screens/add_post_screen.dart';
+import 'package:freecycle/screens/incoming_messages.dart';
+import 'package:freecycle/screens/profile_screen2.dart';
 
-const webScreenSize = 90000;
+// Web ekran boyutu eşik değeri - 900 piksel genişliğinden büyük ekranlar web düzeni kullanacak
+const webScreenSize = 9000;
 
 List<Widget> homeScreenItem = [
   const DiscoverPage2(),

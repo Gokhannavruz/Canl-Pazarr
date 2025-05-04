@@ -1,18 +1,19 @@
 import 'dart:io';
 
-import 'package:Freecycle/ad_helper/ad_helper.dart';
-import 'package:Freecycle/screens/credit_page.dart';
-import 'package:Freecycle/screens/job_post_screen.dart';
-import 'package:Freecycle/widgets/job_card.dart';
+import 'package:freecycle/ad_helper/ad_helper.dart';
+import 'package:freecycle/screens/credit_page.dart';
+import 'package:freecycle/screens/job_post_screen.dart';
+import 'package:freecycle/widgets/job_card.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:csc_picker/csc_picker.dart';
+import 'package:country_state_city_picker/country_state_city_picker.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:Freecycle/screens/post_screen.dart';
-import 'package:Freecycle/screens/search_screen.dart';
+import 'package:freecycle/screens/post_screen.dart';
+import 'package:freecycle/screens/search_screen.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 // import math
 
@@ -324,7 +325,7 @@ class _DiscoverJobsState extends State<DiscoverJobs> {
           ];
         },
         body: _isPostSelected
-            ? jobPostScreen(
+            ? jobscreen(
                 postId: _selectedPostId,
                 uid: _selectedPostUid,
               )
@@ -470,63 +471,35 @@ class _DiscoverJobsState extends State<DiscoverJobs> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: <Widget>[
-                                            CSCPicker(
-                                              /// Enable disable auto validation.
-                                              showStates: false,
-                                              showCities: false,
-                                              flagState: CountryFlag
-                                                  .SHOW_IN_DROP_DOWN_ONLY,
-
-                                              /// Enable disable dropdown dialog animation.
-                                              dropdownDecoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                color: Colors.white
-                                                    .withOpacity(0.2),
+                                            Container(
+                                              height:
+                                                  180, // Yüksekliği artıralım çünkü alanlar alt alta olacak
+                                              child: ClipRect(
+                                                child: SelectState(
+                                                  onCountryChanged: (value) {
+                                                    setState(() {
+                                                      countryValue = value;
+                                                      stateValue = "";
+                                                      cityValue = "";
+                                                    });
+                                                  },
+                                                  onStateChanged: (value) {
+                                                    setState(() {
+                                                      stateValue = value;
+                                                      cityValue = "";
+                                                    });
+                                                  },
+                                                  onCityChanged: (value) {
+                                                    setState(() {
+                                                      cityValue = value;
+                                                    });
+                                                  },
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
                                               ),
-                                              disabledDropdownDecoration:
-                                                  BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                color: Colors.grey
-                                                    .withOpacity(0.1),
-                                              ),
-                                              selectedItemStyle:
-                                                  const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                              ),
-                                              dropdownHeadingStyle:
-                                                  const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 17,
-                                              ),
-                                              dropdownItemStyle:
-                                                  const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                              ),
-
-                                              /// Callback you will get country object as a result.
-                                              onCountryChanged: (value) {
-                                                setState(() {
-                                                  countryValue = value ?? "";
-                                                });
-                                              },
-
-                                              /// Callback you will get state object as a result.
-                                              onStateChanged: (value) {
-                                                setState(() {
-                                                  stateValue = value ?? "";
-                                                });
-                                              },
-
-                                              /// Callback you will get city object as a result.
-                                              onCityChanged: (value) {
-                                                setState(() {
-                                                  cityValue = value ?? "";
-                                                });
-                                              },
                                             ),
                                             SizedBox(height: 25),
                                             ElevatedButton(
@@ -540,7 +513,6 @@ class _DiscoverJobsState extends State<DiscoverJobs> {
                                               onPressed: () {
                                                 setState(() {
                                                   country = countryValue;
-                                                  city = cityValue;
                                                   state = stateValue;
                                                 });
                                                 // refresh the stream
@@ -553,9 +525,7 @@ class _DiscoverJobsState extends State<DiscoverJobs> {
                                                     .update({
                                                   'country': countryValue,
                                                   'state': stateValue,
-                                                  'city': cityValue,
-                                                  'address':
-                                                      "$city, $state, $country",
+                                                  'address': "$state, $country",
                                                 });
                                               },
                                               child: const Text("Save",

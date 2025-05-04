@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:Freecycle/src/model/styles.dart';
-import 'package:Freecycle/src/views/home.dart';
+import 'package:freecycle/src/model/styles.dart';
+import 'package:freecycle/src/views/home.dart';
 
 class MagicWeatherFlutter extends StatelessWidget {
   const MagicWeatherFlutter({

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:Freecycle/src/model/styles.dart';
-import 'package:Freecycle/src/components/top_bar.dart';
-import 'package:Freecycle/src/model/singletons_data.dart';
+import 'package:freecycle/src/model/styles.dart';
+import 'package:freecycle/src/components/top_bar.dart';
+import 'package:freecycle/src/model/singletons_data.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
-import 'package:Freecycle/src/components/native_dialog.dart';
+import 'package:freecycle/src/components/native_dialog.dart';
 import 'package:flutter/services.dart';
 
 class UserScreen extends StatefulWidget {

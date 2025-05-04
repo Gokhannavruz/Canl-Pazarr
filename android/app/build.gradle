@@ -13,12 +13,12 @@ if (flutterRoot == null) {
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '42'
+    flutterVersionCode = '47'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '2.1.4'
+    flutterVersionName = '2.1.7'
 }
 
 apply plugin: 'com.android.application'
@@ -56,10 +56,13 @@ android {
         applicationId "com.thingsfree"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion 24
+        
+        // Google Sign-in için minimum SDK seviyesi 21 olmalı
+        minSdkVersion 21
+        
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
-        versionName "2.1.4"
+        versionName "2.1.7"
         multiDexEnabled true
     }
 
@@ -89,8 +92,12 @@ dependencies {
     implementation project(path: ':google_mobile_ads')
     implementation 'androidx.browser:browser:1.5.0'
     implementation 'com.google.android.play:integrity:1.1.0'
-    implementation platform('com.google.firebase:firebase-bom:32.1.0')
-    implementation 'com.google.firebase:firebase-analytics'
-    implementation 'com.google.firebase:firebase-messaging:14.6.5'
     
+    // Firebase'i eski fakat uyumlu sürümlere sabitliyoruz
+    implementation platform('com.google.firebase:firebase-bom:30.5.0')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'com.google.firebase:firebase-database'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    implementation 'com.google.android.gms:play-services-base:18.2.0'
 }

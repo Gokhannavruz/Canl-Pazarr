@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:Freecycle/utils/colors2.dart';
+import 'package:freecycle/utils/colors2.dart';
 
 TextStyle textFieldStyle = const TextStyle(
   color: AppColors.textGrey,

@@ -1,15 +1,16 @@
-import 'package:Freecycle/src/views/paywall.dart';
+import 'package:freecycle/src/views/paywall.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:Freecycle/src/components/native_dialog.dart';
-import 'package:Freecycle/src/components/top_bar.dart';
-import 'package:Freecycle/src/model/singletons_data.dart';
-import 'package:Freecycle/src/model/styles.dart';
-import 'package:Freecycle/src/model/weather_data.dart';
-import 'package:Freecycle/src/rvncat_constant.dart';
-import 'package:Freecycle/src/views/paywallfirstlaunch.dart';
+import 'package:freecycle/src/components/native_dialog.dart';
+import 'package:freecycle/src/components/top_bar.dart';
+import 'package:freecycle/src/model/singletons_data.dart';
+import 'package:freecycle/src/model/styles.dart';
+import 'package:freecycle/src/model/weather_data.dart';
+import 'package:freecycle/src/rvncat_constant.dart';
+import 'package:freecycle/src/views/paywallfirstlaunch.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:freecycle/src/model/experiment_manager.dart';
 
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({
@@ -44,7 +45,16 @@ class _WeatherScreenState extends State<WeatherScreen> {
     } else {
       Offerings? offerings;
       try {
+        // Get the appropriate offerings based on experiment variant
         offerings = await Purchases.getOfferings();
+
+        // Log the experiment variant for analytics
+        final variant = await ExperimentManager.getCurrentVariant();
+        print('RevenueCat Experiment Variant: $variant');
+
+        // Track experiment view for analytics
+        final isInTreatment = await ExperimentManager.isInTreatmentGroup();
+        print('User is in treatment group: $isInTreatment');
       } on PlatformException catch (e) {
         await showDialog(
             context: context,
