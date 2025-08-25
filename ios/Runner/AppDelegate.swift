@@ -1,7 +1,6 @@
 import UIKit
 import Flutter
 import Firebase
-import GoogleMobileAds
 import FirebaseMessaging
 import UserNotifications
 import StoreKit
@@ -63,13 +62,6 @@ import StoreKit
       }
       
       application.registerForRemoteNotifications()
-    }
-    
-    // Initialize Google Mobile Ads SDK
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-      GADMobileAds.sharedInstance().start(completionHandler: { status in
-        print("Google Mobile Ads SDK initialization completed")
-      })
     }
     
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

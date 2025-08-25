@@ -45,8 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-8445989958080180~9940206569</string>
+
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
