@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:freecycle/screens/post_screen.dart';
-import 'package:freecycle/screens/profile_screen2.dart';
+
+import 'package:animal_trade/screens/profile_screen2.dart';
 
 class NotificationPage extends StatefulWidget {
   final snap;
@@ -302,17 +302,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         }
                         final String postImageUrl = snapshot.data!['postUrl'];
                         return InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PostScreen(
-                                  postId: _notifications[index].postId,
-                                  uid: _notifications[index].postOwnerId,
-                                ),
-                              ),
-                            );
-                          },
+                          onTap: () {},
                           child: SizedBox(
                             width: 48.0,
                             height: 48.0,

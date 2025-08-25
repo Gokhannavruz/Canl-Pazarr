@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:freecycle/utils/global_variables.dart';
-import 'package:freecycle/utils/colors.dart';
+import 'package:animal_trade/utils/global_variables.dart';
+import 'package:animal_trade/utils/colors.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class WebScreenLayout extends StatefulWidget {
@@ -116,7 +116,8 @@ class _WebScreenLayoutState extends State<WebScreenLayout> {
                   _buildSidebarItem(Icons.home, 'Home', 0),
                   _buildSidebarItem(Icons.mail, 'Messages', 1),
                   _buildSidebarItem(Icons.add_circle_outline, 'Add Post', 2),
-                  _buildSidebarItem(Icons.person, 'Profile', 3),
+                  _buildSidebarItem(Icons.local_hospital, 'Veterinarians', 3),
+                  _buildSidebarItem(Icons.person, 'Profile', 4),
                   _buildSidebarItem(Icons.category, 'Categories', -1,
                       onTap: () {}),
                   _buildSidebarItem(Icons.location_on, 'Location', -1,

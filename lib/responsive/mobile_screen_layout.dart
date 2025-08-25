@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../providers/user_provider.dart';
 import '../utils/colors.dart';
 import '../utils/global_variables.dart';
+import '../utils/animal_colors.dart';
 
 class MobileScreenLayout extends StatefulWidget {
   const MobileScreenLayout({Key? key}) : super(key: key);
@@ -84,51 +85,102 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
           ),
         ),
         iconSize: 28,
-        backgroundColor: mobileBackgroundColor,
+        backgroundColor: Colors.white, // Arkaplan beyaz/yeşil
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: Icon(
                 Icons.home,
-                color: (_page == 0) ? primaryColor : secondaryColor,
+                size: (_page == 0) ? 32 : 28,
+                color: (_page == 0) ? Colors.black : Colors.grey.shade400,
+                shadows: (_page == 0)
+                    ? [
+                        Shadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 6)
+                      ]
+                    : [],
               ),
             ),
             label: '',
-            backgroundColor: primaryColor,
+            backgroundColor: AnimalColors.background,
           ),
           BottomNavigationBarItem(
-              // asset image
-              icon: Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: Icon(
-                  Icons.mail,
-                  color: (_page == 2) ? primaryColor : secondaryColor,
-                ),
+            icon: Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: Icon(
+                Icons.mail,
+                size: (_page == 1) ? 32 : 28,
+                color: (_page == 1) ? Colors.black : Colors.grey.shade400,
+                shadows: (_page == 1)
+                    ? [
+                        Shadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 6)
+                      ]
+                    : [],
               ),
-              label: '',
-              backgroundColor: primaryColor),
+            ),
+            label: '',
+            backgroundColor: AnimalColors.background,
+          ),
           BottomNavigationBarItem(
             icon: Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: Icon(
                 Icons.add_circle_outline,
-                color: (_page == 3) ? primaryColor : secondaryColor,
+                size: (_page == 2) ? 36 : 28,
+                color: (_page == 2) ? Colors.black : Colors.grey.shade400,
+                shadows: (_page == 2)
+                    ? [
+                        Shadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 8)
+                      ]
+                    : [],
               ),
             ),
             label: '',
-            backgroundColor: primaryColor,
+            backgroundColor: AnimalColors.background,
+          ),
+          BottomNavigationBarItem(
+            icon: Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: Icon(
+                Icons.local_hospital,
+                size: (_page == 3) ? 32 : 28,
+                color: (_page == 3) ? Colors.black : Colors.grey.shade400,
+                shadows: (_page == 3)
+                    ? [
+                        Shadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 6)
+                      ]
+                    : [],
+              ),
+            ),
+            label: '',
+            backgroundColor: AnimalColors.background,
           ),
           BottomNavigationBarItem(
             icon: Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: Icon(
                 Icons.person,
-                color: (_page == 4) ? primaryColor : secondaryColor,
+                size: (_page == 4) ? 32 : 28,
+                color: (_page == 4) ? Colors.black : Colors.grey.shade400,
+                shadows: (_page == 4)
+                    ? [
+                        Shadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 6)
+                      ]
+                    : [],
               ),
             ),
             label: '',
-            backgroundColor: primaryColor,
+            backgroundColor: AnimalColors.background,
           ),
         ],
         onTap: navigationTapped,

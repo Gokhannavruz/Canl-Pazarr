@@ -1,1 +1,58 @@
-{"hosting":{"source":".","ignore":["firebase.json","**/.*","**/node_modules/**"],"frameworksBackend":{"region":"us-central1"}},"flutter":{"platforms":{"android":{"default":{"projectId":"freethings-257b6","appId":"1:990581988375:android:fb8912776e4a61d77dd052","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"freethings-257b6","appId":"1:990581988375:ios:e53b4e20d479cd677dd052","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"freethings-257b6","appId":"1:990581988375:ios:915d0e2ca34044087dd052","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"freethings-257b6","configurations":{"ios":"1:990581988375:ios:e53b4e20d479cd677dd052"}}}}}}
+{
+  "hosting": {
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "frameworksBackend": {
+      "region": "us-central1"
+    }
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "freethings-257b6",
+          "appId": "1:990581988375:android:fb8912776e4a61d77dd052",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "freethings-257b6",
+          "appId": "1:990581988375:ios:e53b4e20d479cd677dd052",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "freethings-257b6",
+          "appId": "1:990581988375:ios:915d0e2ca34044087dd052",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "freethings-257b6",
+          "configurations": {
+            "ios": "1:990581988375:ios:e53b4e20d479cd677dd052"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "database": {
+    "rules": "database.rules.json"
+  }
+}

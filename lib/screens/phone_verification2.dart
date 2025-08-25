@@ -1,12 +1,12 @@
 import 'dart:typed_data';
-import 'package:freecycle/resources/auth_methods.dart';
-import 'package:freecycle/responsive/mobile_screen_layout.dart';
-import 'package:freecycle/responsive/responsive_layout_screen.dart';
-import 'package:freecycle/responsive/web_screen_layout.dart';
-import 'package:freecycle/screens/country_state_city_picker.dart';
-import 'package:freecycle/screens/terms_of_use_page.dart';
-import 'package:freecycle/screens/welcomepage.dart';
-import 'package:freecycle/utils/utils.dart';
+import 'package:animal_trade/resources/auth_methods.dart';
+import 'package:animal_trade/responsive/mobile_screen_layout.dart';
+import 'package:animal_trade/responsive/responsive_layout_screen.dart';
+import 'package:animal_trade/responsive/web_screen_layout.dart';
+import 'package:animal_trade/screens/location_picker_screen.dart';
+import 'package:animal_trade/screens/terms_of_use_page.dart';
+
+import 'package:animal_trade/utils/utils.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:typed_data';
@@ -429,10 +429,10 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       if (!mounted) return;
 
       if (res == "success") {
-        // navigate to the WelcomePage
+        // navigate directly to location selection (skip onboarding)
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const WelcomePage(),
+            builder: (context) => const LocationPickerScreen(),
           ),
         );
       } else {

@@ -1,12 +1,11 @@
 import 'dart:typed_data';
-import 'package:freecycle/resources/auth_methods.dart';
-import 'package:freecycle/responsive/mobile_screen_layout.dart';
-import 'package:freecycle/responsive/responsive_layout_screen.dart';
-import 'package:freecycle/responsive/web_screen_layout.dart';
-import 'package:freecycle/screens/country_state_city_picker.dart';
-import 'package:freecycle/screens/terms_of_use_page.dart';
-import 'package:freecycle/screens/welcomepage.dart';
-import 'package:freecycle/utils/utils.dart';
+import 'package:animal_trade/resources/auth_methods.dart';
+import 'package:animal_trade/responsive/mobile_screen_layout.dart';
+import 'package:animal_trade/responsive/responsive_layout_screen.dart';
+import 'package:animal_trade/responsive/web_screen_layout.dart';
+import 'package:animal_trade/screens/location_picker_screen.dart';
+import 'package:animal_trade/screens/terms_of_use_page.dart';
+import 'package:animal_trade/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -50,110 +49,136 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   Widget build(BuildContext context) {
     screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
-    bool isWebLayout = screenWidth > 900;
+
+    // Responsive breakpoints
+    bool isMobile = screenWidth < 600;
+    bool isTablet = screenWidth >= 600 && screenWidth < 1200;
+    bool isDesktop = screenWidth >= 1200;
+    bool isLargeDesktop = screenWidth >= 1600;
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.arrow_back_ios, size: 18),
-          ),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade900.withOpacity(0.8),
-              Colors.black,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-                left: isWebLayout ? screenWidth * 0.1 : 24,
-                right: isWebLayout ? screenWidth * 0.1 : 24,
-                top: 20,
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Custom Header with Back Button
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 16 : 24,
+                vertical: isMobile ? 12 : 16,
               ),
-              child: isWebLayout ? _buildWebLayout() : _buildMobileLayout(),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_back_ios_new,
+                      color: const Color(0xFF2E7D32),
+                      size: isMobile ? 20 : 24,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  const Spacer(),
+                ],
+              ),
             ),
-          ),
+            // Main Content
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                    left: isMobile
+                        ? 24
+                        : (isTablet ? 48 : (isDesktop ? 80 : 120)),
+                    right: isMobile
+                        ? 24
+                        : (isTablet ? 48 : (isDesktop ? 80 : 120)),
+                    top: isMobile ? 20 : 40,
+                  ),
+                  child: _buildResponsiveLayout(
+                      isMobile, isTablet, isDesktop, isLargeDesktop),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildWebLayout() {
+  Widget _buildResponsiveLayout(
+      bool isMobile, bool isTablet, bool isDesktop, bool isLargeDesktop) {
+    if (isMobile) {
+      return _buildMobileLayout();
+    } else if (isTablet) {
+      return _buildTabletLayout();
+    } else {
+      return _buildWebLayout(isLargeDesktop);
+    }
+  }
+
+  Widget _buildTabletLayout() {
     return Container(
-      constraints: BoxConstraints(maxWidth: 1200),
+      constraints: const BoxConstraints(maxWidth: 800),
       child: Card(
-        color: Colors.grey[900]?.withOpacity(0.7),
-        elevation: 5,
+        color: Colors.white,
+        elevation: 8,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(40.0),
+          padding: const EdgeInsets.all(48.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
-              Text(
-                "Create Account",
-                style: GoogleFonts.poppins(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              Center(
+                child: Text(
+                  "CanlıPazar",
+                  style: GoogleFonts.poppins(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                "Join our community and start sharing",
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  color: Colors.white.withOpacity(0.7),
+              const SizedBox(height: 16),
+              Center(
+                child: Text(
+                  'Hayvan alım satımında güvenli pazar yeri.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black.withOpacity(0.7),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 40),
-
-              // Two column layout for web
+              const SizedBox(height: 48),
+              // İki sütunlu form
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Left column (form fields)
+                  // Sol sütun (form alanları)
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildInputField(
                           controller: _usernameController,
-                          label: "Username",
-                          hintText: "Enter your username",
+                          label: "Kullanıcı Adı",
+                          hintText: "Kullanıcı adınızı girin",
                           icon: Icons.person_outline_rounded,
                           maxLength: 25,
                           errorText: _usernameError,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 32),
                         _buildInputField(
                           controller: _emailController,
-                          label: "Email",
-                          hintText: "Enter your email address",
+                          label: "E-posta",
+                          hintText: "E-posta adresinizi girin",
                           icon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           errorText: _emailError,
@@ -161,27 +186,120 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 40),
-                  // Right column (password and terms)
+                  const SizedBox(width: 48),
+                  // Sağ sütun (şifre ve koşullar)
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildPasswordField(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 32),
                         _buildTermsCheckbox(),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
                         _buildTermsLinks(),
                       ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 40),
-
-              // Create Account Button (full width)
+              const SizedBox(height: 48),
+              // Hesap Oluştur Butonu
               _buildCreateAccountButton(),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebLayout([bool isLargeDesktop = false]) {
+    return Container(
+      constraints: BoxConstraints(maxWidth: isLargeDesktop ? 1400 : 1200),
+      child: Card(
+        color: Colors.white,
+        elevation: 10,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(isLargeDesktop ? 56.0 : 48.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Center(
+                child: Text(
+                  "CanlıPazar",
+                  style: GoogleFonts.poppins(
+                    fontSize: isLargeDesktop ? 56 : 48,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
+              Center(
+                child: Text(
+                  'Hayvan alım satımında güvenli pazar yeri.',
+                  style: GoogleFonts.poppins(
+                    fontSize: isLargeDesktop ? 20 : 18,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black.withOpacity(0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 56),
+              // İki sütunlu form
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Sol sütun (form alanları)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildInputField(
+                          controller: _usernameController,
+                          label: "Kullanıcı Adı",
+                          hintText: "Kullanıcı adınızı girin",
+                          icon: Icons.person_outline_rounded,
+                          maxLength: 25,
+                          errorText: _usernameError,
+                        ),
+                        const SizedBox(height: 32),
+                        _buildInputField(
+                          controller: _emailController,
+                          label: "E-posta",
+                          hintText: "E-posta adresinizi girin",
+                          icon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                          errorText: _emailError,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: isLargeDesktop ? 64 : 48),
+                  // Sağ sütun (şifre ve koşullar)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildPasswordField(),
+                        const SizedBox(height: 32),
+                        _buildTermsCheckbox(),
+                        const SizedBox(height: 12),
+                        _buildTermsLinks(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 56),
+              // Hesap Oluştur Butonu
+              _buildCreateAccountButton(),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -190,63 +308,66 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   }
 
   Widget _buildMobileLayout() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header
-        Text(
-          "Create Account",
-          style: GoogleFonts.poppins(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+    return Container(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Center(
+            child: Text(
+              "CanlıPazar",
+              style: GoogleFonts.poppins(
+                fontSize: screenWidth < 400 ? 32 : 36,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          "Join our community and start sharing",
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            color: Colors.white.withOpacity(0.7),
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              'Hayvan alım satımında güvenli pazar yeri.',
+              style: GoogleFonts.poppins(
+                fontSize: screenWidth < 400 ? 14 : 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
-        ),
-        const SizedBox(height: 40),
-
-        // Form Fields
-        _buildInputField(
-          controller: _usernameController,
-          label: "Username",
-          hintText: "Enter your username",
-          icon: Icons.person_outline_rounded,
-          maxLength: 25,
-          errorText: _usernameError,
-        ),
-        const SizedBox(height: 20),
-
-        _buildInputField(
-          controller: _emailController,
-          label: "Email",
-          hintText: "Enter your email address",
-          icon: Icons.email_outlined,
-          keyboardType: TextInputType.emailAddress,
-          errorText: _emailError,
-        ),
-        const SizedBox(height: 20),
-
-        _buildPasswordField(),
-        const SizedBox(height: 24),
-
-        // Terms and Conditions
-        _buildTermsCheckbox(),
-        const SizedBox(height: 8),
-
-        _buildTermsLinks(),
-        const SizedBox(height: 40),
-
-        // Create Account Button
-        _buildCreateAccountButton(),
-        const SizedBox(height: 30),
-      ],
+          const SizedBox(height: 32),
+          // Form Alanları
+          _buildInputField(
+            controller: _usernameController,
+            label: "Kullanıcı Adı",
+            hintText: "Kullanıcı adınızı girin",
+            icon: Icons.person_outline_rounded,
+            maxLength: 25,
+            errorText: _usernameError,
+          ),
+          const SizedBox(height: 20),
+          _buildInputField(
+            controller: _emailController,
+            label: "E-posta",
+            hintText: "E-posta adresinizi girin",
+            icon: Icons.email_outlined,
+            keyboardType: TextInputType.emailAddress,
+            errorText: _emailError,
+          ),
+          const SizedBox(height: 20),
+          _buildPasswordField(),
+          const SizedBox(height: 24),
+          // Koşullar
+          _buildTermsCheckbox(),
+          const SizedBox(height: 8),
+          _buildTermsLinks(),
+          const SizedBox(height: 32),
+          // Hesap Oluştur Butonu
+          _buildCreateAccountButton(),
+          const SizedBox(height: 24),
+        ],
+      ),
     );
   }
 
@@ -267,40 +388,40 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.black.withOpacity(0.9),
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: Color(0xFFE8F5E9),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: errorText != null
                   ? Colors.red.withOpacity(0.7)
-                  : Colors.white.withOpacity(0.1),
+                  : Colors.green,
             ),
           ),
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
             maxLength: maxLength,
-            cursorColor: Colors.white,
+            cursorColor: Colors.black,
             style: GoogleFonts.poppins(
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 15,
             ),
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: GoogleFonts.poppins(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.black.withOpacity(0.4),
                 fontSize: 15,
               ),
               prefixIcon: Icon(
                 icon,
                 color: errorText != null
                     ? Colors.red.withOpacity(0.7)
-                    : Colors.white.withOpacity(0.7),
+                    : Colors.black.withOpacity(0.7),
                 size: 22,
               ),
               border: InputBorder.none,
@@ -330,49 +451,49 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Password",
+          "Şifre",
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.black.withOpacity(0.9),
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: Color(0xFFE8F5E9),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _passwordError != null
                   ? Colors.red.withOpacity(0.7)
-                  : Colors.white.withOpacity(0.1),
+                  : Colors.green,
             ),
           ),
           child: TextField(
             controller: _passwordController,
             obscureText: _obscurePassword,
-            cursorColor: Colors.white,
+            cursorColor: Colors.black,
             style: GoogleFonts.poppins(
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 15,
             ),
             decoration: InputDecoration(
-              hintText: "Enter your password",
+              hintText: "Şifrenizi girin",
               hintStyle: GoogleFonts.poppins(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.black.withOpacity(0.4),
                 fontSize: 15,
               ),
               prefixIcon: Icon(
                 Icons.lock_outline_rounded,
                 color: _passwordError != null
                     ? Colors.red.withOpacity(0.7)
-                    : Colors.white.withOpacity(0.7),
+                    : Colors.black.withOpacity(0.7),
                 size: 22,
               ),
               suffixIcon: IconButton(
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.black.withOpacity(0.7),
                   size: 22,
                 ),
                 onPressed: () {
@@ -405,18 +526,18 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   Widget _buildTermsCheckbox() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.green,
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: CheckboxListTile(
         title: Text(
-          "I accept the terms and conditions",
+          "Kullanım koşullarını kabul ediyorum",
           style: GoogleFonts.poppins(
-            color: Colors.white,
+            color: Colors.black,
             fontSize: 14,
           ),
         ),
@@ -428,7 +549,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
         },
         controlAffinity: ListTileControlAffinity.leading,
         checkColor: Colors.white,
-        activeColor: Colors.blue,
+        activeColor: Colors.green,
         contentPadding: const EdgeInsets.symmetric(horizontal: 8),
       ),
     );
@@ -443,11 +564,11 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
             _showTermsDialog();
           },
           style: TextButton.styleFrom(
-            foregroundColor: Colors.blue,
+            foregroundColor: Colors.green,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
           child: Text(
-            "Terms",
+            "Kullanım Şartları",
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -458,18 +579,18 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
         Container(
           height: 16,
           width: 1,
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.black.withOpacity(0.3),
         ),
         TextButton(
           onPressed: () {
             _showConditionDialog();
           },
           style: TextButton.styleFrom(
-            foregroundColor: Colors.blue,
+            foregroundColor: Colors.green,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
           child: Text(
-            "Conditions",
+            "Koşullar",
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -484,17 +605,13 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   Widget _buildCreateAccountButton() {
     bool isWebLayout = MediaQuery.of(context).size.width > 900;
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      height: isWebLayout ? 60 : 56,
-      constraints: isWebLayout ? BoxConstraints(maxWidth: 600) : null,
-      margin: isWebLayout
-          ? const EdgeInsets.symmetric(horizontal: 16)
-          : EdgeInsets.zero,
+      height: 56,
       child: _isLoading
           ? Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
               ),
             )
           : ElevatedButton(
@@ -505,7 +622,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        "Please accept the terms and conditions",
+                        "Lütfen kullanım koşullarını kabul edin",
                         style: GoogleFonts.poppins(),
                       ),
                       backgroundColor: Colors.red,
@@ -518,18 +635,18 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
-                elevation: isWebLayout ? 3 : 0,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                padding: EdgeInsets.symmetric(vertical: isWebLayout ? 16 : 12),
+                disabledBackgroundColor: Colors.green.withOpacity(0.6),
               ),
               child: Text(
-                "Create Account",
+                "Hesap Oluştur",
                 style: GoogleFonts.poppins(
-                  fontSize: isWebLayout ? 18 : 16,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -540,160 +657,519 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   void _showConditionDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Color(0xFF222222),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            'Terms and Conditions',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
             ),
-          ),
-          content: SingleChildScrollView(
-            child: RichText(
-              text: TextSpan(
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white.withOpacity(0.9),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
                 ),
-                children: [
-                  TextSpan(
-                    text: 'freecycle End User License Agreement (EULA)\n\n',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
                     ),
                   ),
-                  _buildTextSpan('1. License Grant\n'),
-                  _buildTextSpan(
-                      'We grant you a limited, non-exclusive, non-transferable, revocable license to use freecycle in accordance with these terms.\n\n'),
-                  _buildTextSpan('2. Restrictions\n'),
-                  _buildTextSpan('You may not:\n\n'
-                      '- Decompile, reverse engineer, disassemble, attempt to derive the source code of, or decrypt freecycle.\n\n'
-                      '- Make any modification, adaptation, improvement, enhancement, translation, or derivative work from freecycle.\n\n'
-                      '- Use freecycle for any unlawful or illegal activity, or to facilitate any illegal activity.\n\n'),
-                  _buildTextSpan('3. User Content\n'),
-                  _buildTextSpan(
-                      'You are responsible for the content you post on or through freecycle. By posting content, you grant us a worldwide, non-exclusive, royalty-free, transferable license to use, reproduce, distribute, prepare derivative works of, display, and perform that content in connection with the service.\n\n'),
-                  _buildTextSpan('4. No Tolerance for Objectionable Content\n'),
-                  _buildTextSpan(
-                      'There is zero tolerance for objectionable content or abusive users. Users found to be engaging in such activities will have their accounts terminated.\n\n'),
-                  _buildTextSpan('5. Termination\n'),
-                  _buildTextSpan(
-                      'We may terminate your access to freecycle if you fail to comply with any of the terms and conditions of this EULA. Upon termination, you must cease all use of freecycle and delete all copies of freecycle from your devices.\n\n'),
-                  _buildTextSpan('6. Changes to EULA\n'),
-                  _buildTextSpan(
-                      'We may update this EULA from time to time. The most current version will always be available on our website. Your continued use of freecycle after any updates indicates your acceptance of the new terms.\n\n'),
-                  _buildTextSpan('7. Contact Information\n'),
-                  _buildTextSpan(
-                      'If you have any questions about this EULA, please contact us at gkhnnavruz@gmail.com'),
-                ],
-              ),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.privacy_tip_outlined,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'CanlıPazar Gizlilik Politikası',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Kişisel verilerinizin korunması',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildConditionSection(
+                          '1. Veri Toplama',
+                          'CanlıPazar, hizmet kalitesini artırmak için şu verileri toplar:\n'
+                              '• Hesap bilgileri (ad, e-posta, telefon)\n'
+                              '• Konum bilgileri (yakın ilanları göstermek için)\n'
+                              '• Hayvan ilanları ve fotoğrafları\n'
+                              '• Mesajlaşma içerikleri\n'
+                              '• Kullanım istatistikleri',
+                          Icons.collections_bookmark,
+                          const Color(0xFF4CAF50),
+                        ),
+                        _buildConditionSection(
+                          '2. Veri Kullanımı',
+                          'Toplanan veriler şu amaçlarla kullanılır:\n'
+                              '• Hesap oluşturma ve yönetimi\n'
+                              '• Hayvan ilanlarının yayınlanması\n'
+                              '• Kullanıcılar arası mesajlaşma\n'
+                              '• Size yakın ilanların gösterilmesi\n'
+                              '• Platform güvenliğinin sağlanması',
+                          Icons.assignment_outlined,
+                          const Color(0xFFFF9800),
+                        ),
+                        _buildConditionSection(
+                          '3. Veri Güvenliği',
+                          'Kişisel verilerinizin güvenliği için:\n'
+                              '• Güvenli sunucu altyapısı kullanılır\n'
+                              '• Düzenli güvenlik güncellemeleri yapılır\n'
+                              '• Erişim kontrolleri uygulanır\n'
+                              '• Platform güvenliği sürekli izlenir',
+                          Icons.security,
+                          const Color(0xFFE91E63),
+                        ),
+                        _buildConditionSection(
+                          '4. Veri Paylaşımı',
+                          'Kişisel bilgilerinizi üçüncü taraflarla paylaşmayız, ancak:\n'
+                              '• Yasal zorunluluk durumunda\n'
+                              '• Platform güvenliği için gerekli olduğunda\n'
+                              '• Hizmet sağlayıcılarımızla (sadece gerekli bilgiler)\n'
+                              '• Açık rızanız olduğunda',
+                          Icons.share_outlined,
+                          const Color(0xFF9C27B0),
+                        ),
+                        _buildConditionSection(
+                          '5. Kullanıcı Hakları',
+                          'Kişisel verilerinizle ilgili şu haklara sahipsiniz:\n'
+                              '• Verilerinize erişim\n'
+                              '• Düzeltme ve güncelleme\n'
+                              '• Silme talep etme\n'
+                              '• İşlemeye itiraz etme\n'
+                              '• Veri taşınabilirliği',
+                          Icons.verified_user,
+                          const Color(0xFF00BCD4),
+                        ),
+                        _buildConditionSection(
+                          '6. Platform Kullanımı',
+                          'CanlıPazar platformu:\n'
+                              '• Oturum yönetimi için gerekli verileri saklar\n'
+                              '• Kullanıcı tercihlerini hatırlar\n'
+                              '• Platform performansını izler\n'
+                              '• Güvenlik kontrollerini gerçekleştirir',
+                          Icons.settings,
+                          const Color(0xFF795548),
+                        ),
+                        _buildConditionSection(
+                          '7. Kullanım Yaşı',
+                          'CanlıPazar platformunu kullanmak için 18 yaşını doldurmuş olmanız önerilir. Platform kullanımından doğacak sorumluluklar kullanıcıya aittir.',
+                          Icons.person_outline,
+                          const Color(0xFFFF5722),
+                        ),
+                        _buildConditionSection(
+                          '8. İletişim',
+                          'Gizlilik politikamızla ilgili sorularınız için:\n'
+                              '📧 gizlilik@canlipazar.com\n'
+                              '🌐 www.canlipazar.com',
+                          Icons.contact_support,
+                          const Color(0xFF2E7D32),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Footer
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F9FA),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E7D32),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: Text(
+                            'Anladım',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                'OK',
-                style: GoogleFonts.poppins(
-                  color: Colors.blue,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
         );
       },
+    );
+  }
+
+  Widget _buildConditionSection(
+      String title, String content, IconData icon, Color iconColor) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFE9ECEF),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF2E7D32),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  content,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: const Color(0xFF495057),
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   void _showTermsDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Color(0xFF222222),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            'Terms and Conditions',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
             ),
-          ),
-          content: SingleChildScrollView(
-            child: RichText(
-              text: TextSpan(
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white.withOpacity(0.9),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
                 ),
-                children: [
-                  TextSpan(
-                    text: 'freecycle Terms of Service (ToS)\n\n',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
                     ),
                   ),
-                  _buildTextSpan('1. Acceptance of Terms\n'),
-                  _buildTextSpan(
-                      'By accessing or using freecycle, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree with any part of these terms, you must not use our services.\n\n'),
-                  _buildTextSpan('2. User Conduct\n'),
-                  _buildTextSpan('You agree not to use freecycle to:\n\n'
-                      '- Post, upload, or share any content that is illegal, harmful, threatening, abusive, harassing, defamatory, vulgar, obscene, hateful, or otherwise objectionable.\n\n'
-                      '- Impersonate any person or entity or falsely state or otherwise misrepresent your affiliation with a person or entity.\n\n'
-                      '- Engage in any form of bullying, harassment, or intimidation.\n\n'
-                      '- Post or transmit any content that infringes any patent, trademark, trade secret, copyright, or other proprietary rights of any party.\n\n'
-                      '- Upload, post, or transmit any material that contains software viruses or any other computer code, files, or programs designed to interrupt, destroy, or limit the functionality of any computer software or hardware.\n\n'),
-                  _buildTextSpan('3. Content Moderation\n'),
-                  _buildTextSpan(
-                      'We reserve the right, but have no obligation, to monitor, edit, or remove any activity or content that we determine in our sole discretion violates these terms or is otherwise objectionable.\n\n'),
-                  _buildTextSpan('4. Reporting and Blocking\n'),
-                  _buildTextSpan(
-                      'Users can report offensive content or behavior by using the report feature within freecycle. We will review and take appropriate action on reported content or users promptly. Users also have the ability to block other users to prevent further interaction.\n\n'),
-                  _buildTextSpan('5. Termination\n'),
-                  _buildTextSpan(
-                      'We reserve the right to terminate or suspend your account and access to freecycle without notice if we determine, in our sole discretion, that you have violated these terms or engaged in any conduct that we consider inappropriate or harmful.\n\n'),
-                  _buildTextSpan('6. Changes to Terms\n'),
-                  _buildTextSpan(
-                      'We may revise these Terms of Service from time to time. The most current version will always be posted on our website. By continuing to use our services after changes are made, you agree to be bound by the revised terms.\n\n'),
-                  _buildTextSpan('7. Contact Information\n'),
-                  _buildTextSpan(
-                      'If you have any questions about these Terms of Service, please contact us at gkhnnavruz@gmail.com'),
-                ],
-              ),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.description_outlined,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'CanlıPazar Kullanım Şartları',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Hesap oluşturmadan önce lütfen okuyun',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildTermsSection(
+                          '1. Hizmet Tanımı',
+                          'CanlıPazar, büyükbaş ve küçükbaş hayvan alım satımı için güvenli bir platform sağlar. Hizmetlerimiz hayvan ilanı yayınlama, kullanıcılar arası mesajlaşma, konum bazlı arama ve güvenli ödeme altyapısını içerir.',
+                          Icons.pets,
+                          const Color(0xFF795548),
+                        ),
+                        _buildTermsSection(
+                          '2. Kullanıcı Sorumlulukları',
+                          '• Doğru ve güncel bilgi sağlamalısınız\n'
+                              '• Hayvan sağlığı ve refahını önemsemelisiniz\n'
+                              '• Yasal düzenlemelere uymalısınız\n'
+                              '• Diğer kullanıcılara saygılı olmalısınız\n'
+                              '• Platform güvenliğini korumalısınız',
+                          Icons.person_outline,
+                          const Color(0xFF2196F3),
+                        ),
+                        _buildTermsSection(
+                          '3. Yasaklı İçerik ve Davranışlar',
+                          '• Sahte veya yanıltıcı hayvan ilanları\n'
+                              '• Hasta veya sağlıksız hayvan satışı\n'
+                              '• Taciz, tehdit veya saldırgan davranış\n'
+                              '• Spam veya istenmeyen mesajlar\n'
+                              '• Yasadışı hayvan ticareti',
+                          Icons.block,
+                          const Color(0xFFE91E63),
+                        ),
+                        _buildTermsSection(
+                          '4. Hayvan Sağlığı ve Bilgilendirme',
+                          '• Sadece sağlıklı hayvanlar satılabilir\n'
+                              '• İlan sahibi aşı bilgilerini belirtir\n'
+                              '• Veteriner belgesi zorunlu değildir\n'
+                              '• Alıcı, belgelerin doğrulanmasını isteyebilir\n'
+                              '• İlanın doğruluğundan satıcı sorumludur',
+                          Icons.favorite,
+                          const Color(0xFFFF5722),
+                        ),
+                        _buildTermsSection(
+                          '5. İçerik Kontrolü ve Raporlama',
+                          '• İlanlar yayınlandıktan sonra kontrol edilir\n'
+                              '• Kullanıcı raporları değerlendirilir\n'
+                              '• Yanıltıcı veya yanlış ilanlar kaldırılır\n'
+                              '• Kural ihlali yapan hesaplar kapatılır\n'
+                              '• Şüpheli durumlar için inceleme yapılır',
+                          Icons.security,
+                          const Color(0xFF607D8B),
+                        ),
+                        _buildTermsSection(
+                          '6. Ödeme ve İşlemler',
+                          '• Ödemeler uygulama üzerinden yapılmaz\n'
+                              '• Kullanıcılar arası ödeme anlaşmaları\n'
+                              '• CanlıPazar ödeme işlemlerinden sorumlu değildir\n'
+                              '• Ödeme güvenliği tamamen kullanıcıların sorumluluğundadır\n'
+                              '• Anlaşmazlık durumlarında platform müdahale etmez',
+                          Icons.payment,
+                          const Color(0xFF00BCD4),
+                        ),
+                        _buildTermsSection(
+                          '7. Sorumluluk Sınırları',
+                          '• CanlıPazar, kullanıcılar arası anlaşmalardan sorumlu değildir\n'
+                              '• İlan içeriklerinin doğruluğundan satıcı sorumludur\n'
+                              '• Hayvan sağlığı garantisi verilmez\n'
+                              '• Üçüncü taraf hizmetlerden sorumlu değildir\n'
+                              '• Teknik aksaklıklardan sorumlu değildir',
+                          Icons.gavel,
+                          const Color(0xFF795548),
+                        ),
+                        _buildTermsSection(
+                          '8. İletişim',
+                          'Sorularınız için:\n'
+                              '📧 destek@canlipazar.com\n'
+                              '🌐 www.canlipazar.com',
+                          Icons.contact_support,
+                          const Color(0xFF2E7D32),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Footer
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F9FA),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E7D32),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: Text(
+                            'Anladım ve Kabul Ediyorum',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                'OK',
-                style: GoogleFonts.poppins(
-                  color: Colors.blue,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
         );
       },
+    );
+  }
+
+  Widget _buildTermsSection(
+      String title, String content, IconData icon, Color iconColor) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFE9ECEF),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF2E7D32),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  content,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: const Color(0xFF495057),
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -705,49 +1181,49 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   }
 
   void signUpUser() async {
-    // Reset previous error messages
+    // Önceki hata mesajlarını sıfırla
     setState(() {
       _usernameError = null;
       _emailError = null;
       _passwordError = null;
     });
 
-    // Validate form fields
+    // Form alanlarını doğrula
     bool isValid = true;
 
     if (_usernameController.text.isEmpty) {
       setState(() {
-        _usernameError = "Username cannot be empty";
+        _usernameError = "Kullanıcı adı boş olamaz";
         isValid = false;
       });
     } else if (_usernameController.text.length < 3) {
       setState(() {
-        _usernameError = "Username must be at least 3 characters";
+        _usernameError = "Kullanıcı adı en az 3 karakter olmalı";
         isValid = false;
       });
     }
 
     if (_emailController.text.isEmpty) {
       setState(() {
-        _emailError = "Email cannot be empty";
+        _emailError = "E-posta boş olamaz";
         isValid = false;
       });
     } else if (!_emailController.text.contains('@') ||
         !_emailController.text.contains('.')) {
       setState(() {
-        _emailError = "Please enter a valid email address";
+        _emailError = "Lütfen geçerli bir e-posta adresi girin";
         isValid = false;
       });
     }
 
     if (_passwordController.text.isEmpty) {
       setState(() {
-        _passwordError = "Password cannot be empty";
+        _passwordError = "Şifre boş olamaz";
         isValid = false;
       });
     } else if (_passwordController.text.length < 6) {
       setState(() {
-        _passwordError = "Password must be at least 6 characters";
+        _passwordError = "Şifre en az 6 karakter olmalı";
         isValid = false;
       });
     }
@@ -758,11 +1234,11 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       _isLoading = true;
     });
 
-    // Remove spaces and convert to lowercase
+    // Boşlukları kaldır ve küçük harfe çevir
     String username =
         _usernameController.text.replaceAll(' ', '').toLowerCase();
 
-    // signup user using authmethods
+    // Kullanıcıyı kaydet
     String res = await AuthMethods().signUpUser(
       email: _emailController.text,
       password: _passwordController.text,
@@ -776,45 +1252,46 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
     });
 
     if (res == "success") {
-      // navigate to the CountrStateCityScreen
+      // Navigate directly to location selection (skip onboarding)
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const WelcomePage(),
+          builder: (context) => const LocationPickerScreen(),
         ),
       );
     } else {
-      // Clean Firebase error codes from the error message
+      // Firebase hata kodlarını temizle
       String cleanErrorMessage = res;
 
-      // Remove Firebase error code pattern [firebase_auth/something]
+      // Firebase hata kodu deseni [firebase_auth/something] varsa kaldır
       if (res.contains(']')) {
         cleanErrorMessage = res.split(']').last.trim();
       }
 
-      // Capitalize first letter if needed
+      // İlk harfi büyük yap
       if (cleanErrorMessage.isNotEmpty) {
         cleanErrorMessage =
             cleanErrorMessage[0].toUpperCase() + cleanErrorMessage.substring(1);
       }
 
-      // Parse error message and show in appropriate field
+      // Hata mesajını ilgili alana göster
       if (cleanErrorMessage.toLowerCase().contains("email") ||
           res.toLowerCase().contains("email")) {
         setState(() {
-          _emailError = cleanErrorMessage;
+          _emailError = cleanErrorMessage.replaceAll("email", "e-posta");
         });
       } else if (cleanErrorMessage.toLowerCase().contains("password") ||
           res.toLowerCase().contains("password")) {
         setState(() {
-          _passwordError = cleanErrorMessage;
+          _passwordError = cleanErrorMessage.replaceAll("password", "şifre");
         });
       } else if (cleanErrorMessage.toLowerCase().contains("username") ||
           res.toLowerCase().contains("username")) {
         setState(() {
-          _usernameError = cleanErrorMessage;
+          _usernameError =
+              cleanErrorMessage.replaceAll("username", "kullanıcı adı");
         });
       } else {
-        // Show general error in snackbar
+        // Genel hata mesajını snackbar ile göster
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

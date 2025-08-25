@@ -1,8 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:country_state_city_picker/country_state_city_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+// import 'package:google_mobile_ads/google_mobile_ads.dart'; // Temporarily disabled
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../utils/animal_colors.dart';
 
 class CountryStateCity extends StatefulWidget {
   const CountryStateCity({
@@ -14,83 +20,345 @@ class CountryStateCity extends StatefulWidget {
 }
 
 class _CountryStateCityState extends State<CountryStateCity> {
-  /// Variables to store country state city data in onChanged method.
-  String countryValue = "";
-  String stateValue = "";
-  String address = "";
-  NativeAd? _nativeAd;
+  MapController? _mapController;
+  LatLng? _selectedLocation;
+  LatLng? _currentLocation;
+  bool _isLoading = false;
+  String _selectedAddress = '';
+
+  // Konum bilgileri
+  String _neighborhood = '';
+  String _district = '';
+  String _city = '';
+  String _province = '';
+  String _country = '';
+
   bool isAdLoaded = false;
-  bool isLoading = true;
 
-  // Add function to clean country names
-  String _cleanCountryName(String? countryName) {
-    if (countryName == null || countryName.isEmpty) return '';
-
-    // Remove flag emojis (country flag emoji is typically 2 regional indicator symbols)
-    // Each regional indicator symbol is 2 bytes in UTF-16
-    if (countryName.length >= 2 &&
-        countryName.codeUnitAt(0) >= 0xD83C &&
-        countryName.codeUnitAt(1) >= 0xDDE6) {
-      // Find the first non-emoji character
-      int startIndex = 0;
-      while (startIndex < countryName.length &&
-          startIndex + 1 < countryName.length &&
-          countryName.codeUnitAt(startIndex) >= 0xD83C &&
-          countryName.codeUnitAt(startIndex + 1) >= 0xDDE6) {
-        startIndex += 2;
-      }
-
-      // Remove extra spaces after flag emoji
-      return countryName.substring(startIndex).trim();
-    }
-
-    return countryName;
-  }
-
-  // initialize the native ad
   @override
   void initState() {
     super.initState();
-    getUserData();
+    _mapController = MapController();
+    _loadUserData();
+    _getCurrentLocation();
   }
 
-  // dispose the native ad
   @override
   void dispose() {
-    _nativeAd?.dispose();
     super.dispose();
   }
 
-  // GET USER DATA
-  Future<void> getUserData() async {
+  Future<void> _loadUserData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (doc.exists) {
+          final data = doc.data()!;
+          setState(() {
+            _neighborhood = data['neighborhood'] ?? '';
+            _district = data['district'] ?? '';
+            _city = data['city'] ?? '';
+            _province = data['state'] ?? '';
+            _country = data['country'] ?? '';
+
+            // Eğer önceki konum varsa haritayı oraya konumlandır
+            if (data['latitude'] != null && data['longitude'] != null) {
+              _selectedLocation = LatLng(data['latitude'], data['longitude']);
+              _currentLocation = _selectedLocation;
+
+              // Adres bilgisini oluştur
+              List<String> addressParts = [];
+              if (_neighborhood.isNotEmpty) addressParts.add(_neighborhood);
+              if (_district.isNotEmpty) addressParts.add(_district);
+              if (_city.isNotEmpty) addressParts.add(_city);
+              if (_country.isNotEmpty) addressParts.add(_country);
+              _selectedAddress = addressParts.join(', ');
+            }
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
     setState(() {
-      isLoading = true;
+      _isLoading = true;
     });
 
     try {
-      // Sadece yükleme işlemini tamamla
-      // Country her zaman boş olacak
-      setState(() {
-        countryValue = "";
-        stateValue = "";
-        isLoading = false;
-      });
-    } catch (e) {
-      print('Error fetching user data: $e');
-      if (mounted) {
+      // Konum izni kontrol et
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        _showPermissionDialog();
+        return;
+      }
+
+      if (permission == LocationPermission.denied) {
+        _showPermissionDialog();
+        return;
+      }
+
+      // Konum servisinin açık olup olmadığını kontrol et
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showLocationServiceDialog();
+        return;
+      }
+
+      // Mevcut konumu al (sadece önceki konum yoksa)
+      if (_selectedLocation == null) {
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+
         setState(() {
-          isLoading = false;
+          _currentLocation = LatLng(position.latitude, position.longitude);
+          _selectedLocation = _currentLocation;
+        });
+
+        // Adres bilgisini al
+        await _getAddressFromLatLng(_currentLocation!);
+      }
+
+      // Harita varsa ve konum seçilmişse kamerayı o konuma götür
+      if (_mapController != null && _selectedLocation != null) {
+        _mapController!.move(_selectedLocation!, 15.0);
+      }
+    } catch (e) {
+      print('Konum alınırken hata: $e');
+      _showErrorDialog('Konum alınırken bir hata oluştu: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _selectLocation(LatLng location) async {
+    setState(() {
+      _selectedLocation = location;
+      _isLoading = true;
+    });
+
+    try {
+      await _getAddressFromLatLng(location);
+    } catch (e) {
+      print('Adres alınırken hata: $e');
+      _showErrorDialog('Adres alınırken bir hata oluştu: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _getAddressFromLatLng(LatLng location) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        location.latitude,
+        location.longitude,
+        localeIdentifier: 'tr_TR',
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+
+        setState(() {
+          _neighborhood = place.subLocality ?? '';
+          _district = place.locality ?? '';
+          _city = place.administrativeArea ?? '';
+          // Türkiye'de şehir ve il aynı olduğu için province'ı boş bırak
+          _province = '';
+          _country = place.country ?? '';
+
+          // Türkiye için address formatı - tekrarlanan değerleri önle
+          List<String> addressParts = [];
+          if (_neighborhood.isNotEmpty) addressParts.add(_neighborhood);
+          if (_district.isNotEmpty && _district != _neighborhood)
+            addressParts.add(_district);
+          if (_city.isNotEmpty && _city != _district) addressParts.add(_city);
+          if (_country.isNotEmpty && _country != _city)
+            addressParts.add(_country);
+
+          _selectedAddress = addressParts.join(', ');
         });
       }
+    } catch (e) {
+      print('Reverse geocoding hatası: $e');
+      setState(() {
+        _selectedAddress = 'Adres bulunamadı';
+      });
     }
+  }
+
+  Future<void> _saveLocation() async {
+    if (_selectedLocation == null) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _showErrorDialog('Kullanıcı oturumu bulunamadı');
+        return;
+      }
+
+      // Firebase'e konum bilgilerini kaydet
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({
+        'neighborhood': _neighborhood,
+        'district': _district,
+        'city': _city,
+        'state': _province,
+        'country': _country,
+        'latitude': _selectedLocation!.latitude,
+        'longitude': _selectedLocation!.longitude,
+        'address': _selectedAddress,
+        'locationUpdatedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Başarı mesajı göster
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Konum başarıyla güncellendi',
+            style: GoogleFonts.poppins(fontSize: 14),
+          ),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+
+      // Geri dön
+      Navigator.pop(context);
+    } catch (e) {
+      print('Konum kaydedilirken hata: $e');
+      _showErrorDialog('Konum kaydedilirken bir hata oluştu: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showPermissionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          'Konum İzni Gerekli',
+          style: GoogleFonts.poppins(color: Colors.white),
+        ),
+        content: Text(
+          'Konum seçmek için konum izni gereklidir. Lütfen ayarlardan konum iznini açın.',
+          style: GoogleFonts.poppins(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'İptal',
+              style: GoogleFonts.poppins(color: Colors.white70),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              openAppSettings();
+            },
+            child: Text(
+              'Ayarlar',
+              style: GoogleFonts.poppins(color: AnimalColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLocationServiceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          'Konum Servisi Kapalı',
+          style: GoogleFonts.poppins(color: Colors.white),
+        ),
+        content: Text(
+          'Konum seçmek için konum servisini açmanız gerekir.',
+          style: GoogleFonts.poppins(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'İptal',
+              style: GoogleFonts.poppins(color: Colors.white70),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Geolocator.openLocationSettings();
+            },
+            child: Text(
+              'Ayarlar',
+              style: GoogleFonts.poppins(color: AnimalColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          'Hata',
+          style: GoogleFonts.poppins(color: Colors.white),
+        ),
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Tamam',
+              style: GoogleFonts.poppins(color: AnimalColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Ekran boyutunu al
-    final screenSize = MediaQuery.of(context).size;
-    final isSmallScreen = screenSize.height < 700;
-
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -102,13 +370,11 @@ class _CountryStateCityState extends State<CountryStateCity> {
             color: Colors.white,
             size: 20,
           ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Location",
-          style: TextStyle(
+        title: Text(
+          "Konum Değiştir",
+          style: GoogleFonts.poppins(
             color: Colors.white,
             fontWeight: FontWeight.w600,
             fontSize: 18,
@@ -117,302 +383,127 @@ class _CountryStateCityState extends State<CountryStateCity> {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: isLoading
-          ? const Center(
+      body: _isLoading
+          ? Center(
               child: CircularProgressIndicator(
-                color: Colors.white,
+                valueColor: AlwaysStoppedAnimation<Color>(AnimalColors.primary),
               ),
             )
-          : Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black,
-                    Colors.blue.shade900.withOpacity(0.2),
-                    Colors.black,
+          : Stack(
+              children: [
+                // Flutter Map (OpenStreetMap)
+                FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    center: _selectedLocation ??
+                        _currentLocation ??
+                        LatLng(39.9334, 32.8597), // Ankara varsayılan
+                    zoom: 15.0,
+                    onTap: (tapPosition, point) {
+                      _selectLocation(point);
+                    },
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.freecycle.animal_trade',
+                    ),
+                    if (_selectedLocation != null)
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: _selectedLocation!,
+                            width: 40,
+                            height: 40,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AnimalColors.primary,
+                                shape: BoxShape.circle,
+                                border:
+                                    Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: Icon(
+                                Icons.location_on,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
-              ),
-              child: SafeArea(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(height: isSmallScreen ? 20 : 30),
-                        // Lokasyon ikonu
-                        Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.blue.shade700.withOpacity(0.7),
-                                Colors.blue.shade900.withOpacity(0.7),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.blue.shade700.withOpacity(0.3),
-                                blurRadius: 20,
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.location_on_rounded,
-                            color: Colors.white,
-                            size: 35,
-                          ),
-                        ),
 
-                        SizedBox(height: isSmallScreen ? 16 : 24),
-
-                        // Başlık
-                        const Text(
-                          "Choose Your Location",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-
-                        SizedBox(height: isSmallScreen ? 8 : 12),
-
-                        // Açıklama
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.08),
-                            ),
-                          ),
-                          child: const Text(
-                            "To see products in your area,\nplease select your location below",
-                            style: TextStyle(
+                // Adres bilgisi kartı
+                if (_selectedAddress.isNotEmpty)
+                  Positioned(
+                    top: 20,
+                    left: 16,
+                    right: 16,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(16),
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Seçilen Konum',
+                            style: GoogleFonts.poppins(
                               color: Colors.white,
-                              fontSize: 15,
-                              height: 1.5,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
-                            textAlign: TextAlign.center,
                           ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _selectedAddress,
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                // Konum kaydet butonu
+                Positioned(
+                  bottom: 32,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed:
+                          _selectedLocation != null ? _saveLocation : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AnimalColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
-
-                        SizedBox(height: isSmallScreen ? 25 : 35),
-
-                        // Country seçici container
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.white.withOpacity(0.07),
-                                Colors.white.withOpacity(0.04),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 15,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Country State Picker
-                              SelectState(
-                                // Style
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                ),
-
-                                // Dropdown decoration
-                                dropdownColor: Colors.black,
-
-                                // Callbacks
-                                onCountryChanged: (value) {
-                                  setState(() {
-                                    countryValue = _cleanCountryName(value);
-                                    // Reset state when country changes
-                                    stateValue = "";
-                                  });
-                                },
-
-                                onStateChanged: (value) {
-                                  setState(() {
-                                    stateValue = value;
-                                  });
-                                },
-
-                                onCityChanged: (value) {
-                                  // Not used in this implementation
-                                },
-                              ),
-                            ],
-                          ),
+                        elevation: 4,
+                      ),
+                      child: Text(
+                        'Konumu Kaydet',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-
-                        SizedBox(height: isSmallScreen ? 25 : 35),
-
-                        // Selected location summary if available
-                        if (countryValue.isNotEmpty)
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 25),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.06),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.1),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  stateValue.isNotEmpty
-                                      ? Icons.place_rounded
-                                      : Icons.public_rounded,
-                                  color: Colors.green,
-                                  size: 18,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    stateValue.isNotEmpty
-                                        ? "$stateValue, $countryValue"
-                                        : countryValue,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.check_circle_outline,
-                                  color: Colors.green,
-                                  size: 16,
-                                ),
-                              ],
-                            ),
-                          ),
-
-                        // Save Button
-                        Container(
-                          width: double.infinity,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: countryValue.isNotEmpty
-                                  ? [Colors.blue.shade500, Colors.blue.shade700]
-                                  : [
-                                      Colors.grey.shade700,
-                                      Colors.grey.shade800
-                                    ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: countryValue.isNotEmpty
-                                ? [
-                                    BoxShadow(
-                                      color:
-                                          Colors.blue.shade900.withOpacity(0.4),
-                                      spreadRadius: 0,
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ]
-                                : [],
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: countryValue.isNotEmpty
-                                  ? () {
-                                      String cleanedCountry =
-                                          _cleanCountryName(countryValue);
-                                      setState(() {
-                                        address = stateValue.isNotEmpty
-                                            ? "$stateValue, $cleanedCountry"
-                                            : cleanedCountry;
-                                      });
-
-                                      FirebaseFirestore.instance
-                                          .collection('users')
-                                          .doc(FirebaseAuth
-                                              .instance.currentUser!.uid)
-                                          .update({
-                                        'country': cleanedCountry,
-                                        'state': stateValue.isEmpty
-                                            ? ""
-                                            : stateValue,
-                                        'city':
-                                            "", // City alanını boş string olarak ayarla
-                                        'address': address,
-                                      });
-                                      Navigator.pop(context);
-                                    }
-                                  : null,
-                              child: Center(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle_outline_rounded,
-                                      color: countryValue.isNotEmpty
-                                          ? Colors.white
-                                          : Colors.grey.shade400,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      "Save Location",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: countryValue.isNotEmpty
-                                            ? Colors.white
-                                            : Colors.grey.shade400,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
     );
   }

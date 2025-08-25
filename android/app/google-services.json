@@ -1,140 +1,65 @@
 {
   "project_info": {
-    "project_number": "990581988375",
-    "firebase_url": "https://freethings-257b6-default-rtdb.europe-west1.firebasedatabase.app",
-    "project_id": "freethings-257b6",
-    "storage_bucket": "freethings-257b6.appspot.com"
+    "project_number": "602963135074",
+    "firebase_url": "https://canlipazar-b3697-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "canlipazar-b3697",
+    "storage_bucket": "canlipazar-b3697.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:990581988375:android:3b5c955e249ebd397dd052",
+        "mobilesdk_app_id": "1:602963135074:android:b0cbc1cc689532af461f3b",
         "android_client_info": {
-          "package_name": "com.freebie"
+          "package_name": "com.canlipazar"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "990581988375-06qdbqfqedrtatrlhumkoeb7tk92cted.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCDFwuFnKMvqtqG5DJI_JN-7ub1ceJCB6I"
+          "current_key": "AIzaSyDc3tzsLYigdk48mXrTf3Perqpn-0pE3Bg"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "990581988375-06qdbqfqedrtatrlhumkoeb7tk92cted.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "990581988375-3tsi88pou4u822niban8sv63errsj1a1.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.freebiealertsapp"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:990581988375:android:fb8912776e4a61d77dd052",
+        "mobilesdk_app_id": "1:602963135074:android:286777f35ea6bc50461f3b",
         "android_client_info": {
-          "package_name": "com.freebieapp"
+          "package_name": "com.canlipazar.app"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "990581988375-06qdbqfqedrtatrlhumkoeb7tk92cted.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCDFwuFnKMvqtqG5DJI_JN-7ub1ceJCB6I"
+          "current_key": "AIzaSyDc3tzsLYigdk48mXrTf3Perqpn-0pE3Bg"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "990581988375-06qdbqfqedrtatrlhumkoeb7tk92cted.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "990581988375-3tsi88pou4u822niban8sv63errsj1a1.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.freebiealertsapp"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:990581988375:android:63d5f83115ccce4c7dd052",
+        "mobilesdk_app_id": "1:602963135074:android:fa010570d4cea80c461f3b",
         "android_client_info": {
           "package_name": "com.thingsfree"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "990581988375-3spvl0idnpfq9b5dd9p1opl89f0o6ii5.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.thingsfree",
-            "certificate_hash": "4fef2d8e1857fc5a26181f1e6e273709b69ace83"
-          }
-        },
-        {
-          "client_id": "990581988375-tmiv6mn5nhe1d9qcnualgppjs4c2dllf.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.thingsfree",
-            "certificate_hash": "29025a4491ca245f21e89f56a4dd8978a5fc2107"
-          }
-        },
-        {
-          "client_id": "990581988375-ue3fhdhb4sk1tda4ltpi38atpokeeu78.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.thingsfree",
-            "certificate_hash": "8e723fe02dad6acaea0ea7859ad82424593bacf6"
-          }
-        },
-        {
-          "client_id": "990581988375-06qdbqfqedrtatrlhumkoeb7tk92cted.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCDFwuFnKMvqtqG5DJI_JN-7ub1ceJCB6I"
+          "current_key": "AIzaSyDc3tzsLYigdk48mXrTf3Perqpn-0pE3Bg"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "990581988375-06qdbqfqedrtatrlhumkoeb7tk92cted.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "990581988375-3tsi88pou4u822niban8sv63errsj1a1.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.freebiealertsapp"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

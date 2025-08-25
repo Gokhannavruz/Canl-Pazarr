@@ -1,4 +1,4 @@
-import 'package:freecycle/src/model/styles.dart';
+import 'package:animal_trade/src/model/styles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

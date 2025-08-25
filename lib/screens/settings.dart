@@ -1,20 +1,18 @@
-import 'package:freecycle/screens/country_state_city2.dart';
-import 'package:freecycle/screens/country_state_city_picker.dart';
-import 'package:freecycle/screens/privacy_policy.dart';
-import 'package:freecycle/screens/terms_of_use_page.dart';
-import 'package:freecycle/screens/welcomepage.dart';
+import 'package:animal_trade/screens/country_state_city2.dart';
+import 'package:animal_trade/screens/country_state_city_picker.dart';
+import 'package:animal_trade/screens/privacy_policy.dart';
+import 'package:animal_trade/screens/terms_of_use_page.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:freecycle/screens/blocked_users.dart';
-import 'package:freecycle/screens/liked_posts_screen.dart';
-import 'package:freecycle/screens/login_screen.dart';
-import 'package:freecycle/screens/location_picker_demo.dart';
+import 'package:animal_trade/screens/liked_posts_screen.dart';
+import 'package:animal_trade/screens/login_screen.dart';
+import 'package:animal_trade/screens/location_picker_screen.dart';
 
-import 'package:freecycle/screens/reset_password.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:animal_trade/screens/reset_password.dart';
 import 'package:flutter/services.dart';
-import 'package:freecycle/utils/utils.dart';
+import 'package:animal_trade/utils/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -24,47 +22,13 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  NativeAd? _nativeAd;
+  // AdMob kodları kaldırıldı
   bool isAdLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    /* _loadNativeAd(); */
-  }
-
-  void _loadNativeAd() {
-    _nativeAd = NativeAd(
-      adUnitId: 'ca-app-pub-8445989958080180/7800892333',
-      factoryId: 'listTile',
-      request: const AdRequest(),
-      listener: NativeAdListener(
-        // Called when an ad is successfully received.
-        onAdLoaded: (Ad ad) {
-          var add = ad as NativeAd;
-          setState(() {
-            _nativeAd = add;
-            isAdLoaded = true;
-          });
-        },
-
-        // Called when an ad request failed.
-        onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          // Dispose the ad here to free resources.
-          ad.dispose();
-        },
-        // Called when an ad opens an overlay that covers the screen.
-        onAdOpened: (Ad ad) => print('Ad opened.'),
-        // Called when an ad removes an overlay that covers the screen.
-        onAdClosed: (Ad ad) => print('Ad closed.'),
-        // Called when an impression occurs on the ad.
-        onAdImpression: (Ad ad) => print('Ad impression.'),
-        // Called when a click is recorded for a NativeAd.
-        onAdClicked: (Ad ad) => print('Ad clicked.'),
-      ),
-    );
-
-    _nativeAd!.load();
+    // AdMob kodu kaldırıldı
   }
 
   void _showReferralInfoDialog(BuildContext context) {
@@ -202,7 +166,7 @@ class _SettingsPageState extends State<SettingsPage> {
         style: GoogleFonts.poppins(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: Colors.white.withOpacity(0.6),
+          color: Colors.grey[700],
           letterSpacing: 0.5,
         ),
       ),
@@ -220,7 +184,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
@@ -231,12 +195,12 @@ class _SettingsPageState extends State<SettingsPage> {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: (iconColor ?? Colors.blue).withOpacity(0.1),
+            color: (iconColor ?? Colors.green).withOpacity(0.12),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             icon,
-            color: iconColor ?? Colors.blue,
+            color: iconColor ?? Colors.green,
             size: 20,
           ),
         ),
@@ -245,7 +209,7 @@ class _SettingsPageState extends State<SettingsPage> {
           style: GoogleFonts.poppins(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: isDestructive ? Colors.red : Colors.white,
+            color: isDestructive ? Colors.red : Colors.black,
           ),
         ),
         trailing: trailing ??
@@ -261,29 +225,32 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         title: Text(
-          'Settings',
+          'Ayarlar',
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.w600,
+            color: Colors.black,
           ),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new),
+          color: Colors.black,
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: ListView(
         children: [
-          _buildSectionHeader('Content'),
+          _buildSectionHeader('İçerik'),
           _buildSettingsTile(
             icon: Icons.favorite_rounded,
             iconColor: Colors.pink,
-            title: 'Favorites',
+            title: 'Beğenilenler',
             onTap: () {
               Navigator.push(
                 context,
@@ -295,26 +262,11 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
           ),
-          _buildSettingsTile(
-            icon: Icons.block_rounded,
-            iconColor: Colors.orange,
-            title: 'Blocked Users',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BlockedListScreen(
-                    userId: FirebaseAuth.instance.currentUser!.uid,
-                  ),
-                ),
-              );
-            },
-          ),
-          _buildSectionHeader('Account'),
+          _buildSectionHeader('Hesap'),
           _buildSettingsTile(
             icon: Icons.lock_rounded,
             iconColor: Colors.green,
-            title: 'Change Password',
+            title: 'Şifreyi Değiştir',
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -326,25 +278,26 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSettingsTile(
             icon: Icons.location_on_rounded,
             iconColor: Colors.purple,
-            title: 'Change Location',
+            title: 'Konumu Değiştir',
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const CountryStateCity(),
+                  builder: (context) => const LocationPickerScreen(
+                    isFromSettings: true,
+                  ),
                 ),
               );
             },
           ),
-
-          _buildSectionHeader('Legal'),
+          _buildSectionHeader('Yasal'),
           _buildSettingsTile(
-            icon: Icons.verified_user_rounded,
+            icon: Icons.privacy_tip_rounded,
             iconColor: Colors.blue,
-            title: 'License Agreement (EULA)',
+            title: 'Gizlilik Politikası',
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => EulaPage(),
+                  builder: (context) => PrivacyPolicyPage(),
                 ),
               );
             },
@@ -352,7 +305,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSettingsTile(
             icon: Icons.gavel_rounded,
             iconColor: Colors.amber,
-            title: 'Terms of Service',
+            title: 'Kullanım Şartları',
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -361,16 +314,14 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
           ),
-          _buildSectionHeader('Danger Zone'),
+          _buildSectionHeader('Tehlikeli Alan'),
           _buildSettingsTile(
             icon: Icons.delete_forever_rounded,
             iconColor: Colors.red,
-            title: 'Delete Account',
+            title: 'Hesabı Sil',
             isDestructive: true,
             onTap: () => deleteAccount(context),
           ),
-
-          // welcome page
         ],
       ),
     );

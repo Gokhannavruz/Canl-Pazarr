@@ -1,7 +1,6 @@
-import 'dart:io' if (dart.library.html) 'package:freecycle/utils/web_stub.dart'
-    as io;
+import 'dart:io'
+    if (dart.library.html) 'package:animal_trade/utils/web_stub.dart' as io;
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdHelper {
   static String get bannerAdUnitId {
@@ -64,28 +63,6 @@ class AdHelper {
       return 'test-ad-unit';
     }
   }
-
-  // banner listener
-  static final BannerAdListener bannerAdListener = BannerAdListener(
-    onAdLoaded: (Ad ad) => print('Ad loaded.'),
-    onAdFailedToLoad: (Ad ad, LoadAdError error) {
-      ad.dispose();
-      print('Ad failed to load: $error');
-    },
-    onAdOpened: (Ad ad) => print('Ad opened.'),
-    onAdClosed: (Ad ad) => print('Ad closed.'),
-  );
-
-  // native ad listener
-  static final NativeAdListener nativeAdListener = NativeAdListener(
-    onAdLoaded: (Ad ad) => print('Ad loaded.'),
-    onAdFailedToLoad: (Ad ad, LoadAdError error) {
-      ad.dispose();
-      print('Ad failed to load: $error');
-    },
-    onAdOpened: (Ad ad) => print('Ad opened.'),
-    onAdClosed: (Ad ad) => print('Ad closed.'),
-  );
 
   // interstitial listener
 }

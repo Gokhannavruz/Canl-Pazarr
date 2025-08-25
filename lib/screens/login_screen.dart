@@ -1,9 +1,9 @@
-import 'package:freecycle/screens/phone_verificication.dart';
-import 'package:freecycle/screens/reset_password.dart';
+import 'package:animal_trade/screens/phone_verificication.dart';
+import 'package:animal_trade/screens/reset_password.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:freecycle/resources/auth_methods.dart';
-import 'package:freecycle/utils/utils.dart';
+import 'package:animal_trade/resources/auth_methods.dart';
+import 'package:animal_trade/utils/utils.dart';
 import '../responsive/mobile_screen_layout.dart';
 import '../responsive/responsive_layout_screen.dart';
 import '../responsive/web_screen_layout.dart';
@@ -45,20 +45,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_emailController.text.isEmpty) {
       setState(() {
-        _emailError = "Email cannot be empty";
+        _emailError = "E-posta boş olamaz";
         isValid = false;
       });
     } else if (!_emailController.text.contains('@') ||
         !_emailController.text.contains('.')) {
       setState(() {
-        _emailError = "Please enter a valid email address";
+        _emailError = "Lütfen geçerli bir e-posta adresi girin";
         isValid = false;
       });
     }
 
     if (_passwordController.text.isEmpty) {
       setState(() {
-        _passwordError = "Password cannot be empty";
+        _passwordError = "Şifre boş olamaz";
         isValid = false;
       });
     }
@@ -100,17 +100,17 @@ class _LoginScreenState extends State<LoginScreen> {
       if (res.toLowerCase().contains("user not found") ||
           res.toLowerCase().contains("user not exist") ||
           res.toLowerCase().contains("no user record")) {
-        _emailError = "No account found with this email";
+        _emailError = "Bu e-posta ile kayıtlı bir hesap bulunamadı";
       } else if (res.toLowerCase().contains("password") ||
           res.toLowerCase().contains("credential") ||
           res.toLowerCase().contains("invalid")) {
-        _passwordError = "Incorrect password";
+        _passwordError = "Şifre yanlış";
       } else if (res.toLowerCase().contains("email") ||
           res.toLowerCase().contains("mail")) {
-        _emailError = "Invalid email format";
+        _emailError = "Geçersiz e-posta formatı";
       } else {
         // Fall back to generic error
-        _emailError = "Login failed. Please check your credentials";
+        _emailError = "Giriş başarısız. Lütfen bilgilerinizi kontrol edin";
       }
 
       setState(() {});
@@ -127,14 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade900.withOpacity(0.8),
-              Colors.black,
-            ],
-          ),
+          color: Colors.white,
         ),
         child: SafeArea(
           child: Center(
@@ -144,19 +137,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Logo
-                  Image.asset(
-                    'assets/frees.png',
-                    height: 80,
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Tagline
                   Text(
-                    'freecycle: Share, Reuse, Be Sustainable',
+                    'CanlıPazar',
                     style: GoogleFonts.poppins(
-                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Hayvan alım satımında güvenli pazar yeri.',
+                    style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
+                      color: Colors.black.withOpacity(0.7),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -165,8 +160,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Email Field
                   _buildInputField(
                     controller: _emailController,
-                    label: "Email",
-                    hintText: "Enter your email address",
+                    label: "E-posta",
+                    hintText: "E-posta adresinizi girin",
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     errorText: _emailError,
@@ -187,12 +182,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         ));
                       },
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.white.withOpacity(0.7),
+                        foregroundColor: Colors.black.withOpacity(0.7),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                       ),
                       child: Text(
-                        'Forgot Password?',
+                        'Şifremi Unuttum?',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -212,15 +207,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       Expanded(
                         child: Container(
                           height: 1,
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.black.withOpacity(0.2),
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
-                          'OR',
+                          'VEYA',
                           style: GoogleFonts.poppins(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.black.withOpacity(0.6),
                             fontSize: 14,
                           ),
                         ),
@@ -228,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Expanded(
                         child: Container(
                           height: 1,
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.black.withOpacity(0.2),
                         ),
                       ),
                     ],
@@ -262,39 +257,39 @@ class _LoginScreenState extends State<LoginScreen> {
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.black.withOpacity(0.9),
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: Color(0xFFE8F5E9),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: errorText != null
                   ? Colors.red.withOpacity(0.7)
-                  : Colors.white.withOpacity(0.1),
+                  : Colors.green,
             ),
           ),
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
-            cursorColor: Colors.white,
+            cursorColor: Colors.black,
             style: GoogleFonts.poppins(
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 15,
             ),
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: GoogleFonts.poppins(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.black.withOpacity(0.4),
                 fontSize: 15,
               ),
               prefixIcon: Icon(
                 icon,
                 color: errorText != null
                     ? Colors.red.withOpacity(0.7)
-                    : Colors.white.withOpacity(0.7),
+                    : Colors.black.withOpacity(0.7),
                 size: 22,
               ),
               border: InputBorder.none,
@@ -323,49 +318,49 @@ class _LoginScreenState extends State<LoginScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Password",
+          "Şifre",
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.black.withOpacity(0.9),
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: Color(0xFFE8F5E9),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _passwordError != null
                   ? Colors.red.withOpacity(0.7)
-                  : Colors.white.withOpacity(0.1),
+                  : Colors.green,
             ),
           ),
           child: TextField(
             controller: _passwordController,
             obscureText: _obscureText,
-            cursorColor: Colors.white,
+            cursorColor: Colors.black,
             style: GoogleFonts.poppins(
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 15,
             ),
             decoration: InputDecoration(
-              hintText: "Enter your password",
+              hintText: "Şifrenizi girin",
               hintStyle: GoogleFonts.poppins(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.black.withOpacity(0.4),
                 fontSize: 15,
               ),
               prefixIcon: Icon(
                 Icons.lock_outline_rounded,
                 color: _passwordError != null
                     ? Colors.red.withOpacity(0.7)
-                    : Colors.white.withOpacity(0.7),
+                    : Colors.black.withOpacity(0.7),
                 size: 22,
               ),
               suffixIcon: IconButton(
                 icon: Icon(
                   _obscureText ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.black.withOpacity(0.7),
                   size: 22,
                 ),
                 onPressed: () {
@@ -402,13 +397,13 @@ class _LoginScreenState extends State<LoginScreen> {
       child: ElevatedButton(
         onPressed: _isLoading ? null : loginUser,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
+          backgroundColor: Colors.green,
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          disabledBackgroundColor: Colors.blue.withOpacity(0.6),
+          disabledBackgroundColor: Colors.green.withOpacity(0.6),
         ),
         child: _isLoading
             ? SizedBox(
@@ -420,7 +415,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               )
             : Text(
-                'Login',
+                'Giriş Yap',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -441,14 +436,14 @@ class _LoginScreenState extends State<LoginScreen> {
           ));
         },
         style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white,
-          side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+          foregroundColor: Colors.black,
+          side: BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
         ),
         child: Text(
-          'Create Account',
+          'Hesap Oluştur',
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w500,

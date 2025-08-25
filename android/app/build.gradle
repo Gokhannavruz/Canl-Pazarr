@@ -1,3 +1,10 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services"
+}
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -8,23 +15,20 @@ if (localPropertiesFile.exists()) {
 
 def flutterRoot = localProperties.getProperty('flutter.sdk')
 if (flutterRoot == null) {
-    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+    throw new RuntimeException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
 }
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '47'
+    flutterVersionCode = '1'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '2.1.7'
+    flutterVersionName = '1.0.0'
 }
 
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
-apply plugin: 'com.google.gms.google-services'
+ext.kotlin_version = '2.2.0'
 
 
 def keystoreProperties = new Properties()
@@ -35,7 +39,8 @@ def keystoreProperties = new Properties()
 
 
 android {
-    compileSdkVersion 34
+    namespace "com.canlipazar"
+    compileSdkVersion 35
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -53,16 +58,15 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.thingsfree"
+        applicationId "com.canlipazar"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         
-        // Google Sign-in için minimum SDK seviyesi 21 olmalı
-        minSdkVersion 21
-        
-        targetSdkVersion 34
+        // Firebase Auth için minimum SDK seviyesi 23 olmalı
+        minSdkVersion 23
+        targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
-        versionName "2.1.7"
+        versionName "1.0.0"
         multiDexEnabled true
     }
 
@@ -77,6 +81,8 @@ android {
    buildTypes {
        release {
            signingConfig signingConfigs.release
+           minifyEnabled false
+           shrinkResources false
        }
    }
 }
@@ -88,16 +94,18 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.google.android.gms:play-services-ads:22.4.0'
-    implementation project(path: ':google_mobile_ads')
     implementation 'androidx.browser:browser:1.5.0'
     implementation 'com.google.android.play:integrity:1.1.0'
-    
-    // Firebase'i eski fakat uyumlu sürümlere sabitliyoruz
-    implementation platform('com.google.firebase:firebase-bom:30.5.0')
+
+    // Add the modular library for SplitCompat/SplitInstall, which Flutter needs.
+    // This replaces the legacy monolithic 'play:core' library.
+    implementation 'com.google.android.play:feature-delivery:2.1.0'
+
+    // Firebase'i güncel sürüme güncelliyoruz
+    implementation platform('com.google.firebase:firebase-bom:33.7.0')
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-messaging'
     implementation 'com.google.firebase:firebase-database'
-    implementation 'com.google.android.gms:play-services-auth:20.7.0'
-    implementation 'com.google.android.gms:play-services-base:18.2.0'
+    implementation 'com.google.android.gms:play-services-auth:21.3.0'
+    implementation 'com.google.android.gms:play-services-base:18.5.0'
 }

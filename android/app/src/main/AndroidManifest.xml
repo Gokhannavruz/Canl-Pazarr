@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.thingsfree">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="com.android.vending.BILLING" />
@@ -16,7 +15,7 @@
     </queries>
 
     <application
-        android:label="Freecycle"
+        android:label="CanlıPazar"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:enableOnBackInvokedCallback="true">  <!-- Back handler için eklendi -->

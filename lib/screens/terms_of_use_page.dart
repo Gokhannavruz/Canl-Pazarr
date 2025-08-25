@@ -1,72 +1,288 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class TermsOfServicePage extends StatelessWidget {
-  final String privacyPolicyUrl =
-      "https://toolstoore.blogspot.com/2024/05/frees-privacy-policy.html";
+  final String termsOfServiceUrl = "https://canlipazar.com/terms-of-service";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF1F8E9),
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Text('freecycle Terms of Service'),
+        backgroundColor: const Color(0xFF2E7D32),
+        elevation: 0,
+        title: Text(
+          'CanlıPazar Kullanım Şartları',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white,
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle('1. Acceptance of Terms'),
-            _buildText(
-                'By accessing or using freecycle, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree with any part of these terms, you must not use our services.'),
-            SizedBox(height: 20),
-            _buildSectionTitle('2. User Conduct'),
-            _buildText('You agree not to use freecycle to:\n\n'
-                '- Post, upload, or share any content that is illegal, harmful, threatening, abusive, harassing, defamatory, vulgar, obscene, hateful, or otherwise objectionable.\n\n'
-                '- Impersonate any person or entity or falsely state or otherwise misrepresent your affiliation with a person or entity.\n\n'
-                '- Engage in any form of bullying, harassment, or intimidation.\n\n'
-                '- Post or transmit any content that infringes any patent, trademark, trade secret, copyright, or other proprietary rights of any party.\n\n'
-                '- Upload, post, or transmit any material that contains software viruses or any other computer code, files, or programs designed to interrupt, destroy, or limit the functionality of any computer software or hardware.'),
-            SizedBox(height: 20),
-            _buildSectionTitle('3. Content Moderation'),
-            _buildText(
-                'We reserve the right, but have no obligation, to monitor, edit, or remove any activity or content that we determine in our sole discretion violates these terms or is otherwise objectionable.'),
-            SizedBox(height: 20),
-            _buildSectionTitle('4. Reporting and Blocking'),
-            _buildText(
-                'Users can report offensive content or behavior by using the report feature within freecycle. We will review and take appropriate action on reported content or users promptly. Users also have the ability to block other users to prevent further interaction.'),
-            SizedBox(height: 20),
-            _buildSectionTitle('5. Termination'),
-            _buildText(
-                'We reserve the right to terminate or suspend your account and access to freecycle without notice if we determine, in our sole discretion, that you have violated these terms or engaged in any conduct that we consider inappropriate or harmful.'),
-            SizedBox(height: 20),
-            _buildSectionTitle('6. Changes to Terms'),
-            _buildText(
-                'We may revise these Terms of Service from time to time. The most current version will always be posted on our website. By continuing to use our services after changes are made, you agree to be bound by the revised terms.'),
-            SizedBox(height: 20),
-            _buildSectionTitle('7. Contact Us'),
-            // contact us
-            _buildText(
-                'If you have any questions about this EULA, please contact us at gkhnnavruz@gmail.com.'),
+            // Header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2E7D32).withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.description_outlined,
+                    color: Colors.white,
+                    size: 48,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'CanlıPazar Kullanım Şartları',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Son güncelleme: ${DateTime.now().year}',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-            // url launcher
+            const SizedBox(height: 24),
+
+            // Content
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionTitle('1. Şartların Kabulü'),
+                  _buildText(
+                    'CanlıPazar uygulamasını kullanarak bu kullanım şartlarını ve gizlilik politikamızı kabul etmiş sayılırsınız. Bu şartların herhangi bir kısmını kabul etmiyorsanız, uygulamamızı kullanmamalısınız.',
+                    isFirst: true,
+                    isLast: false,
+                    hasIcon: Icons.check_circle_outline,
+                    iconColor: const Color(0xFF4CAF50),
+                  ),
+                  _buildSectionTitle('2. Hizmet Tanımı'),
+                  _buildText(
+                    'CanlıPazar, büyükbaş ve küçükbaş hayvan alım satımı için güvenli bir platform sağlar. Hizmetlerimiz:\n\n'
+                    '• Hayvan ilanı yayınlama ve görüntüleme\n'
+                    '• Kullanıcılar arası mesajlaşma\n'
+                    '• Konum bazlı arama ve filtreleme\n'
+                    '• Güvenli ödeme altyapısı\n'
+                    '• Veteriner doğrulama sistemi',
+                    isFirst: false,
+                    isLast: false,
+                    hasIcon: Icons.pets,
+                    iconColor: const Color(0xFF795548),
+                  ),
+                  _buildSectionTitle('3. Kullanıcı Sorumlulukları'),
+                  _buildText(
+                    'Uygulamamızı kullanırken:\n\n'
+                    '• Doğru ve güncel bilgi sağlamalısınız\n'
+                    '• Hayvan sağlığı ve refahını önemsemelisiniz\n'
+                    '• Yasal düzenlemelere uymalısınız\n'
+                    '• Diğer kullanıcılara saygılı olmalısınız\n'
+                    '• Platform güvenliğini korumalısınız',
+                    isFirst: false,
+                    isLast: false,
+                    hasIcon: Icons.person_outline,
+                    iconColor: const Color(0xFF2196F3),
+                  ),
+                  _buildSectionTitle('4. Yasaklı İçerik ve Davranışlar'),
+                  _buildText(
+                    'Aşağıdaki içerik ve davranışlar kesinlikle yasaktır:\n\n'
+                    '• Sahte veya yanıltıcı hayvan ilanları\n'
+                    '• Hasta veya sağlıksız hayvan satışı\n'
+                    '• Taciz, tehdit veya saldırgan davranış\n'
+                    '• Spam veya istenmeyen mesajlar\n'
+                    '• Yasadışı hayvan ticareti\n'
+                    '• Telif hakkı ihlali',
+                    isFirst: false,
+                    isLast: false,
+                    hasIcon: Icons.block,
+                    iconColor: const Color(0xFFE91E63),
+                  ),
+                  _buildSectionTitle('5. Hayvan Sağlığı ve Refahı'),
+                  _buildText(
+                    'CanlıPazar, hayvan sağlığı ve refahını önemsemektedir:\n\n'
+                    '• Sadece sağlıklı hayvanlar satılabilir\n'
+                    '• Veteriner raporu gereklidir\n'
+                    '• Aşı kartları kontrol edilir\n'
+                    '• Hayvan refahı standartları uygulanır\n'
+                    '• Şüpheli durumlar raporlanır',
+                    isFirst: false,
+                    isLast: false,
+                    hasIcon: Icons.favorite,
+                    iconColor: const Color(0xFFFF5722),
+                  ),
+                  _buildSectionTitle('6. İçerik Moderasyonu'),
+                  _buildText(
+                    'Platform güvenliği için:\n\n'
+                    '• Tüm ilanlar önceden incelenir\n'
+                    '• Kullanıcı raporları değerlendirilir\n'
+                    '• Şüpheli içerikler kaldırılır\n'
+                    '• Kural ihlali yapan hesaplar kapatılır\n'
+                    '• Sürekli güvenlik denetimi yapılır',
+                    isFirst: false,
+                    isLast: false,
+                    hasIcon: Icons.security,
+                    iconColor: const Color(0xFF607D8B),
+                  ),
+                  _buildSectionTitle('7. Ödeme ve İşlem Güvenliği'),
+                  _buildText(
+                    'CanlıPazar güvenli ödeme altyapısı sağlar:\n\n'
+                    '• Şifreli ödeme işlemleri\n'
+                    '• Güvenli para transferi\n'
+                    '• İşlem kayıtları tutulur\n'
+                    '• Anlaşmazlık çözümü\n'
+                    '• Para iade garantisi',
+                    isFirst: false,
+                    isLast: false,
+                    hasIcon: Icons.payment,
+                    iconColor: const Color(0xFF00BCD4),
+                  ),
+                  _buildSectionTitle('8. Fikri Mülkiyet'),
+                  _buildText(
+                    'CanlıPazar platformu ve içeriği:\n\n'
+                    '• Telif hakkı ile korunmaktadır\n'
+                    '• Ticari marka hakları saklıdır\n'
+                    '• Kopyalama ve dağıtım yasaktır\n'
+                    '• Tersine mühendislik yasaktır\n'
+                    '• Lisans ihlali cezalandırılır',
+                    isFirst: false,
+                    isLast: false,
+                    hasIcon: Icons.copyright,
+                    iconColor: const Color(0xFF9C27B0),
+                  ),
+                  _buildSectionTitle('9. Sorumluluk Sınırları'),
+                  _buildText(
+                    'CanlıPazar:\n\n'
+                    '• Kullanıcılar arası anlaşmalardan sorumlu değildir\n'
+                    '• Hayvan sağlığı garantisi vermez\n'
+                    '• Üçüncü taraf hizmetlerden sorumlu değildir\n'
+                    '• Teknik aksaklıklardan sorumlu değildir\n'
+                    '• Maksimum yasal sorumluluk sınırları geçerlidir',
+                    isFirst: false,
+                    isLast: false,
+                    hasIcon: Icons.gavel,
+                    iconColor: const Color(0xFF795548),
+                  ),
+                  _buildSectionTitle('10. Hesap Sonlandırma'),
+                  _buildText(
+                    'Aşağıdaki durumlarda hesabınız kapatılabilir:\n\n'
+                    '• Kural ihlali yapmanız\n'
+                    '• Sahte bilgi vermeniz\n'
+                    '• Platform güvenliğini tehdit etmeniz\n'
+                    '• Diğer kullanıcıları rahatsız etmeniz\n'
+                    '• Yasal düzenlemelere aykırı davranmanız',
+                    isFirst: false,
+                    isLast: false,
+                    hasIcon: Icons.person_off,
+                    iconColor: const Color(0xFFE91E63),
+                  ),
+                  _buildSectionTitle('11. Şartların Değişikliği'),
+                  _buildText(
+                    'Bu kullanım şartlarını zaman zaman güncelleyebiliriz. Önemli değişiklikler olduğunda sizi bilgilendireceğiz. Güncel şartlar her zaman uygulamamızda mevcut olacaktır.',
+                    isFirst: false,
+                    isLast: false,
+                    hasIcon: Icons.update,
+                    iconColor: const Color(0xFFFF9800),
+                  ),
+                  _buildSectionTitle('12. İletişim ve Destek'),
+                  _buildText(
+                    'Kullanım şartlarıyla ilgili sorularınız için:\n\n'
+                    '📧 E-posta: destek.canlipazar@gmail.com\n'
+                    '🌐 Web: www.canlipazar.net\n',
+                    isFirst: false,
+                    isLast: true,
+                    hasIcon: Icons.support_agent,
+                    iconColor: const Color(0xFF2E7D32),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Browser Button
             Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
+              child: Container(
+                width: double.infinity,
+                child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E7D32),
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
                   ),
                   onPressed: () async {
-                    if (await canLaunch(privacyPolicyUrl)) {
-                      await launch(privacyPolicyUrl);
+                    if (await canLaunch(termsOfServiceUrl)) {
+                      await launch(termsOfServiceUrl);
                     } else {
-                      throw 'Could not launch $privacyPolicyUrl';
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Bağlantı açılamadı'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
                     }
                   },
-                  child: Text('Open Term of Service in Browser',
-                      style: TextStyle(fontSize: 13.0, color: Colors.grey)),
+                  icon: const Icon(Icons.open_in_browser),
+                  label: Text(
+                    'Kullanım Şartlarını Tarayıcıda Aç',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -78,21 +294,70 @@ class TermsOfServicePage extends StatelessWidget {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: 12.0, top: 24.0),
       child: Text(
         title,
-        style: TextStyle(
+        style: GoogleFonts.poppins(
           fontWeight: FontWeight.bold,
-          fontSize: 18.0,
+          fontSize: 20.0,
+          color: const Color(0xFF2E7D32),
         ),
       ),
     );
   }
 
-  Widget _buildText(String text) {
-    return Text(
-      text,
-      style: TextStyle(fontSize: 16.0),
+  Widget _buildText(
+    String text, {
+    bool isFirst = false,
+    bool isLast = false,
+    IconData? hasIcon,
+    Color? iconColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(
+        top: isFirst ? 0 : 8,
+        bottom: isLast ? 0 : 8,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFE9ECEF),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (hasIcon != null) ...[
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor?.withOpacity(0.1) ??
+                    const Color(0xFF2E7D32).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                hasIcon,
+                color: iconColor ?? const Color(0xFF2E7D32),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.poppins(
+                fontSize: 15.0,
+                color: const Color(0xFF495057),
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

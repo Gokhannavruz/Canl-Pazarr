@@ -2,7 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:freecycle/screens/profile_screen2.dart';
+import 'package:animal_trade/screens/profile_screen2.dart';
 
 class FollowersListScreen extends StatefulWidget {
   final String userId;

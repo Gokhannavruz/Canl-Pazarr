@@ -1,10 +1,12 @@
 import 'package:flutter/widgets.dart';
-import 'package:freecycle/models/user.dart';
-import 'package:freecycle/resources/auth_methods.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:animal_trade/models/user.dart';
+import 'package:animal_trade/resources/auth_methods.dart';
 
 class UserProvider with ChangeNotifier {
   User? _user;
   final AuthMethods _authMethods = AuthMethods();
+  bool _isLoading = true;
 
   User? get getUser =>
       _user ??
@@ -35,6 +37,28 @@ class UserProvider with ChangeNotifier {
         fcmToken: '',
         credit: 0,
       );
+
+  bool get isLoading => _isLoading;
+
+  // Initialize user provider with auth stream
+  void initialize() {
+    firebase_auth.FirebaseAuth.instance
+        .authStateChanges()
+        .listen((firebase_auth.User? firebaseUser) async {
+      if (firebaseUser != null) {
+        // User is signed in
+        User? user = await _authMethods.getUserDetails();
+        _user = user;
+        _isLoading = false;
+        notifyListeners();
+      } else {
+        // User is signed out
+        _user = null;
+        _isLoading = false;
+        notifyListeners();
+      }
+    });
+  }
 
   // refresh user
   Future<void> refreshUser() async {

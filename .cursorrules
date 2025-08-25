@@ -1,0 +1,834 @@
+# 🐄 Hayvan Alım Satımı Platformu Dönüşüm Kuralları
+
+Bu dosya mevcut freecycle uygulamasını hayvan alım satımı platformuna dönüştürme sürecinde takip edilecek kuralları ve rehberleri içerir.
+
+## 📋 Proje Genel Bakış
+
+### Mevcut Durum
+- **Uygulama Adı**: freecycle
+- **Mevcut Amaç**: Ücretsiz eşya paylaşımı
+- **Ana Koleksiyonlar**: `posts` (eşya), `jobs` (hizmet), `users`, `conversations`
+- **Navigasyon**: 4 tab (Home, Messages, Add Post, Profile)
+
+### Hedef Durum
+- **Yeni Uygulama Adı**: AnimalTrade / HayvanMarket
+- **Yeni Amaç**: Büyükbaş ve küçükbaş hayvan alım satımı
+- **Yeni Koleksiyonlar**: `animals` (hayvan ilanları), `farmers` (çiftçi profilleri), `health_records`, `transactions`
+
+## 🔄 Dönüşüm Aşamaları
+
+### Faz 1: Temel Altyapı Dönüşümü (2-3 hafta)
+
+#### 1.1 Uygulama Adı ve Branding
+```yaml
+# pubspec.yaml değişiklikleri
+name: animal_trade  # freecycle -> animal_trade
+description: Hayvan alım satımı platformu
+
+# assets/images değişiklikleri
+- assets/animal_logo.png         # freecycle logo yerine
+- assets/cow_icon.png           # hayvan ikonu
+- assets/livestock_banner.png   # banner görseli
+```
+
+#### 1.2 Veri Modeli Dönüşümü
+
+**Yeni Animal Post Modeli** (`lib/models/animal_post.dart`):
+```dart
+class AnimalPost {
+  final String description;
+  final String uid;
+  final String username;
+  final String postId;
+  final DateTime datePublished;
+  final List<String> photoUrls;
+  final String profImage;
+  final String country;
+  final String state;
+  final String city;
+  
+  // Hayvan-specific alanlar
+  final String animalType;        // "büyükbaş", "küçükbaş"
+  final String animalSpecies;     // "sığır", "koyun", "keçi", "manda"
+  final String animalBreed;       // "holstein", "angus", "merinos"
+  final int ageInMonths;          // ay cinsinden yaş
+  final String gender;            // "erkek", "dişi"
+  final double weightInKg;        // kg cinsinden ağırlık
+  final double priceInTL;         // TL cinsinden fiyat
+  final String healthStatus;      // "sağlıklı", "aşılı", "hasta"
+  final List<String> vaccinations; // ["şap", "brucella", "tuberculin"]
+  final String purpose;           // "süt", "et", "damızlık", "yün"
+  final bool isPregnant;          // hamilelik durumu
+  final DateTime? birthDate;      // doğum tarihi
+  final String? parentInfo;       // ebeveyn bilgisi
+  final List<String> certificates; // sertifika URL'leri
+  final bool isNegotiable;        // pazarlık yapılabilir mi
+  final String sellerType;        // "bireysel", "çiftlik", "kooperatif"
+  final String transportInfo;     // nakliye bilgileri
+  final bool isUrgentSale;        // acil satış
+  final String? veterinarianContact; // veteriner iletişim
+  final Map<String, dynamic>? additionalInfo; // ek bilgiler
+  
+  // Mevcut sistemden devam edenler
+  final List<dynamic> likes;
+  final List<dynamic> saved;
+  final bool isActive;            // ilan aktif mi
+  final DateTime? soldDate;       // satış tarihi
+  final String? buyerUid;         // alıcı uid
+}
+```
+
+**Farmer User Modeli** (`lib/models/farmer_user.dart`):
+```dart
+class FarmerUser extends User {
+  // Mevcut User alanları...
+  
+  // Çiftçi-specific alanlar
+  final String? farmerLicense;      // çiftçi belgesi no
+  final String? farmName;           // çiftlik adı
+  final String? farmAddress;        // çiftlik adresi
+  final int? experienceYears;       // deneyim yılı
+  final List<String>? specializations; // ["süt sığırı", "et sığırı"]
+  final bool isVerifiedFarmer;      // doğrulanmış çiftçi
+  final String? businessNumber;     // vergi/ticaret sicil no
+  final List<String>? pastSales;    // geçmiş satış ID'leri
+  final double? averageRating;      // ortalama puan
+  final int? totalSales;            // toplam satış sayısı
+  final int? totalAnimals;          // toplam hayvan sayısı
+  final String? farmType;           // "süt çiftliği", "et çiftliği"
+  final Map<String, int>? animalCounts; // hayvan türü sayıları
+  final List<String>? certifications; // sertifikalar
+  final String? farmSize;           // çiftlik büyüklüğü
+  final bool? hasVeterinarySupport; // veteriner desteği
+  final String? contactHours;       // ulaşılabilir saatler
+}
+```
+
+#### 1.3 Kategori Sistemi Dönüşümü
+
+**Yeni Kategori Listesi** (`lib/utils/animal_categories.dart`):
+```dart
+class AnimalCategories {
+  static const List<String> categories = [
+    'Tüm Hayvanlar',
+    
+    // Büyükbaş Kategoriler
+    'Süt Sığırı',
+    'Et Sığırı',
+    'Damızlık Boğa',
+    'Düve',
+    'Manda',
+    'Tosun',
+    
+    // Küçükbaş Kategoriler
+    'Koyun',
+    'Keçi',
+    'Kuzu',
+    'Oğlak',
+    'Koç',
+    'Teke',
+    
+    // Özel Kategoriler
+    'Gebe Hayvanlar',
+    'Genç Hayvanlar',
+    'Damızlık Hayvanlar',
+    'Acil Satış',
+    'Süt Veren',
+    'Et İçin',
+    'Organik Beslenmiş',
+  ];
+
+  static const Map<String, IconData> categoryIcons = {
+    'Süt Sığırı': Icons.local_drink,
+    'Et Sığırı': Icons.restaurant,
+    'Damızlık Boğa': Icons.pets,
+    'Düve': Icons.pets,
+    'Manda': Icons.pets,
+    'Tosun': Icons.pets,
+    'Koyun': Icons.pets,
+    'Keçi': Icons.pets,
+    'Kuzu': Icons.child_care,
+    'Oğlak': Icons.child_care,
+    'Koç': Icons.pets,
+    'Teke': Icons.pets,
+    'Gebe Hayvanlar': Icons.pregnant_woman,
+    'Genç Hayvanlar': Icons.child_care,
+    'Damızlık Hayvanlar': Icons.favorite,
+    'Acil Satış': Icons.flash_on,
+    'Süt Veren': Icons.local_drink,
+    'Et İçin': Icons.restaurant,
+    'Organik Beslenmiş': Icons.eco,
+  };
+
+  static const Map<String, Color> categoryColors = {
+    'Süt Sığırı': Colors.blue,
+    'Et Sığırı': Colors.red,
+    'Damızlık Boğa': Colors.purple,
+    'Düve': Colors.pink,
+    'Manda': Colors.brown,
+    'Tosun': Colors.orange,
+    'Koyun': Colors.grey,
+    'Keçi': Colors.green,
+    'Kuzu': Colors.lightBlue,
+    'Oğlak': Colors.lightGreen,
+    'Koç': Icons.pets,
+    'Teke': Icons.pets,
+  };
+}
+```
+
+### Faz 2: UI/UX Dönüşümü (3-4 hafta)
+
+#### 2.1 Ana Sayfalar Dönüşümü
+
+**Ana Hayvan Listesi** (`lib/screens/animal_discover_screen.dart`):
+```dart
+// discoverPage2.dart -> animal_discover_screen.dart
+// Mevcut DiscoverPage2 sınıfından türetilecek
+
+class AnimalDiscoverScreen extends StatefulWidget {
+  // Mevcut filtreleme sistemine ek olarak:
+  // - Fiyat aralığı filtresi
+  // - Yaş aralığı filtresi
+  // - Ağırlık aralığı filtresi
+  // - Cinsiyet filtresi
+  // - Sağlık durumu filtresi
+  // - Hamilelik durumu filtresi
+}
+
+// Yeni filtre widget'ları
+class AnimalFilterDialog extends StatefulWidget {
+  final AnimalFilters currentFilters;
+  final Function(AnimalFilters) onFiltersChanged;
+}
+
+class PriceRangeSlider extends StatefulWidget {
+  final double minPrice;
+  final double maxPrice;
+  final Function(double, double) onChanged;
+}
+```
+
+**Hayvan İlan Ekleme** (`lib/screens/add_animal_screen.dart`):
+```dart
+// add_post_screen.dart -> add_animal_screen.dart
+// Mevcut AddPostScreen sınıfından türetilecek
+
+class AddAnimalScreen extends StatefulWidget {
+  // Yeni form alanları:
+  // - Hayvan türü dropdown
+  // - Cinsiyet seçimi
+  // - Yaş girişi
+  // - Ağırlık girişi
+  // - Fiyat girişi
+  // - Sağlık durumu
+  // - Aşı bilgileri
+  // - Veteriner raporu yükleme
+  // - Nakliye bilgileri
+}
+
+// Yeni form widget'ları
+class AnimalInfoForm extends StatefulWidget {
+  final AnimalPost? existingPost;
+  final Function(AnimalPost) onSave;
+}
+
+class HealthRecordUploader extends StatefulWidget {
+  final Function(List<String>) onUploaded;
+}
+```
+
+#### 2.2 Renk Paleti ve Tema Dönüşümü
+
+**Yeni Renk Sistemi** (`lib/utils/animal_colors.dart`):
+```dart
+class AnimalColors {
+  // Ana renkler
+  static const Color primary = Color(0xFF2E7D32);        // Koyu yeşil (tarım)
+  static const Color secondary = Color(0xFF8BC34A);      // Açık yeşil
+  static const Color accent = Color(0xFFFF9800);         // Turuncu (fiyat)
+  static const Color background = Color(0xFFF1F8E9);     // Açık yeşil arka plan
+  
+  // Durum renkleri
+  static const Color success = Color(0xFF4CAF50);        // Başarı
+  static const Color error = Color(0xFFD32F2F);          // Hata
+  static const Color warning = Color(0xFFFFA000);        // Uyarı
+  static const Color info = Color(0xFF2196F3);           // Bilgi
+  
+  // Hayvan türü renkleri
+  static const Color bigAnimal = Color(0xFF6D4C41);      // Büyükbaş (kahverengi)
+  static const Color smallAnimal = Color(0xFF9E9E9E);    // Küçükbaş (gri)
+  static const Color urgent = Color(0xFFE91E63);         // Acil satış
+  static const Color pregnant = Color(0xFFE1BEE7);       // Gebe
+  static const Color young = Color(0xFFBBDEFB);          // Genç
+  static const Color breeding = Color(0xFFF8BBD9);       // Damızlık
+}
+```
+
+#### 2.3 Navigasyon Güncellemesi
+
+**Ana Navigasyon** (`lib/utils/global_variables.dart`):
+```dart
+List<Widget> homeScreenItems = [
+  const AnimalDiscoverScreen(),     // Ana hayvan listesi
+  const AnimalMessagesScreen(),     // Mesajlaşma
+  const AddAnimalScreen(),          // Hayvan ilanı ekleme
+  const FarmerProfileScreen(),      // Çiftçi profili
+  const AnimalFavoritesScreen(),    // Favoriler (5. tab olarak eklenebilir)
+];
+
+// Alt navigasyon ikonları
+const List<IconData> navIcons = [
+  Icons.home,                       // Ana sayfa
+  Icons.message,                    // Mesajlar
+  Icons.add_circle_outline,         // İlan ekle
+  Icons.person,                     // Profil
+  Icons.favorite,                   // Favoriler
+];
+```
+
+### Faz 3: Gelişmiş Özellikler (2-3 hafta)
+
+#### 3.1 Fiyat Sistemi
+
+**Fiyat Yöneticisi** (`lib/services/pricing_service.dart`):
+```dart
+class PricingService {
+  static String formatPrice(double price) {
+    final formatter = NumberFormat('#,###', 'tr_TR');
+    return '${formatter.format(price)} ₺';
+  }
+  
+  static bool validatePrice(double price, String animalType) {
+    if (animalType == 'büyükbaş') {
+      return price >= 5000 && price <= 200000;
+    } else if (animalType == 'küçükbaş') {
+      return price >= 500 && price <= 20000;
+    }
+    return false;
+  }
+  
+  static Future<Map<String, double>> getAveragePrices(
+    String animalType, 
+    String breed, 
+    String location
+  ) async {
+    // Firebase'den geçmiş satış verilerini al
+    // Ortalama fiyatları hesapla
+    return {
+      'average': 0.0,
+      'min': 0.0,
+      'max': 0.0,
+    };
+  }
+}
+```
+
+#### 3.2 Sağlık Kayıtları Sistemi
+
+**Sağlık Kayıtları** (`lib/models/health_record.dart`):
+```dart
+class HealthRecord {
+  final String recordId;
+  final String animalId;
+  final String animalPostId;
+  final String veterinarianName;
+  final String veterinarianLicense;
+  final DateTime checkupDate;
+  final String overallHealth;
+  final List<Vaccination> vaccinations;
+  final List<String> healthIssues;
+  final List<String> certificateUrls;
+  final String notes;
+  final bool isVerified;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+}
+
+class Vaccination {
+  final String vaccineId;
+  final String vaccineName;
+  final String vaccineType;
+  final DateTime administeredDate;
+  final DateTime expiryDate;
+  final String veterinarianName;
+  final String batchNumber;
+  final String manufacturer;
+  final String certificateUrl;
+  final bool isValid;
+}
+```
+
+#### 3.3 Gelişmiş Mesajlaşma
+
+**Hayvan Mesajlaşma** (`lib/screens/animal_message_screen.dart`):
+```dart
+class AnimalMessageScreen extends StatefulWidget {
+  // Mevcut mesajlaşma sistemine ek özellikler:
+  // - Hızlı mesaj şablonları
+  // - Fotoğraf paylaşımı
+  // - Konum paylaşımı
+  // - Fiyat teklifi gönderme
+  // - Randevu planlama
+}
+
+class QuickMessageTemplates {
+  static const List<String> animalInquiries = [
+    'Hayvan hala satılık mı?',
+    'Veteriner raporu mevcut mu?',
+    'Nakliye nasıl olacak?',
+    'Fiyat pazarlığa açık mı?',
+    'Hayvanı görmeye gelebilir miyim?',
+    'Aşı kartı var mı?',
+    'Soy kütüğü belgesi mevcut mu?',
+    'Hayvan gebe mi?',
+    'Hangi tarihte doğmuş?',
+    'Günlük süt verimi nedir?',
+    'Hastalık geçmişi var mı?',
+    'Hangi yemle beslenmiş?',
+    'Peşin fiyat nedir?',
+    'Taksit imkanı var mı?',
+  ];
+}
+```
+
+### Faz 4: Güvenlik ve Doğrulama (1-2 hafta)
+
+#### 4.1 Çiftçi Doğrulama Sistemi
+
+**Doğrulama Servisi** (`lib/services/verification_service.dart`):
+```dart
+class VerificationService {
+  static Future<bool> verifyFarmerLicense(String licenseNumber) async {
+    // Tarım Bakanlığı API'si ile doğrulama
+    return true;
+  }
+  
+  static Future<bool> verifyVeterinaryReport(String reportUrl) async {
+    // Veteriner raporu geçerliliği kontrolü
+    return true;
+  }
+  
+  static Future<bool> verifyPhoneNumber(String phoneNumber) async {
+    // SMS doğrulama
+    return true;
+  }
+  
+  static Future<bool> verifyAddress(String address) async {
+    // Adres doğrulama
+    return true;
+  }
+}
+```
+
+#### 4.2 Sahtecilik Önleme
+
+**Sahtecilik Kontrol** (`lib/services/fraud_detection_service.dart`):
+```dart
+class FraudDetectionService {
+  static bool detectFakeAnimalListing(AnimalPost post) {
+    List<String> suspiciousIndicators = [];
+    
+    // Şüpheli fiyat kontrolü
+    if (post.priceInTL < 1000 || post.priceInTL > 100000) {
+      suspiciousIndicators.add('Anormal fiyat');
+    }
+    
+    // Çok fazla hayvan kontrolü
+    if (post.uid != null) {
+      // Kullanıcının aktif ilan sayısını kontrol et
+    }
+    
+    // Fotoğraf kontrolü
+    if (post.photoUrls.length < 3) {
+      suspiciousIndicators.add('Yetersiz fotoğraf');
+    }
+    
+    return suspiciousIndicators.isNotEmpty;
+  }
+}
+```
+
+## 🛠️ Teknik Gereksinimler
+
+### Yeni Paket Bağımlılıkları
+```yaml
+dependencies:
+  # Mevcut paketler korunacak...
+  
+  # Yeni paketler
+  intl: ^0.18.0                    # Fiyat formatı
+  charts_flutter: ^0.12.0          # Fiyat grafikleri
+  image_cropper: ^3.0.0            # Resim düzenleme
+  pdf: ^3.8.0                      # PDF raporları
+  printing: ^5.9.0                 # Yazdırma
+  currency_formatter: ^2.0.0       # Para birimi formatı
+  geolocator: ^9.0.0               # Konum servisleri
+  maps_launcher: ^2.0.0            # Harita açma
+  file_picker: ^5.2.0              # Dosya seçme
+  crypto: ^3.0.0                   # Şifreleme
+  flutter_rating_bar: ^4.0.1       # Değerlendirme
+  image_gallery_saver: ^2.0.0      # Resim kaydetme
+  share_plus: ^7.0.0               # Paylaşım
+  qr_flutter: ^4.0.0               # QR kod
+  flutter_local_notifications: ^15.0.0  # Bildirimler
+```
+
+### Firebase Koleksiyon Yapısı
+```
+Firestore Collections:
+├── animals/                     # Hayvan ilanları
+│   ├── {animalId}/
+│   │   ├── basic_info          # Temel bilgiler
+│   │   ├── health_info         # Sağlık bilgileri
+│   │   ├── pricing_info        # Fiyat bilgileri
+│   │   ├── photos              # Fotoğraflar
+│   │   └── seller_info         # Satıcı bilgileri
+│
+├── farmers/                     # Çiftçi profilleri
+│   ├── {farmerId}/
+│   │   ├── profile_info        # Profil bilgileri
+│   │   ├── verification_status # Doğrulama durumu
+│   │   ├── ratings            # Değerlendirmeler
+│   │   ├── sales_history      # Satış geçmişi
+│   │   └── animal_inventory   # Hayvan envanteri
+│
+├── health_records/             # Sağlık kayıtları
+│   ├── {recordId}/
+│   │   ├── vaccinations       # Aşı bilgileri
+│   │   ├── checkups          # Kontrol bilgileri
+│   │   └── certificates      # Sertifikalar
+│
+├── transactions/               # Satış işlemleri
+│   ├── {transactionId}/
+│   │   ├── buyer_info        # Alıcı bilgileri
+│   │   ├── seller_info       # Satıcı bilgileri
+│   │   ├── animal_info       # Hayvan bilgileri
+│   │   ├── payment_info      # Ödeme bilgileri
+│   │   └── status_history    # Durum geçmişi
+│
+├── veterinarians/             # Veteriner listesi
+├── transport_companies/       # Nakliye firmaları
+├── price_history/            # Fiyat geçmişi
+└── reports/                  # Raporlar ve şikayetler
+```
+
+## 🎨 UI/UX Tasarım Kuralları
+
+### Bileşen Tasarım Sistemi
+```dart
+// lib/widgets/animal_card.dart
+class AnimalCard extends StatefulWidget {
+  final AnimalPost animal;
+  final bool isGridView;
+  final VoidCallback? onTap;
+  final VoidCallback? onFavorite;
+  final VoidCallback? onShare;
+  
+  // Hayvan kartı tasarımı:
+  // - Büyük fotoğraf
+  // - Fiyat etiketi (sağ üst)
+  // - Hayvan türü rozeti
+  // - Yaş ve ağırlık bilgisi
+  // - Konum bilgisi
+  // - Çiftçi profil resmi
+  // - Favori butonu
+  // - Paylaş butonu
+}
+
+// lib/widgets/price_tag.dart
+class PriceTag extends StatelessWidget {
+  final double price;
+  final bool isNegotiable;
+  final bool isUrgent;
+  
+  // Fiyat etiketi tasarımı:
+  // - Büyük, belirgin fiyat
+  // - Pazarlık yapılabilir rozeti
+  // - Acil satış animasyonu
+}
+
+// lib/widgets/animal_info_chip.dart
+class AnimalInfoChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+  
+  // Bilgi çipleri:
+  // - Yaş, ağırlık, cinsiyet
+  // - Sağlık durumu
+  // - Aşı durumu
+}
+```
+
+### Responsive Tasarım
+```dart
+// lib/utils/responsive_helper.dart
+class ResponsiveHelper {
+  static bool isTablet(BuildContext context) {
+    return MediaQuery.of(context).size.width >= 600;
+  }
+  
+  static bool isDesktop(BuildContext context) {
+    return MediaQuery.of(context).size.width >= 1200;
+  }
+  
+  static int getGridCrossAxisCount(BuildContext context) {
+    if (isDesktop(context)) return 4;
+    if (isTablet(context)) return 3;
+    return 2;
+  }
+}
+```
+
+## 📊 Analitik ve Metrikler
+
+### Takip Edilecek Events
+```dart
+class AnimalAnalytics {
+  static const String animalViewed = 'animal_viewed';
+  static const String animalLiked = 'animal_liked';
+  static const String animalShared = 'animal_shared';
+  static const String messageSent = 'message_sent';
+  static const String listingCreated = 'listing_created';
+  static const String priceFiltered = 'price_filtered';
+  static const String categorySelected = 'category_selected';
+  static const String animalPurchased = 'animal_purchased';
+  static const String farmerVerified = 'farmer_verified';
+  static const String healthRecordUploaded = 'health_record_uploaded';
+}
+```
+
+### Performans Metrikleri
+- Sayfa yükleme süresi < 2 saniye
+- Arama sonuçları < 1 saniye
+- Resim yükleme < 3 saniye
+- Mesaj gönderme < 500ms
+- Uygulama başlatma < 3 saniye
+
+## 🚀 Deployment Stratejisi
+
+### Versiyon Planlaması
+```
+v1.0.0 - Temel hayvan listeleme ve mesajlaşma
+v1.1.0 - Gelişmiş filtreleme ve arama
+v1.2.0 - Sağlık kayıtları sistemi
+v1.3.0 - Çiftçi doğrulama sistemi
+v1.4.0 - Ödeme ve satış sistemi
+v1.5.0 - Analitik ve raporlama
+```
+
+### Environment Variables
+```env
+# Firebase Configuration
+FIREBASE_PROJECT_ID=animal-trade-platform
+FIREBASE_API_KEY=your-firebase-api-key
+FIREBASE_AUTH_DOMAIN=your-auth-domain
+
+# External APIs
+GOOGLE_MAPS_API_KEY=your-google-maps-key
+PAYMENT_API_KEY=your-payment-api-key
+SMS_API_KEY=your-sms-api-key
+VETERINARY_API_KEY=your-veterinary-api-key
+
+# Feature Flags
+ENABLE_PREMIUM_FEATURES=true
+ENABLE_FARMER_VERIFICATION=true
+ENABLE_HEALTH_RECORDS=true
+ENABLE_PAYMENT_SYSTEM=false
+```
+
+## 📱 Platform Uyumluluk
+
+### iOS Özel Gereksinimler
+```dart
+// iOS için özel düzenlemeler
+if (Platform.isIOS) {
+  // Cupertino tasarım bileşenleri
+  // App Store review süreçleri
+  // Push notification ayarları
+  // Photo library izinleri
+}
+```
+
+### Android Özel Gereksinimler
+```dart
+// Android için özel düzenlemeler
+if (Platform.isAndroid) {
+  // Material Design bileşenleri
+  // Google Play review süreçleri
+  // File system izinleri
+  // Background services
+}
+```
+
+### Web Uyumluluk
+```dart
+// Web için özel düzenlemeler
+if (kIsWeb) {
+  // Responsive web tasarımı
+  // SEO optimizasyonu
+  // Social media meta tags
+  // Browser uyumluluk
+}
+```
+
+## 🧪 Test Stratejisi
+
+### Unit Tests
+```dart
+// test/models/animal_post_test.dart
+void main() {
+  group('AnimalPost Tests', () {
+    test('should create valid animal post', () {
+      final post = AnimalPost(
+        animalType: 'büyükbaş',
+        priceInTL: 15000,
+        ageInMonths: 24,
+        // ... other fields
+      );
+      expect(post.animalType, 'büyükbaş');
+      expect(post.priceInTL, 15000);
+    });
+    
+    test('should validate price correctly', () {
+      expect(AnimalValidators.validatePrice(15000, 'büyükbaş'), true);
+      expect(AnimalValidators.validatePrice(100, 'büyükbaş'), false);
+    });
+  });
+}
+```
+
+### Widget Tests
+```dart
+// test/widgets/animal_card_test.dart
+void main() {
+  group('AnimalCard Widget Tests', () {
+    testWidgets('should display animal information', (tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: AnimalCard(animal: mockAnimalPost),
+      ));
+      
+      expect(find.text('15.000 ₺'), findsOneWidget);
+      expect(find.text('Süt Sığırı'), findsOneWidget);
+    });
+  });
+}
+```
+
+### Integration Tests
+```dart
+// integration_test/app_test.dart
+void main() {
+  group('App Integration Tests', () {
+    testWidgets('complete animal listing flow', (tester) async {
+      app.main();
+      await tester.pumpAndSettle();
+      
+      // Login
+      await tester.tap(find.text('Giriş Yap'));
+      await tester.pumpAndSettle();
+      
+      // Navigate to add animal
+      await tester.tap(find.byIcon(Icons.add_circle_outline));
+      await tester.pumpAndSettle();
+      
+      // Fill form and submit
+      await tester.enterText(find.byType(TextField).first, 'Test hayvan');
+      await tester.tap(find.text('Paylaş'));
+      await tester.pumpAndSettle();
+      
+      // Verify success
+      expect(find.text('İlan başarıyla eklendi'), findsOneWidget);
+    });
+  });
+}
+```
+
+## 🔒 Güvenlik Kuralları
+
+### Veri Güvenliği
+```dart
+// lib/services/security_service.dart
+class SecurityService {
+  static String encryptSensitiveData(String data) {
+    // Önemli verileri şifrele
+    return encrypted_data;
+  }
+  
+  static bool validateUserInput(String input) {
+    // SQL injection, XSS koruması
+    return true;
+  }
+  
+  static void logSecurityEvent(String event) {
+    // Güvenlik olaylarını logla
+  }
+}
+```
+
+### Kullanıcı Doğrulama
+```dart
+// Her kritik işlem için kullanıcı doğrulaması
+class AuthGuard {
+  static bool canCreateAnimalListing(User user) {
+    return user.isVerified && user.isActive;
+  }
+  
+  static bool canSendMessage(User user) {
+    return user.isVerified;
+  }
+  
+  static bool canViewContactInfo(User user) {
+    return user.isPremium || user.credit > 0;
+  }
+}
+```
+
+## 🎯 Başarı Kriterleri
+
+### Teknik Başarı Kriterleri
+- [ ] Uygulama başlatma süresi < 3 saniye
+- [ ] Arama sonuçları < 2 saniye
+- [ ] 99.9% uptime
+- [ ] Crash rate < 0.1%
+- [ ] Memory usage < 200MB
+- [ ] Battery optimization grade A
+
+### İş Başarı Kriterleri
+- [ ] Günlük aktif kullanıcı > 1000
+- [ ] Aylık yeni ilan > 5000
+- [ ] Kullanıcı retention > 60%
+- [ ] Ortalama session duration > 5 dakika
+- [ ] Conversion rate > 15%
+- [ ] Kullanıcı memnuniyeti > 4.5/5
+
+### Özellik Başarı Kriterleri
+- [ ] Hayvan ilanı oluşturma tamamlanma oranı > 80%
+- [ ] Mesajlaşma kullanım oranı > 70%
+- [ ] Filtreleme kullanım oranı > 60%
+- [ ] Favorilere ekleme oranı > 40%
+- [ ] Paylaşım oranı > 20%
+- [ ] Premium üyelik dönüşüm oranı > 10%
+
+---
+
+Bu kurallar, freecycle uygulamasının hayvan alım satımı platformuna başarılı bir şekilde dönüştürülmesi için gerekli tüm adımları, standartları ve en iyi uygulamaları içerir. Her geliştirme aşamasında bu kurallara uyulması, projenin başarılı bir şekilde tamamlanmasını sağlayacaktır.
+
+## 📞 Destek ve İletişim
+
+### Geliştirici Ekibi
+- **Proje Yöneticisi**: Hayvan alım satımı uzmanı
+- **Lead Developer**: Flutter/Dart uzmanı
+- **UI/UX Designer**: Tarım sektörü deneyimi
+- **Backend Developer**: Firebase uzmanı
+- **QA Engineer**: Mobil test uzmanı
+
+### Stakeholder İletişimi
+- **Çiftçi Temsilcileri**: Haftalık feedback toplantıları
+- **Veteriner Hekim**: Sağlık kayıtları danışmanlığı
+- **Nakliye Uzmanı**: Lojistik süreçler danışmanlığı
+- **Hukuk Danışmanı**: Yasal süreçler danışmanlığı
+
+Bu dokümanda belirtilen kuralların takibi ve güncellemeleri için düzenli kod review'ları yapılmalı ve proje ilerlemesi bu kurallara göre değerlendirilmelidir. 

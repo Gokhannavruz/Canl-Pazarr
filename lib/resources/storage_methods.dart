@@ -49,4 +49,15 @@ class StorageMethods {
       throw Exception('Failed to upload image: $e');
     }
   }
+
+  // Delete image from Firebase Storage by download URL
+  Future<void> deleteImageByUrl(String url) async {
+    try {
+      final ref = _storage.refFromURL(url);
+      await ref.delete();
+    } catch (e) {
+      print('Error deleting image: $e');
+      throw Exception('Failed to delete image: $e');
+    }
+  }
 }

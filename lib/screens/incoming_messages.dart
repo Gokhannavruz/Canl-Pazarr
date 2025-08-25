@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:freecycle/screens/message_screen.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:animal_trade/screens/message_screen.dart';
 import '../models/user.dart';
-import 'package:freecycle/screens/jobs_messages_page.dart' hide Message;
+import '../utils/animal_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class IncomingMessagesPage extends StatefulWidget {
   final String currentUserUid;
@@ -21,7 +21,7 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
   late Future<Map<String, List<Message>>> _futureConversations;
   bool isJobPost = false;
 
-  NativeAd? _nativeAd;
+  // AdMob kodları kaldırıldı
   bool isAdLoaded = false;
   final StreamController<Message> _messageStreamController =
       StreamController.broadcast();
@@ -47,40 +47,6 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
         break;
       }
     }
-  }
-
-  void _loadNativeAd() {
-    _nativeAd = NativeAd(
-      adUnitId: 'ca-app-pub-8445989958080180/5911867262',
-      factoryId: 'listTile',
-      request: const AdRequest(),
-      listener: NativeAdListener(
-        // Called when an ad is successfully received.
-        onAdLoaded: (Ad ad) {
-          var add = ad as NativeAd;
-          setState(() {
-            _nativeAd = add;
-            isAdLoaded = true;
-          });
-        },
-
-        // Called when an ad request failed.
-        onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          // Dispose the ad here to free resources.
-          ad.dispose();
-        },
-        // Called when an ad opens an overlay that covers the screen.
-        onAdOpened: (Ad ad) => print('Ad opened.'),
-        // Called when an ad removes an overlay that covers the screen.
-        onAdClosed: (Ad ad) => print('Ad closed.'),
-        // Called when an impression occurs on the ad.
-        onAdImpression: (Ad ad) => print('Ad impression.'),
-        // Called when a click is recorded for a NativeAd.
-        onAdClicked: (Ad ad) => print('Ad clicked.'),
-      ),
-    );
-
-    _nativeAd!.load();
   }
 
   @override
@@ -110,16 +76,13 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
   @override
   void dispose() {
     _messageStreamController.close();
-    _nativeAd?.dispose();
+    // AdMob kodu kaldırıldı
     super.dispose();
   }
 
   Future<void> _getPostIdAndRedirect(String recipientUid) async {
     try {
       String postId = await _getPostId(recipientUid);
-
-      // Check if postId exists in either "posts" or "jobPosts" collection
-      bool isJobPost = await _isJobPost(postId);
 
       // Always direct to MessagesPage for deleted posts
       if (postId.isEmpty || (!await _postExists(postId))) {
@@ -136,30 +99,17 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
         return;
       }
 
-      // Direct to appropriate page based on post type
-      if (isJobPost) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => jobMessagesPage(
-              currentUserUid: widget.currentUserUid,
-              recipientUid: recipientUid,
-              postId: postId,
-            ),
+      // Navigate to MessagesPage
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MessagesPage(
+            currentUserUid: widget.currentUserUid,
+            recipientUid: recipientUid,
+            postId: postId,
           ),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MessagesPage(
-              currentUserUid: widget.currentUserUid,
-              recipientUid: recipientUid,
-              postId: postId,
-            ),
-          ),
-        );
-      }
+        ),
+      );
     } catch (e) {
       print("Error in _getPostIdAndRedirect: $e");
       // Default to MessagesPage in case of any error
@@ -176,31 +126,14 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
     }
   }
 
-  // Helper method to check if post exists in either collection
+  // Helper method to check if post exists
   Future<bool> _postExists(String postId) async {
     if (postId.isEmpty) return false;
 
     DocumentSnapshot postSnapshot =
         await FirebaseFirestore.instance.collection("posts").doc(postId).get();
 
-    DocumentSnapshot jobPostSnapshot = await FirebaseFirestore.instance
-        .collection("jobPosts")
-        .doc(postId)
-        .get();
-
-    return postSnapshot.exists || jobPostSnapshot.exists;
-  }
-
-  // Helper method to determine if a post is a job post
-  Future<bool> _isJobPost(String postId) async {
-    if (postId.isEmpty) return false;
-
-    DocumentSnapshot jobPostSnapshot = await FirebaseFirestore.instance
-        .collection("jobPosts")
-        .doc(postId)
-        .get();
-
-    return jobPostSnapshot.exists;
+    return postSnapshot.exists;
   }
 
 // get clicked conversation's post id
@@ -222,358 +155,217 @@ class _IncomingMessagesPageState extends State<IncomingMessagesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(
-          title: Text(
-            "Messages",
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 20,
-              color: Colors.white,
-            ),
+      backgroundColor: AnimalColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(
+          'Mesajlar',
+          style: GoogleFonts.poppins(
+            color: Color(0xFF212121), // textPrimary
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
           ),
-          centerTitle: true,
-          backgroundColor: Color(0xFF1A1A1A),
-          elevation: 0,
         ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF1A1A1A),
-                Colors.black,
-              ],
-            ),
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                child: FutureBuilder<Map<String, List<Message>>>(
-                  future: _futureConversations,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                        ),
-                      );
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(
-                        child: Container(
-                          padding: const EdgeInsets.all(24),
-                          margin: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
+        iconTheme: IconThemeData(color: AnimalColors.primary),
+      ),
+      body: Container(
+        color: Colors.white,
+        child: Column(
+          children: [
+            Expanded(
+              child: FutureBuilder<Map<String, List<Message>>>(
+                future: _futureConversations,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: AnimalColors.primary,
+                      ),
+                    );
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        margin: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: AnimalColors.background,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Color(0xFFE0E0E0), // dividerColor
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
                             ),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.inbox_outlined,
-                                size: 80,
-                                color: Colors.blue.withOpacity(0.7),
-                              ),
-                              const SizedBox(height: 24),
-                              Text(
-                                "Your inbox is empty",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                "Messages will appear here when you connect with other users",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
-                      );
-                    }
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.inbox_outlined,
+                              size: 80,
+                              color: AnimalColors.primary.withOpacity(0.7),
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              "Gelen kutunuz boş",
+                              style: GoogleFonts.poppins(
+                                color: Color(0xFF212121),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "Diğer kullanıcılarla iletişime geçtiğinizde mesajlar burada görünecek",
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                color: Color(0xFF757575),
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
 
-                    Map<String, List<Message>> chats = snapshot.data!;
-                    List<String> senderUids = chats.keys.toList()
-                      ..sort((a, b) {
-                        var aMessages = chats[a]!;
-                        var bMessages = chats[b]!;
-                        return bMessages.first.timestamp
-                            .compareTo(aMessages.first.timestamp);
-                      });
+                  Map<String, List<Message>> chats = snapshot.data!;
+                  List<String> senderUids = chats.keys.toList()
+                    ..sort((a, b) {
+                      var aMessages = chats[a]!;
+                      var bMessages = chats[b]!;
+                      return bMessages.first.timestamp
+                          .compareTo(aMessages.first.timestamp);
+                    });
 
-                    return ListView.builder(
-                      physics: BouncingScrollPhysics(),
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      itemCount: senderUids.length,
-                      itemBuilder: (context, index) {
-                        late Message lastMessage;
-                        String senderUid = senderUids[index];
-                        List<Message> messages = chats[senderUid]!;
-                        messages
-                            .sort((a, b) => b.timestamp.compareTo(a.timestamp));
-                        lastMessage = messages.first;
+                  return ListView.builder(
+                    physics: BouncingScrollPhysics(),
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    itemCount: senderUids.length,
+                    itemBuilder: (context, index) {
+                      late Message lastMessage;
+                      String senderUid = senderUids[index];
+                      List<Message> messages = chats[senderUid]!;
+                      messages
+                          .sort((a, b) => b.timestamp.compareTo(a.timestamp));
+                      lastMessage = messages.first;
 
-                        return FutureBuilder<User>(
-                          future: _getUser(senderUid),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const SizedBox.shrink();
-                            } else if (!snapshot.hasData) {
-                              return const SizedBox.shrink();
-                            }
-                            User user = snapshot.data!;
-                            String username = user.username ?? "User";
-                            String profilePhotoUrl = user.photoUrl ?? "";
-                            bool isCurrentUser =
-                                senderUid == widget.currentUserUid;
+                      return FutureBuilder<User>(
+                        future: _getUser(senderUid),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const SizedBox.shrink();
+                          } else if (!snapshot.hasData) {
+                            return const SizedBox.shrink();
+                          }
+                          User user = snapshot.data!;
+                          String username = user.username ?? "Kullanıcı";
+                          String profilePhotoUrl = user.photoUrl ?? "";
+                          bool isCurrentUser =
+                              senderUid == widget.currentUserUid;
 
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 6),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    _getPostIdAndRedirect(senderUid);
-                                  },
-                                  onLongPress: () {
-                                    // Show bottom sheet with options to delete conversation
-                                    showModalBottomSheet(
-                                      backgroundColor: Color(0xFF1E1E1E),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(20),
-                                        ),
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 6),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  _getPostIdAndRedirect(senderUid);
+                                },
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  padding: EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFFAFAFA), // surfaceColor
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                        color:
+                                            Color(0xFFE0E0E0)), // dividerColor
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.03),
+                                        blurRadius: 4,
+                                        offset: Offset(0, 2),
                                       ),
-                                      context: context,
-                                      builder: (context) => Container(
-                                        padding:
-                                            EdgeInsets.symmetric(vertical: 20),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 24,
+                                        backgroundImage:
+                                            profilePhotoUrl.isNotEmpty
+                                                ? NetworkImage(profilePhotoUrl)
+                                                : null,
+                                        backgroundColor: AnimalColors.secondary
+                                            .withOpacity(0.2),
+                                        child: profilePhotoUrl.isEmpty
+                                            ? Icon(Icons.person,
+                                                color: AnimalColors.primary,
+                                                size: 28)
+                                            : null,
+                                      ),
+                                      SizedBox(width: 16),
+                                      Expanded(
                                         child: Column(
-                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Container(
-                                              width: 50,
-                                              height: 5,
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey[600],
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
+                                            Text(
+                                              username,
+                                              style: GoogleFonts.poppins(
+                                                color: Color(0xFF212121),
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 16,
                                               ),
                                             ),
-                                            SizedBox(height: 20),
-                                            ListTile(
-                                              leading: Container(
-                                                padding: EdgeInsets.all(10),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.red
-                                                      .withOpacity(0.1),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Icon(
-                                                  Icons.delete_outline,
-                                                  color: Colors.red,
-                                                ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              lastMessage.text,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: GoogleFonts.poppins(
+                                                color: Color(0xFF757575),
+                                                fontSize: 14,
                                               ),
-                                              title: Text(
-                                                "Delete conversation",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              subtitle: Text(
-                                                "This action cannot be undone",
-                                                style: TextStyle(
-                                                  color: Colors.white
-                                                      .withOpacity(0.5),
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                              onTap: () {
-                                                Navigator.pop(context);
-                                                _deleteConversation(
-                                                    widget.currentUserUid,
-                                                    senderUid);
-                                              },
                                             ),
                                           ],
                                         ),
                                       ),
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.05),
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.1),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        _formatTimestamp(lastMessage.timestamp),
+                                        style: GoogleFonts.poppins(
+                                          color: Color(0xFF757575),
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                    ),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 55,
-                                          height: 55,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color:
-                                                  Colors.white.withOpacity(0.2),
-                                              width: 2,
-                                            ),
-                                          ),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                            child: profilePhotoUrl.isNotEmpty
-                                                ? Image.network(
-                                                    profilePhotoUrl,
-                                                    fit: BoxFit.cover,
-                                                    errorBuilder: (context,
-                                                        error, stackTrace) {
-                                                      return Icon(
-                                                        Icons.account_circle,
-                                                        size: 55,
-                                                        color: Colors.white
-                                                            .withOpacity(0.7),
-                                                      );
-                                                    },
-                                                  )
-                                                : Icon(
-                                                    Icons.account_circle,
-                                                    size: 55,
-                                                    color: Colors.white
-                                                        .withOpacity(0.7),
-                                                  ),
-                                          ),
-                                        ),
-                                        SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Flexible(
-                                                    child: Text(
-                                                      username,
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: 8),
-                                                  Text(
-                                                    _formatTimestamp(
-                                                        lastMessage.timestamp),
-                                                    style: TextStyle(
-                                                      color: Colors.white
-                                                          .withOpacity(0.5),
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(height: 6),
-                                              lastMessage.sender ==
-                                                      widget.currentUserUid
-                                                  ? Text(
-                                                      "You: ${_truncateMessage(lastMessage.text)}",
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors.white
-                                                            .withOpacity(0.5),
-                                                      ),
-                                                    )
-                                                  : Text(
-                                                      _truncateMessage(
-                                                          lastMessage.text),
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors.white
-                                                            .withOpacity(0.7),
-                                                      ),
-                                                    ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                    ],
                                   ),
                                 ),
                               ),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
               ),
-              // show native ad
-              /*  if (isAdLoaded)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: SizedBox(
-                    height: 55,
-                    child: AdWidget(ad: _nativeAd!),
-                  ),
-                )
-              else
-                const SizedBox.shrink(), */
-            ],
-          ),
-        ));
-    // floatingActionButton: FloatingActionButton(
-    //   onPressed: () {
-    //     // show bottom sheet with search bar
-    //     showModalBottomSheet(
-    //       context: context,
-    //       builder: (context) => const SearchForMessageScreen(),
-    //     );
-    //   },
-    //   backgroundColor: Colors.blue,
-    //   child: const Icon(
-    //     Icons.add,
-    //     size: 35,
-    //     weight: 100,
-    //     color: Colors.white,
-    //   ),
-    // ));
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<Map<String, List<Message>>> _loadConversations() async {

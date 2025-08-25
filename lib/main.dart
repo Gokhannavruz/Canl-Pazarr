@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:freecycle/screens/country_state_city_picker.dart';
-import 'package:freecycle/screens/message_screen.dart';
-import 'package:freecycle/screens/services/firebase_messaging_service.dart';
-import 'package:freecycle/src/rvncat_constant.dart';
-import 'package:freecycle/store_config.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:animal_trade/screens/location_picker_screen.dart';
+import 'package:animal_trade/screens/message_screen.dart';
+import 'package:animal_trade/screens/services/firebase_messaging_service.dart';
+import 'package:animal_trade/src/rvncat_constant.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -12,24 +14,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:google_fonts/google_fonts.dart';
+// import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
-import 'package:freecycle/providers/user_provider.dart';
-import 'package:freecycle/responsive/mobile_screen_layout.dart';
-import 'package:freecycle/responsive/responsive_layout_screen.dart';
-import 'package:freecycle/responsive/web_screen_layout.dart';
-import 'package:freecycle/screens/login_screen.dart';
-import 'package:freecycle/utils/colors.dart';
+import 'package:animal_trade/providers/user_provider.dart';
+import 'package:animal_trade/responsive/mobile_screen_layout.dart';
+import 'package:animal_trade/responsive/responsive_layout_screen.dart';
+import 'package:animal_trade/responsive/web_screen_layout.dart';
+import 'package:animal_trade/screens/login_screen.dart';
+import 'package:animal_trade/utils/colors.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:purchases_flutter/models/store.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'firebase_options.dart';
 
 // Conditionally import dart:io
-import 'dart:io' if (dart.library.html) 'package:freecycle/utils/web_stub.dart'
-    as io;
-import 'package:animated_text_kit/animated_text_kit.dart';
+import 'dart:io'
+    if (dart.library.html) 'package:animal_trade/utils/web_stub.dart' as io;
 import 'screens/location_picker_demo.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -61,32 +63,6 @@ Future<void> requestNotificationPermissions() async {
   );
 
   print('User granted permission: ${settings.authorizationStatus}');
-}
-
-Future<void> _configureSDK() async {
-  // Skip RevenueCat configuration on web
-  if (kIsWeb) {
-    print("Skipping RevenueCat configuration on web platform");
-    return;
-  }
-
-  await Purchases.setLogLevel(LogLevel.debug);
-
-  PurchasesConfiguration configuration;
-  if (StoreConfig.isForAmazonAppstore()) {
-    configuration = AmazonConfiguration(StoreConfig.instance.apiKey)
-      ..appUserID = null;
-  } else if (StoreConfig.isForAppleStore() || StoreConfig.isForGooglePlay()) {
-    configuration = PurchasesConfiguration(StoreConfig.instance.apiKey)
-      ..appUserID = null;
-  } else {
-    throw Exception("Unsupported store configuration");
-  }
-
-  await Purchases.configure(configuration);
-
-  // Enable RevenueCat experiments
-  await Purchases.enableAdServicesAttributionTokenCollection();
 }
 
 Future<void> setupLocalNotifications() async {
@@ -130,67 +106,6 @@ Future<void> setupLocalNotifications() async {
   );
 }
 
-class SplashScreen extends StatefulWidget {
-  final Widget? child;
-  const SplashScreen({Key? key, this.child}) : super(key: key);
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(Duration(seconds: 5), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => widget.child ?? Container()),
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue.shade700, Colors.blue.shade200],
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.recycling,
-              size: 100,
-              color: Colors.white,
-            ),
-            SizedBox(height: 20),
-            AnimatedTextKit(
-              animatedTexts: [
-                TypewriterAnimatedText(
-                  'freecycle',
-                  textStyle: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  speed: Duration(milliseconds: 200),
-                ),
-              ],
-              totalRepeatCount: 1,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 Future<void> _handleBackgroundMessage(RemoteMessage message) async {
   print("Handling background message: ${message.messageId}");
   // Burada minimum işlem yapın, yalnızca loglama gibi hafif işlemler olmalı
@@ -198,6 +113,15 @@ Future<void> _handleBackgroundMessage(RemoteMessage message) async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Turkish locale data for date formatting
+  try {
+    await initializeDateFormatting('tr_TR', null);
+    print("Turkish locale data initialized successfully");
+  } catch (e) {
+    print("Error initializing Turkish locale data: $e");
+    // Continue with the app even if locale initialization fails
+  }
 
   // Firebase initialization with better error handling
   try {
@@ -225,21 +149,7 @@ Future<void> main() async {
     // Continue with the app even if FCM fails
   }
 
-  // AdMob initialization (with web check)
-  try {
-    // AdMob initialization
-    if (!kIsWeb) {
-      await MobileAds.instance.initialize();
-      print("AdMob initialized successfully");
-
-      // Initialize consent after successful AdMob initialization
-      await ConsentManager.initializeConsent();
-    } else {
-      print("Skipping AdMob initialization on web");
-    }
-  } catch (e) {
-    print("Error initializing AdMob: $e");
-  }
+  // AdMob initialization removed
 
   // Notification permissions (skip on web or handle differently)
   if (!kIsWeb) {
@@ -260,21 +170,6 @@ Future<void> main() async {
     } catch (e) {
       print("Error detecting platform: $e");
     }
-
-    if (isIOS || isMacOS) {
-      StoreConfig(
-        store: Store.appStore,
-        apiKey: appleApiKey,
-      );
-    } else if (isAndroid) {
-      const useAmazon = bool.fromEnvironment("amazon");
-      StoreConfig(
-        store: useAmazon ? Store.amazon : Store.playStore,
-        apiKey: useAmazon ? amazonApiKey : googleApiKey,
-      );
-    }
-
-    await _configureSDK();
   }
 
   // FirebaseAppCheck initialization (with web handling)
@@ -338,18 +233,46 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<UserProvider>(
-          create: (context) => UserProvider(),
+          create: (context) {
+            final provider = UserProvider();
+            provider.initialize();
+            return provider;
+          },
         ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'freecycle',
-        theme: ThemeData.dark().copyWith(
-          scaffoldBackgroundColor: mobileBackgroundColor,
+        title: 'CanlıPazar',
+        theme: ThemeData.light().copyWith(
+          scaffoldBackgroundColor: Colors.white,
+          primaryColor: const Color(0xFF2E7D32),
+          colorScheme: ColorScheme.light(
+            primary: const Color(0xFF2E7D32),
+            secondary: const Color(0xFFFF9800),
+            surface: const Color(0xFFF5F5F5),
+            background: Colors.white,
+            onPrimary: Colors.white,
+            onSecondary: Colors.white,
+            onSurface: const Color(0xFF000000),
+            onBackground: const Color(0xFF000000),
+          ),
+          textSelectionTheme: TextSelectionThemeData(
+            cursorColor: Colors.black,
+            selectionColor: Colors.black.withOpacity(0.3),
+            selectionHandleColor: Colors.black,
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: const Color(0xFF2E7D32)),
+            ),
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: const Color(0xFFE0E0E0)),
+            ),
+          ),
         ),
         routes: {
           '/login': (context) => const LoginScreen(),
-          '/location': (context) => const CountryStateCityForFirstSelect(),
+          '/location': (context) => const LocationPickerScreen(),
           '/location_picker': (context) => const LocationPickerDemo(),
         },
         onUnknownRoute: (settings) {
@@ -361,22 +284,53 @@ class _MyAppState extends State<MyApp> {
         onGenerateRoute: (settings) {
           if (settings.name == '/') {
             return MaterialPageRoute(
-              builder: (context) => StreamBuilder(
-                stream: FirebaseAuth.instance.authStateChanges(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.active) {
-                    if (snapshot.hasData) {
-                      return const ResponsiveLayout(
-                        mobileScreenLayout: MobileScreenLayout(),
-                        webScreenLayout: WebScreenLayout(),
-                      );
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Text('${snapshot.error}'),
-                      );
-                    }
+              builder: (context) => Consumer<UserProvider>(
+                builder: (context, userProvider, child) {
+                  // Minimal splash screen
+                  if (userProvider.isLoading) {
+                    return Scaffold(
+                      backgroundColor: const Color(0xFF2E7D32),
+                      body: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // App name
+                            Text(
+                              'CanlıPazar',
+                              style: GoogleFonts.poppins(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Güvenilir hayvan alım satım platformu',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.white.withOpacity(0.8),
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
                   }
-                  return const LoginScreen();
+
+                  // Kullanıcı giriş yapmış
+                  final userUid = userProvider.getUser?.uid;
+                  if (userUid != null && userUid.isNotEmpty) {
+                    return const ResponsiveLayout(
+                      mobileScreenLayout: MobileScreenLayout(),
+                      webScreenLayout: WebScreenLayout(),
+                    );
+                  } else {
+                    // Kullanıcı giriş yapmamış
+                    return const LoginScreen();
+                  }
                 },
               ),
             );
@@ -432,91 +386,4 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-class ConsentManager {
-  static const String _consentShownKey = 'gdpr_consent_shown';
-
-  static Future<void> initializeConsent() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final bool consentShown = prefs.getBool(_consentShownKey) ?? false;
-
-      // Eğer daha önce consent gösterilmemişse devam et
-      if (!consentShown) {
-        ConsentRequestParameters params = ConsentRequestParameters(
-          consentDebugSettings: ConsentDebugSettings(
-            debugGeography:
-                DebugGeography.debugGeographyDisabled, // Production için
-          ),
-        );
-
-        ConsentInformation.instance.requestConsentInfoUpdate(
-          params,
-          () async {
-            try {
-              // Kullanıcının GDPR bölgesinde olup olmadığını kontrol et
-              bool isConsentRequired =
-                  await ConsentInformation.instance.isConsentFormAvailable();
-
-              if (isConsentRequired) {
-                await loadAndShowConsentForm();
-                // Consent form gösterildi olarak işaretle
-                await prefs.setBool(_consentShownKey, true);
-              } else {
-                // GDPR bölgesi dışındaki kullanıcılar için
-                print("Consent form is not required for this region");
-                await prefs.setBool(_consentShownKey, true);
-              }
-            } catch (e) {
-              print("Error during consent check: $e");
-            }
-          },
-          (FormError error) {
-            print("Consent form error: ${error.message}");
-          },
-        );
-      } else {
-        print("Consent form has already been shown before");
-      }
-    } catch (e) {
-      print("ConsentManager initialization error: $e");
-    }
-  }
-
-  static Future<void> loadAndShowConsentForm() async {
-    try {
-      ConsentForm.loadConsentForm(
-        (ConsentForm consentForm) async {
-          try {
-            consentForm.show(
-              (FormError? formError) {
-                if (formError != null) {
-                  print("Consent form show error: ${formError.message}");
-                  return;
-                }
-                print("Consent form shown successfully");
-              },
-            );
-          } catch (e) {
-            print("Error showing consent form: $e");
-          }
-        },
-        (FormError formError) {
-          print("Consent form load error: ${formError.message}");
-        },
-      );
-    } catch (e) {
-      print("Error loading consent form: $e");
-    }
-  }
-
-  // Consent durumunu sıfırlamak için (test amaçlı)
-  static Future<void> resetConsentStatus() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_consentShownKey);
-      await ConsentInformation.instance.reset();
-    } catch (e) {
-      print("Error resetting consent status: $e");
-    }
-  }
-}
+// ConsentManager class removed

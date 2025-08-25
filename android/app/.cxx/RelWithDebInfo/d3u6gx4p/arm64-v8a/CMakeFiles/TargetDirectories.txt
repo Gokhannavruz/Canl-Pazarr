@@ -1,0 +1,2 @@
+/Users/gokhannavruz/Desktop/frees_ios_copy/android/app/.cxx/RelWithDebInfo/d3u6gx4p/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/gokhannavruz/Desktop/frees_ios_copy/android/app/.cxx/RelWithDebInfo/d3u6gx4p/arm64-v8a/CMakeFiles/rebuild_cache.dir

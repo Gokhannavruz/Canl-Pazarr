@@ -1,22 +1,24 @@
-import 'package:freecycle/screens/discoverPage2.dart';
-import 'package:freecycle/screens/discover_jobs_page.dart';
-import 'package:freecycle/screens/welcomepage.dart';
+import 'package:animal_trade/screens/animal_discover_screen.dart';
+import 'package:animal_trade/screens/add_animal_screen.dart';
+import 'package:animal_trade/screens/veterinarian_discover_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:freecycle/screens/add_post_screen.dart';
-import 'package:freecycle/screens/incoming_messages.dart';
-import 'package:freecycle/screens/profile_screen2.dart';
+import 'package:animal_trade/screens/incoming_messages.dart';
+import 'package:animal_trade/screens/profile_screen2.dart';
 
 // Web ekran boyutu eşik değeri - 900 piksel genişliğinden büyük ekranlar web düzeni kullanacak
 const webScreenSize = 9000;
 
 List<Widget> homeScreenItem = [
-  const DiscoverPage2(),
+  const AnimalDiscoverScreen(), // Ana hayvan listesi sayfası
   IncomingMessagesPage(
+      // Hayvan mesajlaşma
       currentUserUid: FirebaseAuth.instance.currentUser?.uid ?? ''),
-  const AddPostScreen(),
+  const AddAnimalScreen(), // Hayvan ilanı ekleme sayfası
+  const VeterinarianDiscoverScreen(), // Veteriner discover sayfası
   StreamBuilder<DocumentSnapshot>(
+    // Çiftçi profili
     stream: FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser?.uid)
@@ -41,4 +43,22 @@ List<Widget> homeScreenItem = [
       }
     },
   )
+];
+
+// Ana navigasyon ikonları
+const List<IconData> navIcons = [
+  Icons.home, // Ana sayfa
+  Icons.message, // Mesajlar
+  Icons.add_circle_outline, // İlan ekle
+  Icons.local_hospital, // Veterinerler
+  Icons.person, // Profil
+];
+
+// Navigasyon etiketleri
+const List<String> navLabels = [
+  'Hayvanlar',
+  'Mesajlar',
+  'İlan Ekle',
+  'Veterinerler',
+  'Profil',
 ];

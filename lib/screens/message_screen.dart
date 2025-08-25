@@ -4,15 +4,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:freecycle/screens/profile_screen2.dart';
-import 'package:freecycle/screens/post_screen.dart';
+import 'package:animal_trade/screens/profile_screen2.dart';
+
 import 'package:intl/intl.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:freecycle/utils/store_review_helper.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../models/user.dart';
+import '../models/animal_post.dart';
+import '../screens/animal_detail_screen.dart';
+import '../utils/animal_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../services/pricing_service.dart';
+import '../services/animal_sale_service.dart';
+import '../widgets/sale_rating_dialog.dart';
+import 'dart:ui';
 
 // NOT: Firebase artık FCM Server Key kullanımını desteklemiyor (Haziran 2023'ten beri deprecated)
 // Bunun yerine FCM HTTP v1 API ve Firebase Cloud Functions kullanılmalıdır
@@ -45,6 +54,7 @@ class _MessagesPageState extends State<MessagesPage> {
   String PostUid = "";
   String? _senderToken;
   String? _recipientToken;
+  String _userCountry = "";
 
   // Lokal bildirimler için plugin
   late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -53,6 +63,13 @@ class _MessagesPageState extends State<MessagesPage> {
       widget.currentUserUid.hashCode <= widget.recipientUid.hashCode
           ? "${widget.currentUserUid}-${widget.recipientUid}"
           : "${widget.recipientUid}-${widget.currentUserUid}";
+
+  // Veteriner kontrolü için
+  bool _isVeterinarianConversation = false;
+  Map<String, dynamic>? _veterinarianData;
+
+  // Klavye durumu için
+  bool _isKeyboardVisible = false;
 
   @override
   void initState() {
@@ -69,6 +86,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
     getUserProfile();
     getCurrentUserUid();
+    _getUserCountry();
 
     // If a postId was provided, get post info safely
     if (widget.postId.isNotEmpty) {
@@ -79,6 +97,41 @@ class _MessagesPageState extends State<MessagesPage> {
           });
         }
       });
+    }
+
+    // Veteriner kontrolü yap
+    _checkIfVeterinarian();
+
+    // Klavye durumunu takip et
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupKeyboardListener();
+    });
+  }
+
+  Future<void> _checkIfVeterinarian() async {
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.recipientUid)
+          .get();
+
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        final isVeterinarian = userData['isVeterinarian'] ?? false;
+
+        if (mounted) {
+          setState(() {
+            _isVeterinarianConversation = isVeterinarian;
+            if (isVeterinarian) {
+              _veterinarianData = userData;
+            }
+          });
+        }
+
+        print('Veteriner kontrolü: $isVeterinarian');
+      }
+    } catch (e) {
+      print('Veteriner kontrolü hatası: $e');
     }
   }
 
@@ -374,6 +427,10 @@ class _MessagesPageState extends State<MessagesPage> {
     super.dispose();
   }
 
+  void _setupKeyboardListener() {
+    // Bu metod artık gerekli değil, MediaQuery kullanacağız
+  }
+
   Future<User> getUser(String uid) async {
     DocumentSnapshot doc =
         await FirebaseFirestore.instance.collection("users").doc(uid).get();
@@ -427,15 +484,15 @@ class _MessagesPageState extends State<MessagesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AnimalColors.background,
       appBar: AppBar(
         toolbarHeight: 70,
         elevation: 0,
-        backgroundColor: Color(0xFF1A1A1A),
+        backgroundColor: Colors.white,
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
+            color: AnimalColors.primary,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
@@ -448,10 +505,11 @@ class _MessagesPageState extends State<MessagesPage> {
                     decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: Colors.white.withOpacity(0.2), width: 2),
+                            color: AnimalColors.secondary.withOpacity(0.2),
+                            width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.blue.shade900.withOpacity(0.2),
+                            color: AnimalColors.primary.withOpacity(0.08),
                             blurRadius: 10,
                             spreadRadius: 0,
                           )
@@ -460,13 +518,11 @@ class _MessagesPageState extends State<MessagesPage> {
                       radius: 20,
                       backgroundImage:
                           NetworkImage(recipientUser!.photoUrl ?? ''),
-                      backgroundColor: Colors.grey[900],
-                      onBackgroundImageError: (exception, stackTrace) {
-                        // Handle image loading error
-                      },
+                      backgroundColor: AnimalColors.secondary.withOpacity(0.2),
                       child: recipientUser!.photoUrl == null ||
                               recipientUser!.photoUrl!.isEmpty
-                          ? Icon(Icons.person, color: Colors.white, size: 24)
+                          ? Icon(Icons.person,
+                              color: AnimalColors.primary, size: 24)
                           : null,
                     ),
                   ),
@@ -494,10 +550,10 @@ class _MessagesPageState extends State<MessagesPage> {
                                 child: Text(
                                   recipientUser!.username ?? "User",
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                                    color: Color(0xFF212121),
                                   ),
                                 ),
                               ),
@@ -507,7 +563,7 @@ class _MessagesPageState extends State<MessagesPage> {
                                   child: Icon(
                                     Icons.verified_rounded,
                                     size: 16,
-                                    color: Colors.blue[400],
+                                    color: AnimalColors.primary,
                                   ),
                                 ),
                             ],
@@ -516,9 +572,9 @@ class _MessagesPageState extends State<MessagesPage> {
                             recipientUser!.isPremium == true
                                 ? "Premium User"
                                 : "Online",
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 12,
-                              color: Colors.grey[400],
+                              color: Color(0xFF757575),
                             ),
                           ),
                         ],
@@ -528,586 +584,48 @@ class _MessagesPageState extends State<MessagesPage> {
                 ],
               )
             : null,
+        actions: widget.postId.isNotEmpty && !_isVeterinarianConversation
+            ? [
+                _buildSaleButton(),
+              ]
+            : null,
       ),
       body: Container(
-        decoration: BoxDecoration(
-          color: Colors.black,
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1A1A1A),
-              Colors.black,
-            ],
-          ),
-        ),
+        color: Colors.white,
         child: Column(
           children: [
-            if (widget.postId.isNotEmpty)
-              StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('posts')
-                    .doc(widget.postId)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Container(
-                      margin: const EdgeInsets.all(12),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.orange.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.info_outline,
-                              color: Colors.orange, size: 20),
-                          SizedBox(width: 12),
-                          Flexible(
-                            child: Text(
-                              "Loading post information...",
-                              style:
-                                  TextStyle(color: Colors.orange, fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  if (!snapshot.data!.exists) {
-                    return Container(
-                      margin: const EdgeInsets.all(12),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.red.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.error_outline,
-                              color: Colors.red, size: 20),
-                          SizedBox(width: 12),
-                          Flexible(
-                            child: Text(
-                              "This product has been removed or is no longer available",
-                              style: TextStyle(color: Colors.red, fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  final data = snapshot.data!.data() as Map<String, dynamic>?;
-
-                  // Check if data is null or if required fields are missing
-                  if (data == null ||
-                      !data.containsKey('postUrl') ||
-                      !data.containsKey('category')) {
-                    return Container(
-                      margin: const EdgeInsets.all(12),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.red.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.error_outline,
-                              color: Colors.red, size: 20),
-                          SizedBox(width: 12),
-                          Flexible(
-                            child: Text(
-                              "This product has been removed or is no longer available",
-                              style: TextStyle(color: Colors.red, fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return Container(
-                    margin: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.blue.withOpacity(0.08),
-                          Colors.purple.withOpacity(0.05),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.1),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Product Image with improved presentation
-                              Hero(
-                                tag: 'product-${widget.postId}',
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => PostScreen(
-                                            postId: widget.postId,
-                                            uid: PostUid,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Container(
-                                      height: 80,
-                                      width: 80,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.2),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image.network(
-                                          data['postUrl'],
-                                          height: 80,
-                                          width: 80,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                            return Container(
-                                              height: 80,
-                                              width: 80,
-                                              color: Colors.grey[800],
-                                              child: const Icon(
-                                                  Icons.image_not_supported,
-                                                  color: Colors.white54),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              // Product Information with better organization
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // Add title if available, otherwise use category
-                                    Text(
-                                      data['title'] ??
-                                          data['category'] ??
-                                          'Unknown Item',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: -0.3,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    // Category as a tag if title was used
-                                    if (data['title'] != null &&
-                                        data['category'] != null)
-                                      Container(
-                                        margin:
-                                            EdgeInsets.only(top: 2, bottom: 6),
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue.withOpacity(0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: Colors.blue.withOpacity(0.2),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          data['category'],
-                                          style: TextStyle(
-                                            color: Colors.blue[300],
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    // Location with icon
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on_rounded,
-                                          size: 12,
-                                          color: Colors.white.withOpacity(0.5),
-                                        ),
-                                        SizedBox(width: 4),
-                                        Expanded(
-                                          child: Text(
-                                            [
-                                              if (data['city']?.isNotEmpty ??
-                                                  false)
-                                                data['city'],
-                                              if (data['state']?.isNotEmpty ??
-                                                  false)
-                                                data['state'],
-                                              if (data['country']?.isNotEmpty ??
-                                                  false)
-                                                data['country'],
-                                            ]
-                                                .where((e) =>
-                                                    e != null && e.isNotEmpty)
-                                                .join(", "),
-                                            style: TextStyle(
-                                              color:
-                                                  Colors.white.withOpacity(0.6),
-                                              fontSize: 13,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // View Product button
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                          child: Row(
-                            children: [
-                              const Spacer(),
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => PostScreen(
-                                          postId: widget.postId,
-                                          uid: PostUid,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.transparent,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.2),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.visibility_outlined,
-                                          size: 14,
-                                          color: Colors.white.withOpacity(0.8),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          "View Item",
-                                          style: TextStyle(
-                                            color:
-                                                Colors.white.withOpacity(0.8),
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            if (PostUid == currentUserUid)
-              StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('posts')
-                    .doc(widget.postId)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) return const SizedBox.shrink();
-
-                  final data = snapshot.data!.data() as Map<String, dynamic>?;
-                  if (data == null) return const SizedBox.shrink();
-
-                  final bool isGiven = data['isGiven'] ?? false;
-
-                  return Container(
-                    width: MediaQuery.of(context).size.width - 24,
-                    margin:
-                        const EdgeInsets.only(left: 12, right: 12, bottom: 12),
-                    child: isGiven
-                        ? Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.green.withOpacity(0.3),
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.check_circle_outline,
-                                  color: Colors.green,
-                                  size: 16,
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  "Item Given",
-                                  style: TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : Container(
-                            width: MediaQuery.of(context).size.width - 24,
-                            alignment: Alignment.center,
-                            child: TextButton(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    backgroundColor: Color(0xFF1E1E1E),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    title: const Text(
-                                      "Confirm Item Transfer",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    content: const Text(
-                                      "Are you sure you want to mark this item as given?",
-                                      style: TextStyle(color: Colors.white70),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.grey,
-                                        ),
-                                        child: const Text(
-                                          "Cancel",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green,
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 10,
-                                          ),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          FirebaseFirestore.instance
-                                              .collection("posts")
-                                              .doc(widget.postId)
-                                              .update({"isGiven": true});
-                                          updateCredit();
-                                        },
-                                        child: const Text(
-                                          "Confirm",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                backgroundColor: Colors.blue.withOpacity(0.1),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(
-                                    color: Colors.blue.withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.check_circle_outline,
-                                    color: Colors.blue[400],
-                                    size: 16,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    "Mark as Given",
-                                    style: TextStyle(
-                                      color: Colors.blue[400],
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                  );
-                },
-              ),
+            // Klavye açık değilse hayvan detay bilgilerini göster
+            if (MediaQuery.of(context).viewInsets.bottom == 0) ...[
+              if (widget.postId.isNotEmpty && !_isVeterinarianConversation)
+                _buildProductCard(),
+              if (_isVeterinarianConversation) _buildVeterinarianInfoCard(),
+            ],
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection("conversations")
-                      .where("messagesId", isEqualTo: conversationId)
-                      .orderBy("timestamp", descending: true)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.white54,
-                        ),
-                      );
-                    }
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection("conversations")
+                    .where("messagesId", isEqualTo: conversationId)
+                    .orderBy("timestamp", descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  // İlk yükleme sırasında sadece loading göster, klavye değişimlerinde gösterme
+                  if (snapshot.connectionState == ConnectionState.waiting &&
+                      !snapshot.hasData &&
+                      MediaQuery.of(context).viewInsets.bottom == 0) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: AnimalColors.primary,
+                      ),
+                    );
+                  }
 
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.blue.withOpacity(0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Icon(
-                                Icons.chat_bubble_outline_rounded,
-                                color: Colors.blue[400],
-                                size: 40,
-                              ),
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              "No messages yet",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              "Send a message to start the conversation",
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    List<Message> messages = snapshot.data!.docs
+                  // Klavye açılıp kapanırken mevcut veriyi göster
+                  if (snapshot.connectionState == ConnectionState.waiting &&
+                      snapshot.hasData) {
+                    // Mevcut veriyi göster, loading gösterme
+                    List messages = snapshot.data!.docs
                         .map((doc) => Message.fromSnapshot(doc))
                         .toList();
-
                     return ListView.builder(
                       key: _listKey,
                       itemCount: messages.length,
@@ -1137,13 +655,13 @@ class _MessagesPageState extends State<MessagesPage> {
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[900],
+                                      color: Colors.grey[200],
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
                                       _formatMessageDate(message.timestamp),
-                                      style: TextStyle(
-                                        color: Colors.grey[400],
+                                      style: GoogleFonts.poppins(
+                                        color: Color(0xFF757575),
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -1170,8 +688,8 @@ class _MessagesPageState extends State<MessagesPage> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: isCurrentUser
-                                        ? Colors.blue[700]
-                                        : Colors.grey[850],
+                                        ? AnimalColors.primary.withOpacity(0.18)
+                                        : Colors.blueGrey.withOpacity(0.10),
                                     borderRadius: BorderRadius.only(
                                       topLeft: Radius.circular(
                                           isCurrentUser ? 16 : 4),
@@ -1182,15 +700,19 @@ class _MessagesPageState extends State<MessagesPage> {
                                     ),
                                     border: Border.all(
                                       color: isCurrentUser
-                                          ? Colors.blue.withOpacity(0.3)
-                                          : Colors.grey[800]!,
-                                      width: 1,
+                                          ? AnimalColors.primary
+                                              .withOpacity(0.35)
+                                          : Colors.blueGrey.withOpacity(0.18),
+                                      width: 1.2,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
+                                        color: isCurrentUser
+                                            ? AnimalColors.primary
+                                                .withOpacity(0.08)
+                                            : Colors.blueGrey.withOpacity(0.08),
+                                        blurRadius: 8,
+                                        offset: Offset(0, 2),
                                       ),
                                     ],
                                   ),
@@ -1198,44 +720,14 @@ class _MessagesPageState extends State<MessagesPage> {
                                     horizontal: 16,
                                     vertical: 12,
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        message.text,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            DateFormat('HH:mm').format(
-                                                message.timestamp.toDate()),
-                                            style: TextStyle(
-                                              color: isCurrentUser
-                                                  ? Colors.white
-                                                      .withOpacity(0.7)
-                                                  : Colors.grey[400],
-                                              fontSize: 11,
-                                            ),
-                                          ),
-                                          if (isCurrentUser) ...[
-                                            SizedBox(width: 4),
-                                            Icon(
-                                              Icons.check_circle,
-                                              size: 11,
-                                              color:
-                                                  Colors.white.withOpacity(0.7),
-                                            ),
-                                          ]
-                                        ],
-                                      ),
-                                    ],
+                                  child: Text(
+                                    message.text,
+                                    style: GoogleFonts.poppins(
+                                      color: isCurrentUser
+                                          ? Colors.white
+                                          : Color(0xFF212121),
+                                      fontSize: 14,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -1244,75 +736,268 @@ class _MessagesPageState extends State<MessagesPage> {
                         );
                       },
                     );
-                  },
-                ),
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    // Klavye açıksa hiçbir şey gösterme
+                    if (MediaQuery.of(context).viewInsets.bottom > 0) {
+                      return SizedBox.shrink();
+                    }
+
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AnimalColors.primary.withOpacity(0.08),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AnimalColors.primary.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              color: AnimalColors.primary,
+                              size: 24,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "Henüz mesaj yok",
+                            style: GoogleFonts.poppins(
+                              color: Color(0xFF212121),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  List messages = snapshot.data!.docs
+                      .map((doc) => Message.fromSnapshot(doc))
+                      .toList();
+                  return ListView.builder(
+                    key: _listKey,
+                    itemCount: messages.length,
+                    reverse: true,
+                    padding: const EdgeInsets.only(bottom: 8),
+                    physics: const BouncingScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      final isCurrentUser =
+                          message.sender == widget.currentUserUid;
+                      final isFirstMessage = index == messages.length - 1 ||
+                          messages[index + 1].sender != message.sender;
+                      final showDateHeader = index == messages.length - 1 ||
+                          !_isSameDay(messages[index].timestamp,
+                              messages[index + 1].timestamp);
+
+                      return Column(
+                        children: [
+                          if (showDateHeader)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16.0),
+                              child: Center(
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    _formatMessageDate(message.timestamp),
+                                    style: GoogleFonts.poppins(
+                                      color: Color(0xFF757575),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: isFirstMessage ? 8 : 4,
+                              bottom: 4,
+                              left: 8,
+                              right: 8,
+                            ),
+                            child: Align(
+                              alignment: isCurrentUser
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.75,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isCurrentUser
+                                      ? AnimalColors.primary.withOpacity(0.18)
+                                      : Colors.blueGrey.withOpacity(0.10),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft:
+                                        Radius.circular(isCurrentUser ? 16 : 4),
+                                    topRight:
+                                        Radius.circular(isCurrentUser ? 4 : 16),
+                                    bottomLeft: Radius.circular(16),
+                                    bottomRight: Radius.circular(16),
+                                  ),
+                                  border: Border.all(
+                                    color: isCurrentUser
+                                        ? AnimalColors.primary.withOpacity(0.35)
+                                        : Colors.blueGrey.withOpacity(0.18),
+                                    width: 1.2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: isCurrentUser
+                                          ? AnimalColors.primary
+                                              .withOpacity(0.08)
+                                          : Colors.blueGrey.withOpacity(0.08),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      message.text,
+                                      style: GoogleFonts.poppins(
+                                        color: Color(0xFF212121),
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          DateFormat('HH:mm').format(
+                                              message.timestamp.toDate()),
+                                          style: GoogleFonts.poppins(
+                                            color: Color(0xFF757575),
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                        if (isCurrentUser) ...[
+                                          SizedBox(width: 4),
+                                          Icon(
+                                            Icons.check_circle,
+                                            size: 11,
+                                            color: AnimalColors.primary
+                                                .withOpacity(0.7),
+                                          ),
+                                        ]
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
               ),
             ),
-            Container(
-              margin: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _textController,
-                      textCapitalization: TextCapitalization.sentences,
-                      cursorColor: Colors.white,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: "Type a message...",
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.all(16),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0xFFE9ECEF),
+                          Color(0xFFF5F6FA),
+                        ],
                       ),
-                    ),
-                  ),
-                  Material(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(25),
-                    child: InkWell(
                       borderRadius: BorderRadius.circular(25),
-                      onTap: () {
-                        if (_textController.text.isNotEmpty) {
-                          _handleSubmitted(_textController.text);
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        margin: const EdgeInsets.only(right: 6),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.blue[700]!,
-                              Colors.blue[400]!,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.send_rounded,
-                          color: Colors.white,
-                          size: 22,
-                        ),
+                      border: Border.all(
+                        color: Colors.grey.shade300,
+                        width: 1.3,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.12),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _textController,
+                            textCapitalization: TextCapitalization.sentences,
+                            cursorColor: AnimalColors.primary,
+                            style:
+                                GoogleFonts.poppins(color: Color(0xFF212121)),
+                            decoration: InputDecoration(
+                              hintText: "Mesaj yaz...",
+                              hintStyle:
+                                  GoogleFonts.poppins(color: Color(0xFF757575)),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                          ),
+                        ),
+                        Material(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(25),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(25),
+                            onTap: () {
+                              if (_textController.text.isNotEmpty) {
+                                _handleSubmitted(_textController.text);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              margin: const EdgeInsets.only(right: 6),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AnimalColors.primary,
+                                    AnimalColors.secondary,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.send_rounded,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
@@ -1440,11 +1125,6 @@ class _MessagesPageState extends State<MessagesPage> {
       // 8. İsteğe bağlı: Bildirim durumunu kontrol et
       Future.delayed(
           Duration(seconds: 5), () => _checkNotificationStatus(messageRef.id));
-
-      // Check if this is the first message in the conversation and show review if appropriate
-      if (Platform.isIOS) {
-        _checkAndShowReview();
-      }
     } catch (e) {
       print('❌ Mesaj gönderme hatası: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1645,6 +1325,24 @@ class _MessagesPageState extends State<MessagesPage> {
     }
   }
 
+  void _getUserCountry() async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.currentUserUid)
+          .get();
+
+      if (userDoc.exists && mounted) {
+        final data = userDoc.data() as Map<String, dynamic>?;
+        setState(() {
+          _userCountry = data?['country'] as String? ?? '';
+        });
+      }
+    } catch (e) {
+      print('Error getting user country: $e');
+    }
+  }
+
   Future<void> _updateCurrentUserToken() async {
     try {
       // 1. Internet kontrolü
@@ -1799,18 +1497,1225 @@ class _MessagesPageState extends State<MessagesPage> {
     }
   }
 
-  Future<void> _checkAndShowReview() async {
-    // Wait for 3 seconds after sending the message
-    await Future.delayed(const Duration(seconds: 3));
+  Widget _buildProductCard() {
+    // Veteriner konuşması ise hayvan kartı gösterme
+    if (_isVeterinarianConversation) {
+      return const SizedBox.shrink();
+    }
 
-    // Check if we should show a review prompt after messaging
-    bool shouldShow = await StoreReviewHelper.shouldRequestReviewAfterMessage();
-    if (shouldShow) {
-      // Request a review using Apple's SKStoreReviewController
-      await StoreReviewHelper.requestReview();
+    return FutureBuilder<DocumentSnapshot>(
+      future: _getProductData(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Stack(
+              children: [
+                // Glassmorphism arka plan
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withOpacity(0.9),
+                            AnimalColors.primary.withOpacity(0.05),
+                            AnimalColors.secondary.withOpacity(0.05),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AnimalColors.primary.withOpacity(0.06),
+                            blurRadius: 12,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Fotoğraf shimmer
+                            Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                width: 70,
+                                height: 70,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[300],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Bilgiler shimmer
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Kategori shimmer
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 80,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  // Başlık shimmer
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 120,
+                                      height: 16,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 3),
+                                  // Fiyat shimmer
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 60,
+                                      height: 18,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 3),
+                                  // Alt bilgi shimmer
+                                  Row(
+                                    children: [
+                                      Shimmer.fromColors(
+                                        baseColor: Colors.grey[300]!,
+                                        highlightColor: Colors.grey[100]!,
+                                        child: Container(
+                                          width: 50,
+                                          height: 16,
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[300],
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 4),
+                                      Shimmer.fromColors(
+                                        baseColor: Colors.grey[300]!,
+                                        highlightColor: Colors.grey[100]!,
+                                        child: Container(
+                                          width: 40,
+                                          height: 16,
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[300],
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // Favori butonu shimmer
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+                // Detay butonu shimmer
+                Positioned(
+                  bottom: 8,
+                  right: 8,
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
 
-      // Mark that we've shown the review request
-      await StoreReviewHelper.markMessageReviewRequested();
+        if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+          return Container(
+            margin: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.red.withOpacity(0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.10),
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline, color: Colors.red, size: 22),
+                SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    "Bu ilan kaldırılmış veya mevcut değil",
+                    style: GoogleFonts.poppins(
+                        color: Colors.red,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final data = snapshot.data!.data() as Map<String, dynamic>;
+        final isAnimal = data.containsKey('animalType');
+        final List likes = data['likes'] ?? [];
+        final bool isLikedInitial = likes.contains(widget.currentUserUid);
+        // Favori butonu için local state
+        ValueNotifier<bool> isLikedNotifier = ValueNotifier(isLikedInitial);
+        ValueNotifier<bool> likeError = ValueNotifier(false);
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Stack(
+            children: [
+              // Glassmorphism arka plan
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withOpacity(0.9),
+                          AnimalColors.primary.withOpacity(0.05),
+                          AnimalColors.secondary.withOpacity(0.05),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AnimalColors.primary.withOpacity(0.06),
+                          blurRadius: 12,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Fotoğraf
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              _getImageUrl(data, isAnimal),
+                              width: 70,
+                              height: 70,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 70,
+                                  height: 70,
+                                  color: Colors.grey[200],
+                                  child: Icon(
+                                    isAnimal
+                                        ? Icons.pets
+                                        : Icons.image_not_supported,
+                                    color: Colors.grey[400],
+                                    size: 24,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Bilgiler
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Kategori chip
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AnimalColors.primary.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.pets,
+                                          size: 12,
+                                          color: AnimalColors.primary),
+                                      SizedBox(width: 3),
+                                      Text(_getCategory(data, isAnimal),
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 10,
+                                              color: AnimalColors.primary)),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                // Başlık
+                                Text(
+                                  _getTitle(data, isAnimal),
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF212121)),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 3),
+                                // Fiyat
+                                Row(
+                                  children: [
+                                    Text(
+                                      isAnimal && data['priceInTL'] != null
+                                          ? PricingService.formatPrice(
+                                              data['priceInTL'].toDouble())
+                                          : '',
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: AnimalColors.primary),
+                                    ),
+                                    if (isAnimal &&
+                                        (data['isNegotiable'] ?? false))
+                                      Container(
+                                        margin: EdgeInsets.only(left: 6),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: AnimalColors.accent
+                                              .withOpacity(0.25),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                        child: Text('Pazarlık',
+                                            style: GoogleFonts.poppins(
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.black)),
+                                      ),
+                                  ],
+                                ),
+                                SizedBox(height: 3),
+                                // Alt bilgi chipleri
+                                Wrap(
+                                  spacing: 4,
+                                  runSpacing: 2,
+                                  children: [
+                                    if (data['city'] != null &&
+                                        data['city'].toString().isNotEmpty)
+                                      _infoChip(Icons.location_on,
+                                          _getLocation(data)),
+                                    if (isAnimal && data['ageInMonths'] != null)
+                                      _infoChip(Icons.cake,
+                                          '${data['ageInMonths']} ay'),
+                                    if (isAnimal && data['weightInKg'] != null)
+                                      _infoChip(Icons.monitor_weight,
+                                          '${data['weightInKg']} kg'),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Favori butonu
+              Positioned(
+                top: 8,
+                right: 8,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: isLikedNotifier,
+                  builder: (context, isLiked, _) {
+                    return Material(
+                      color: Colors.white,
+                      shape: CircleBorder(),
+                      elevation: 1,
+                      child: IconButton(
+                        icon: Icon(
+                          isLiked ? Icons.favorite : Icons.favorite_border,
+                          color: isLiked ? Colors.red : AnimalColors.primary,
+                          size: 18,
+                        ),
+                        onPressed: () async {
+                          final prev = isLikedNotifier.value;
+                          isLikedNotifier.value = !prev; // Optimistic update
+                          try {
+                            print(
+                                'Favori işlemi başlatıldı - PostId: ${widget.postId}');
+
+                            // Önce animals koleksiyonunda dene
+                            DocumentReference docRef = FirebaseFirestore
+                                .instance
+                                .collection('animals')
+                                .doc(widget.postId);
+
+                            // Eğer animals'da yoksa posts koleksiyonunda dene
+                            final animalDoc = await docRef.get();
+                            if (!animalDoc.exists) {
+                              print(
+                                  'Animals koleksiyonunda bulunamadı, posts koleksiyonunda aranıyor');
+                              docRef = FirebaseFirestore.instance
+                                  .collection('posts')
+                                  .doc(widget.postId);
+                            } else {
+                              print('Animals koleksiyonunda bulundu');
+                            }
+
+                            if (prev) {
+                              print('Favorilerden çıkarılıyor');
+                              await docRef.update({
+                                'likes': FieldValue.arrayRemove(
+                                    [widget.currentUserUid])
+                              });
+                            } else {
+                              print('Favorilere ekleniyor');
+                              await docRef.update({
+                                'likes': FieldValue.arrayUnion(
+                                    [widget.currentUserUid])
+                              });
+                            }
+
+                            print('Favori işlemi başarılı');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(prev
+                                    ? 'Favorilerden çıkarıldı'
+                                    : 'Favorilere eklendi'),
+                                backgroundColor: Colors.green,
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          } catch (e) {
+                            print('Favori işlemi hatası: $e');
+                            isLikedNotifier.value = prev; // Revert on error
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Favori işlemi başarısız: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+              // Detay butonu
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: FloatingActionButton(
+                  mini: true,
+                  backgroundColor: AnimalColors.primary,
+                  child:
+                      Icon(Icons.arrow_forward, color: Colors.white, size: 16),
+                  onPressed: () => _navigateToDetailScreen(isAnimal, data),
+                  elevation: 2,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<DocumentSnapshot> _getProductData() async {
+    // Veteriner konuşması ise null döndür
+    if (_isVeterinarianConversation) {
+      throw Exception('Veteriner konuşması - hayvan bilgisi gerekmez');
+    }
+
+    try {
+      // First try to get from animals collection
+      final animalDoc = await FirebaseFirestore.instance
+          .collection('animals')
+          .doc(widget.postId)
+          .get();
+
+      if (animalDoc.exists) {
+        return animalDoc;
+      }
+
+      // If not found in animals, try posts collection
+      final postDoc = await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .get();
+
+      return postDoc;
+    } catch (e) {
+      print('Error getting product data: $e');
+      rethrow;
+    }
+  }
+
+  String _getImageUrl(Map<String, dynamic> data, bool isAnimal) {
+    if (isAnimal) {
+      final photoUrls = data['photoUrls'] as List<dynamic>?;
+      if (photoUrls != null && photoUrls.isNotEmpty) {
+        return photoUrls[0];
+      }
+    } else {
+      final postUrl = data['postUrl'] as String?;
+      if (postUrl != null && postUrl.isNotEmpty) {
+        return postUrl;
+      }
+    }
+    return '';
+  }
+
+  String _getTitle(Map<String, dynamic> data, bool isAnimal) {
+    if (isAnimal) {
+      final species = data['animalSpecies'] ?? '';
+      final breed = data['animalBreed'] ?? '';
+      if (species.isNotEmpty && breed.isNotEmpty) {
+        return '$species - $breed';
+      }
+      return species.isNotEmpty ? species : 'Hayvan';
+    } else {
+      return data['title'] ?? data['category'] ?? 'Unknown Item';
+    }
+  }
+
+  String _getCategory(Map<String, dynamic> data, bool isAnimal) {
+    if (isAnimal) {
+      final animalType = data['animalType'] ?? '';
+      final purpose = data['purpose'] ?? '';
+      if (animalType.isNotEmpty && purpose.isNotEmpty) {
+        return '$animalType - $purpose';
+      }
+      return animalType.isNotEmpty ? animalType : 'Hayvan';
+    } else {
+      return data['category'] ?? 'Item';
+    }
+  }
+
+  String _getLocation(Map<String, dynamic> data) {
+    final itemCountry = data['country'] as String? ?? '';
+    final itemState = data['state'] as String? ?? '';
+    final itemCity = data['city'] as String? ?? '';
+
+    // Eğer kullanıcının ülkesi ile ilanın ülkesi aynıysa
+    if (_userCountry.isNotEmpty && _userCountry == itemCountry) {
+      // Şehir varsa sadece şehir göster
+      if (itemCity.isNotEmpty) {
+        return itemCity;
+      }
+      // Şehir yoksa il göster
+      else if (itemState.isNotEmpty) {
+        return itemState;
+      }
+      // İkisi de yoksa ülke göster
+      else {
+        return itemCountry;
+      }
+    }
+    // Eğer ülkeler farklıysa veya kullanıcının ülkesi bilinmiyorsa
+    else {
+      return [
+        if (itemCity.isNotEmpty) itemCity,
+        if (itemState.isNotEmpty) itemState,
+        if (itemCountry.isNotEmpty) itemCountry,
+      ].where((e) => e.isNotEmpty).join(", ");
+    }
+  }
+
+  void _navigateToDetailScreen(bool isAnimal, Map<String, dynamic> data) {
+    if (isAnimal) {
+      try {
+        final animal = AnimalPost.fromMap(data);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AnimalDetailScreen(animal: animal),
+          ),
+        );
+      } catch (e) {
+        print('Error creating AnimalPost: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error opening animal details')),
+        );
+      }
+    }
+    // Post screen kaldırıldı, sadece hayvan detayları gösteriliyor
+  }
+
+  Widget _buildSaleButton() {
+    // Veteriner konuşması ise hayvan satış butonu gösterme
+    if (_isVeterinarianConversation) {
+      return const SizedBox.shrink();
+    }
+
+    // Sadece animals koleksiyonunu kontrol et
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('animals')
+          .doc(widget.postId)
+          .snapshots(),
+      builder: (context, animalSnapshot) {
+        print('🔍 Animal Sale Button Debug:');
+        print('  - Post ID: ${widget.postId}');
+        print('  - Current User: ${widget.currentUserUid}');
+        print('  - Has Data: ${animalSnapshot.hasData}');
+        print(
+            '  - Document Exists: ${animalSnapshot.hasData ? animalSnapshot.data!.exists : 'No data'}');
+
+        if (!animalSnapshot.hasData || !animalSnapshot.data!.exists) {
+          print('  - No animal data found, hiding button');
+          return const SizedBox.shrink();
+        }
+
+        final data = animalSnapshot.data!.data() as Map<String, dynamic>?;
+        if (data == null) {
+          print('  - Animal data is null, hiding button');
+          return const SizedBox.shrink();
+        }
+
+        final String sellerId = data['uid'] ?? '';
+        final String saleStatus = data['saleStatus'] ?? 'active';
+        final bool isCurrentUserSeller = sellerId == widget.currentUserUid;
+
+        print('  - Seller ID: $sellerId');
+        print('  - Sale Status: $saleStatus');
+        print('  - Is Current User Seller: $isCurrentUserSeller');
+
+        // Sadece satıcı için göster ve hayvan aktif durumda olmalı
+        if (!isCurrentUserSeller || saleStatus != 'active') {
+          print('  - Not seller or not active, hiding button');
+          return const SizedBox.shrink();
+        }
+
+        print('  - Showing sale button');
+        return _buildSaleButtonUI();
+      },
+    );
+  }
+
+  Widget _buildVeterinarianInfoCard() {
+    if (!_isVeterinarianConversation || _veterinarianData == null) {
+      return const SizedBox.shrink();
+    }
+
+    final clinicName = _veterinarianData!['veterinarianClinicName'] ?? '';
+    final phone = _veterinarianData!['veterinarianPhone'] ?? '';
+    final emergencyPhone =
+        _veterinarianData!['veterinarianEmergencyPhone'] ?? '';
+    final consultationFee = _veterinarianData!['veterinarianConsultationFee'];
+    final specializations = List<String>.from(
+        _veterinarianData!['veterinarianSpecializations'] ?? []);
+    final cities =
+        List<String>.from(_veterinarianData!['veterinarianCities'] ?? []);
+    final available = _veterinarianData!['veterinarianAvailable'] ?? false;
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.local_hospital, color: Colors.green, size: 24),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  clinicName.isNotEmpty ? clinicName : 'Veteriner Klinik',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                  maxLines: 2,
+                  softWrap: true,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: available ? Colors.green : Colors.grey,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  available ? 'Müsait' : 'Meşgul',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (consultationFee != null)
+            Row(
+              children: [
+                Icon(Icons.attach_money, color: Colors.orange, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  'Muayene: ${PricingService.formatPrice(consultationFee.toDouble())}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          if (specializations.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.medical_services, color: Colors.blue, size: 16),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    'Uzmanlık: ${specializations.take(4).join(', ')}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 3,
+                    softWrap: true,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (cities.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.location_on, color: Colors.red, size: 16),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    'Hizmet: ${cities.take(4).join(', ')}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 3,
+                    softWrap: true,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (phone.isNotEmpty || emergencyPhone.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (phone.isNotEmpty)
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        final phoneUrl = 'tel:$phone';
+                        try {
+                          if (await canLaunchUrl(Uri.parse(phoneUrl))) {
+                            await launchUrl(Uri.parse(phoneUrl));
+                          } else {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Telefon arama başlatılamadı: $phone'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Arama sırasında hata oluştu: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.phone, color: Colors.white, size: 16),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Ara',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                if (phone.isNotEmpty && emergencyPhone.isNotEmpty)
+                  const SizedBox(width: 8),
+                if (emergencyPhone.isNotEmpty)
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        final phoneUrl = 'tel:$emergencyPhone';
+                        try {
+                          if (await canLaunchUrl(Uri.parse(phoneUrl))) {
+                            await launchUrl(Uri.parse(phoneUrl));
+                          } else {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Acil telefon arama başlatılamadı: $emergencyPhone'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    'Acil arama sırasında hata oluştu: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.emergency,
+                                color: Colors.white, size: 16),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Acil Ara',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSaleButtonUI() {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: PopupMenuButton<String>(
+        icon: Icon(
+          Icons.more_vert,
+          color: Colors.white,
+        ),
+        color: Color(0xFF2A2A2A),
+        onSelected: (value) {
+          if (value == 'mark_sold') {
+            _showMarkAsSoldDialog();
+          }
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            value: 'mark_sold',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  color: Colors.green[400],
+                  size: 20,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  'Satıldı Olarak İşaretle',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDebugButton() {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: IconButton(
+        icon: Icon(
+          Icons.bug_report,
+          color: Colors.orange,
+        ),
+        onPressed: () async {
+          await _createTestAnimalPost();
+        },
+      ),
+    );
+  }
+
+  void _showMarkAsSoldDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Color(0xFF1E1E1E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.check_circle_outline,
+              color: Colors.green[400],
+              size: 24,
+            ),
+            SizedBox(width: 8),
+            Text(
+              "Satış Onayı",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Hayvanınızı ${recipientUser?.username ?? 'Bu kullanıcı'} adlı kişiye sattığınızı onaylıyor musunuz?",
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+            SizedBox(height: 16),
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.orange.withOpacity(0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: Colors.orange,
+                    size: 16,
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "Bu işlem sonrasında alıcı sizin hakkınızda değerlendirme yapabilecek.",
+                      style: TextStyle(
+                        color: Colors.orange,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.grey,
+            ),
+            child: Text(
+              "İptal",
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _markAnimalAsSold();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green[600],
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 10,
+              ),
+            ),
+            child: Text(
+              "Onayla",
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _markAnimalAsSold() async {
+    try {
+      print('🔄 Marking animal as sold...');
+      print('  - Animal ID: ${widget.postId}');
+      print('  - Seller ID: ${widget.currentUserUid}');
+      print('  - Buyer ID: ${widget.recipientUid}');
+
+      // Sadece animals koleksiyonunu kullan
+      final result = await AnimalSaleService().markAnimalAsSold(
+        animalId: widget.postId,
+        sellerId: widget.currentUserUid,
+        buyerId: widget.recipientUid,
+      );
+
+      print('  - Result: $result');
+
+      if (result == "success") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  Icons.check_circle,
+                  color: Colors.white,
+                ),
+                SizedBox(width: 8),
+                Text("Hayvan satıldı olarak işaretlendi"),
+              ],
+            ),
+            backgroundColor: Colors.green[600],
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        throw Exception(result);
+      }
+    } catch (e) {
+      print('❌ Error marking animal as sold: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: Colors.white,
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text("Hata: $e"),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red[600],
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _createTestAnimalPost() async {
+    try {
+      print('🔧 Creating test animal post...');
+
+      // Test animal post'u oluştur
+      final testAnimal = {
+        'animalId': widget.postId,
+        'description': 'Test hayvan ilanı',
+        'uid': widget.currentUserUid,
+        'username': 'Test User',
+        'datePublished': FieldValue.serverTimestamp(),
+        'photoUrls': ['https://example.com/test.jpg'],
+        'profImage': '',
+        'country': 'Türkiye',
+        'state': 'İstanbul',
+        'city': 'İstanbul',
+        'animalType': 'büyükbaş',
+        'animalSpecies': 'Sığır',
+        'animalBreed': 'Holstein',
+        'ageInMonths': 24,
+        'gender': 'Dişi',
+        'weightInKg': 450.0,
+        'priceInTL': 15000.0,
+        'healthStatus': 'Sağlıklı',
+        'vaccinations': ['Şap', 'Brucellla'],
+        'purpose': 'Süt',
+        'isPregnant': false,
+        'birthDate': DateTime.now().subtract(Duration(days: 365 * 2)),
+        'parentInfo': null,
+        'certificates': [],
+        'isNegotiable': true,
+        'sellerType': 'Bireysel',
+        'transportInfo': 'Nakliye mevcut',
+        'isUrgentSale': false,
+        'veterinarianContact': null,
+        'additionalInfo': {},
+        'likes': [],
+        'saved': [],
+        'isActive': true,
+        'saleStatus': 'active',
+        'buyerUid': null,
+        'soldDate': null,
+        'hasRating': false,
+        'canBeRated': false,
+      };
+
+      // Firestore'a kaydet
+      await FirebaseFirestore.instance
+          .collection('animals')
+          .doc(widget.postId)
+          .set(testAnimal);
+
+      print('✅ Test animal post created successfully');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Test hayvan ilanı oluşturuldu'),
+          backgroundColor: Colors.green[600],
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      print('❌ Error creating test animal post: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Test hayvan ilanı oluşturulamadı: $e'),
+          backgroundColor: Colors.red[600],
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 }
@@ -1869,4 +2774,24 @@ class Message {
         "users": users,
         "postId": postId,
       };
+}
+
+// Ekstra: Alt bilgi chip fonksiyonu
+Widget _infoChip(IconData icon, String text) {
+  return Container(
+    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+    decoration: BoxDecoration(
+      color: Colors.grey[100],
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 11, color: AnimalColors.primary),
+        SizedBox(width: 2),
+        Text(text,
+            style: GoogleFonts.poppins(fontSize: 10, color: Color(0xFF212121))),
+      ],
+    ),
+  );
 }

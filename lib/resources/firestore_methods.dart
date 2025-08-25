@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:freecycle/resources/storage_methods.dart';
+import 'package:animal_trade/resources/storage_methods.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/posts.dart';
