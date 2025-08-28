@@ -1,11 +1,11 @@
 {
-    "name": "Freebie",
-    "short_name": "Freebie",
+    "name": "CanlıPazar",
+    "short_name": "CanlıPazar",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#hexcode",
     "theme_color": "#hexcode",
-    "description": "Freebie",
+    "description": "CanlıPazar",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
