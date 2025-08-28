@@ -14,22 +14,22 @@
     "platforms": {
       "android": {
         "default": {
-          "projectId": "freethings-257b6",
-          "appId": "1:990581988375:android:fb8912776e4a61d77dd052",
+          "projectId": "canlipazar-b3697",
+          "appId": "1:602963135074:android:b0cbc1cc689532af461f3b",
           "fileOutput": "android/app/google-services.json"
         }
       },
       "ios": {
         "default": {
-          "projectId": "freethings-257b6",
-          "appId": "1:990581988375:ios:e53b4e20d479cd677dd052",
+          "projectId": "canlipazar-b3697",
+          "appId": "1:602963135074:ios:2e66bfd02a522a80461f3b",
           "uploadDebugSymbols": false,
           "fileOutput": "ios/Runner/GoogleService-Info.plist"
         }
       },
       "macos": {
         "default": {
-          "projectId": "freethings-257b6",
+          "projectId": "canlipazar-b3697",
           "appId": "1:990581988375:ios:915d0e2ca34044087dd052",
           "uploadDebugSymbols": false,
           "fileOutput": "macos/Runner/GoogleService-Info.plist"
@@ -37,9 +37,9 @@
       },
       "dart": {
         "lib/firebase_options.dart": {
-          "projectId": "freethings-257b6",
+          "projectId": "canlipazar-b3697",
           "configurations": {
-            "ios": "1:990581988375:ios:e53b4e20d479cd677dd052"
+            "ios": "1:602963135074:ios:2e66bfd02a522a80461f3b"
           }
         }
       }

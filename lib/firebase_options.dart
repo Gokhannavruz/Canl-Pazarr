@@ -56,28 +56,24 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCDFwuFnKMvqtqG5DJI_JN-7ub1ceJCB6I',
-    appId: '1:990581988375:android:63d5f83115ccce4c7dd052',
-    messagingSenderId: '990581988375',
-    projectId: 'freethings-257b6',
+    apiKey: 'AIzaSyDc3tzsLYigdk48mXrTf3Perqpn-0pE3Bg',
+    appId: '1:602963135074:android:b0cbc1cc689532af461f3b',
+    messagingSenderId: '602963135074',
+    projectId: 'canlipazar-b3697',
     databaseURL:
-        'https://freethings-257b6-default-rtdb.europe-west1.firebasedatabase.app',
-    storageBucket: 'freethings-257b6.appspot.com',
+        'https://canlipazar-b3697-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'canlipazar-b3697.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBhzlzp3DUt-OExgVgP39-XMfBoZzoC-yc',
-    appId: '1:990581988375:ios:e53b4e20d479cd677dd052',
-    messagingSenderId: '990581988375',
-    projectId: 'freethings-257b6',
+    apiKey: 'AIzaSyBqjZiF_PjYTDcpbtvUaorv9uk2chdp8is',
+    appId: '1:602963135074:ios:2e66bfd02a522a80461f3b',
+    messagingSenderId: '602963135074',
+    projectId: 'canlipazar-b3697',
     databaseURL:
-        'https://freethings-257b6-default-rtdb.europe-west1.firebasedatabase.app',
-    storageBucket: 'freethings-257b6.appspot.com',
-    androidClientId:
-        '990581988375-3spvl0idnpfq9b5dd9p1opl89f0o6ii5.apps.googleusercontent.com',
-    iosClientId:
-        '990581988375-n5913t4nsfk1trsdhcb3vi3992tqsbqc.apps.googleusercontent.com',
-    iosBundleId: 'com.canlipazar',
+        'https://canlipazar-b3697-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'canlipazar-b3697.firebasestorage.app',
+    iosBundleId: 'com.canlipazar.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(

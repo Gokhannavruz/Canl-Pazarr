@@ -8,7 +8,7 @@ class AuthMethods {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String photoUrl =
-      "https://firebasestorage.googleapis.com/v0/b/freethings-257b6.appspot.com/o/defaulprofilephoto%2FdefaultProfilePhoto.png?alt=media&token=f2500621-2916-4601-bcbe-93c63d7fa802";
+      "https://firebasestorage.googleapis.com/v0/b/canlipazar-b3697.firebasestorage.app/o/defaulprofilephoto%2FdefaultProfilePhoto.png?alt=media&token=f2500621-2916-4601-bcbe-93c63d7fa802";
 
   // get user details
   Future<model.User> getUserDetails() async {
@@ -86,7 +86,7 @@ class AuthMethods {
               .uploadImageToStorage('profilePics', file, true);
         } else {
           photoUrl =
-              "https://firebasestorage.googleapis.com/v0/b/freethings-257b6.appspot.com/o/defaulprofilephoto%2FdefaultProfilePhoto.png?alt=media&token=f2500621-2916-4601-bcbe-93c63d7fa802";
+              "https://firebasestorage.googleapis.com/v0/b/canlipazar-b3697.firebasestorage.app/o/defaulprofilephoto%2FdefaultProfilePhoto.png?alt=media&token=f2500621-2916-4601-bcbe-93c63d7fa802";
         }
 
         // Prepare user data as a Map directly, avoiding potential issues with User model
