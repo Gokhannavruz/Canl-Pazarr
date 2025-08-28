@@ -10,7 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_trade/screens/profile_screen2.dart';
 
 const String defaultProfilePicture =
-    "https://firebasestorage.googleapis.com/v0/b/canlipazar-b3697.firebasestorage.app/o/defaulprofilephoto%2FdefaultProfilePhoto.png?alt=media&token=f2500621-2916-4601-bcbe-93c63d7fa802";
+    "https://firebasestorage.googleapis.com/v0/b/canlipazar-b3697.firebasestorage.app/o/defaultprofilephoto%2Fdefaultphoto.jpg?alt=media&token=1e70e65b-84f0-4819-9cd6-52104e271dd8";
 
 class EditProfileScreen extends StatefulWidget {
   final String userId;
